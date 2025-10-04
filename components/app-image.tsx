@@ -22,9 +22,9 @@ interface AppImageProps extends Omit<ImageProps, 'source'> {
  *   height={200} 
  * />
  * <AppImage 
- *   source={require('@/assets/icons/ic-moadong.svg')} 
- *   width={80} 
- *   height={32} 
+ *   source={require('@/assets/images/banner-2.png')} 
+ *   width={200} 
+ *   height={120} 
  * />
  * ```
  */

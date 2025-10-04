@@ -1,6 +1,23 @@
+import AllIconDefault from '@/assets/icons/ic-전체.svg';
+import AllIconSelected from '@/assets/icons/ic-전체-clicked.svg';
+import PerformanceIconDefault from '@/assets/icons/ic-공연.svg';
+import PerformanceIconSelected from '@/assets/icons/ic-공연-clicked.svg';
+import ReligionIconDefault from '@/assets/icons/ic-종교.svg';
+import ReligionIconSelected from '@/assets/icons/ic-종교-clicked.svg';
+import HobbyIconDefault from '@/assets/icons/ic-취미교양.svg';
+import HobbyIconSelected from '@/assets/icons/ic-취미교양-clicked.svg';
+import VolunteerIconDefault from '@/assets/icons/ic-봉사.svg';
+import VolunteerIconSelected from '@/assets/icons/ic-봉사-clicked.svg';
+import AcademicIconDefault from '@/assets/icons/ic-학술.svg';
+import AcademicIconSelected from '@/assets/icons/ic-학술-clicked.svg';
+import SportsIconDefault from '@/assets/icons/ic-운동.svg';
+import SportsIconSelected from '@/assets/icons/ic-운동-clicked.svg';
 import { TagColors } from '@/constants/theme';
-import { Image, ImageStyle } from 'expo-image';
+import { Image } from 'expo-image';
+import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
+import type { ImageSourcePropType, ImageStyle, StyleProp } from 'react-native';
+import type { SvgProps } from 'react-native-svg';
 
 /**
  * 카테고리 아이콘 타입
@@ -17,54 +34,58 @@ export type CategoryType =
 /**
  * 카테고리 아이콘 Props
  */
+type SvgComponent = React.FC<SvgProps>;
+
 interface CategoryIconProps {
   category: CategoryType;
   selected?: boolean;
   size?: number;
-  style?: ImageStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
  * 일반 아이콘 Props
  */
+type IconSource = ImageSourcePropType | SvgComponent;
+
 interface IconProps {
-  source: any;
+  source: IconSource;
   size?: number;
   color?: string;
-  style?: ImageStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
  * 카테고리 아이콘 매핑
  */
-const categoryIconMap: Record<CategoryType, { default: any; selected: any }> = {
+const categoryIconMap: Record<CategoryType, { default: SvgComponent; selected: SvgComponent }> = {
   전체: {
-    default: require('@/assets/icons/ic-전체.svg'),
-    selected: require('@/assets/icons/ic-전체-clicked.svg'),
+    default: AllIconDefault,
+    selected: AllIconSelected,
   },
   학술: {
-    default: require('@/assets/icons/ic-학술.svg'),
-    selected: require('@/assets/icons/ic-학술-clicked.svg'),
+    default: AcademicIconDefault,
+    selected: AcademicIconSelected,
   },
   봉사: {
-    default: require('@/assets/icons/ic-봉사.svg'),
-    selected: require('@/assets/icons/ic-봉사-clicked.svg'),
+    default: VolunteerIconDefault,
+    selected: VolunteerIconSelected,
   },
   운동: {
-    default: require('@/assets/icons/ic-운동.svg'),
-    selected: require('@/assets/icons/ic-운동-clicked.svg'),
+    default: SportsIconDefault,
+    selected: SportsIconSelected,
   },
   종교: {
-    default: require('@/assets/icons/ic-종교.svg'),
-    selected: require('@/assets/icons/ic-종교-clicked.svg'),
+    default: ReligionIconDefault,
+    selected: ReligionIconSelected,
   },
   취미교양: {
-    default: require('@/assets/icons/ic-취미교양.svg'),
-    selected: require('@/assets/icons/ic-취미교양-clicked.svg'),
+    default: HobbyIconDefault,
+    selected: HobbyIconSelected,
   },
   공연: {
-    default: require('@/assets/icons/ic-공연.svg'),
-    selected: require('@/assets/icons/ic-공연-clicked.svg'),
+    default: PerformanceIconDefault,
+    selected: PerformanceIconSelected,
   },
 };
 
@@ -89,26 +110,17 @@ export const categoryColorMap: Record<CategoryType, { main: string; light: strin
  * <CategoryIcon category="학술" selected={true} size={24} />
  * ```
  */
-export function CategoryIcon({ 
-  category, 
-  selected = false, 
-  size = 24, 
-  style 
+export function CategoryIcon({
+  category,
+  selected = false,
+  size = 24,
+  style,
 }: CategoryIconProps) {
-  const iconSource = selected 
-    ? categoryIconMap[category].selected 
+  const IconComponent = selected
+    ? categoryIconMap[category].selected
     : categoryIconMap[category].default;
 
-  return (
-    <Image
-      source={iconSource}
-      style={[
-        { width: size, height: size },
-        style,
-      ]}
-      contentFit="contain"
-    />
-  );
+  return <IconComponent width={size} height={size} style={style} />;
 }
 
 /**
@@ -117,26 +129,44 @@ export function CategoryIcon({
  * 
  * @example
  * ```tsx
+ * import SearchIcon from '@/assets/icons/ic-search.svg';
+ * 
  * <Icon 
- *   source={require('@/assets/icons/ic-검색.svg')} 
+ *   source={SearchIcon} 
  *   size={24} 
  *   color="#FF5414" 
  * />
  * ```
  */
-export function Icon({ 
-  source, 
-  size = 24, 
-  color, 
-  style 
+function isSvgComponent(source: IconSource): source is SvgComponent {
+  return typeof source === 'function';
+}
+
+export function Icon({
+  source,
+  size = 24,
+  color,
+  style,
 }: IconProps) {
+  if (isSvgComponent(source)) {
+    const SvgComponent = source;
+    return (
+      <SvgComponent
+        width={size}
+        height={size}
+        color={color}
+        style={style}
+      />
+    );
+  }
+
   return (
     <Image
       source={source}
       style={[
         { width: size, height: size },
         color && { tintColor: color },
-        style,
+        style as StyleProp<ImageStyle>,
       ]}
       contentFit="contain"
     />

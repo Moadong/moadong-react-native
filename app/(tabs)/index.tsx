@@ -86,11 +86,17 @@ export default function MainScreen() {
     console.log('동아리 상세:', club);
   }, []);
 
-  /**
-   * 리스트 헤더 컴포넌트
-   */
-  const renderListHeader = () => (
-    <>
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* 헤더 */}
+      <MainHeader
+        onSearchPress={handleSearchPress}
+        onMenuPress={handleMenuPress}
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+      />
+
       {/* 배너 섹션 */}
       <View style={styles.bannerSection}>
         <Banner />
@@ -109,18 +115,6 @@ export default function MainScreen() {
         activeTab={activeTab}
         onTabChange={handleTabChange}
       />
-    </>
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* 헤더 */}
-      <MainHeader
-        onSearchPress={handleSearchPress}
-        onMenuPress={handleMenuPress}
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}
-      />
 
       {/* 동아리 목록 섹션 */}
       <View style={styles.clubListSection}>
@@ -132,7 +126,6 @@ export default function MainScreen() {
           onClubPress={handleClubPress}
           hasMore={hasMore}
           error={error}
-          ListHeaderComponent={renderListHeader}
         />
       </View>
     </SafeAreaView>

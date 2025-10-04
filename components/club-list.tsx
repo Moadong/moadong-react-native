@@ -22,7 +22,6 @@ interface ClubListProps {
   hasMore?: boolean;
   error?: string | null;
   style?: any;
-  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
 /**
@@ -49,7 +48,6 @@ export function ClubList({
   hasMore = false,
   error,
   style,
-  ListHeaderComponent,
 }: ClubListProps) {
   /**
    * 빈 목록 렌더링
@@ -124,7 +122,6 @@ export function ClubList({
         keyExtractor={(item) => item.id}
         ListEmptyComponent={renderEmptyComponent}
         ListFooterComponent={renderFooterComponent}
-        ListHeaderComponent={ListHeaderComponent}
         refreshControl={
           onRefresh ? (
             <RefreshControl
