@@ -49,12 +49,28 @@ export function SvgIcon({ xml, size, width, height, color, style }: SvgIconProps
 }
 
 /**
+ * 모아동 로고 SVG
+ */
+export const moadongLogoSvg = `
+<svg width="33" height="26" viewBox="0 0 33 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.9587 26C21.5595 26 20.3818 25.4766 19.6369 24.4901C18.5497 23.0406 18.741 20.8864 20.0898 19.4772C21.026 18.5008 22.3648 17.9572 23.9753 17.8968C25.2839 17.8565 26.5623 18.1283 27.7199 18.6719C28.042 17.927 28.2232 17.1217 28.2232 16.3164C28.2031 13.6489 26.1597 11.0619 23.5727 10.4278C23.2707 10.3472 22.9587 10.307 22.6366 10.2868C22.6164 10.5385 22.5963 10.7901 22.556 11.0418C22.1936 13.518 20.8951 15.6621 19.0027 16.9506C17.3116 18.0881 15.3991 18.1686 14.1106 17.1519C12.6611 16.0044 12.4195 13.8502 13.5167 11.7867C14.6038 9.7332 16.4661 8.18302 18.6101 7.33746C18.4189 6.85429 18.1572 6.40132 17.835 6.00874C15.9225 3.66334 12.0974 2.94865 9.11786 4.37803C6.2591 5.74702 4.14523 8.92791 3.72246 12.4712C3.33995 15.7427 4.28616 19.3664 6.37989 22.6681L3.30975 24.6209C0.763041 20.6046 -0.374421 16.1352 0.108749 12.0484C0.672447 7.21667 3.52114 3.01911 7.53749 1.09649C12.037 -1.06772 17.674 0.0596793 20.6435 3.7036C21.338 4.54916 21.8615 5.55577 22.2037 6.63284C22.9587 6.63284 23.7036 6.71337 24.4384 6.89456C28.6359 7.93136 31.8268 11.9679 31.857 16.2862C31.8671 17.9169 31.4343 19.5074 30.6592 20.9166C31.6557 22.0843 32.3503 23.5237 32.5617 25.0941L28.958 25.5873C28.8674 24.9632 28.6359 24.3592 28.2937 23.8257C27.2166 24.7417 25.9583 25.4162 24.5793 25.7785C24.0156 25.9295 23.472 26 22.9587 26ZM22.5963 22.3561C22.6969 22.3561 23.0795 22.4064 23.6532 22.2655C24.1767 22.1246 24.68 21.9132 25.1531 21.6213C24.8108 21.5508 24.4686 21.5105 24.1163 21.5307C23.4821 21.5508 22.9687 21.7219 22.707 21.9937C22.5963 22.1044 22.556 22.2957 22.5661 22.3561C22.5661 22.3561 22.5762 22.3561 22.5862 22.3561H22.5963ZM18.7813 11.3035C17.9256 11.8571 17.1908 12.602 16.7177 13.4878C16.5869 13.7395 16.5063 13.9912 16.4862 14.1723C16.6171 14.1321 16.7882 14.0515 16.9694 13.9308C17.825 13.357 18.4591 12.4208 18.7913 11.3035H18.7813Z" fill="#FF5414"/>
+</svg>
+`;
+
+/**
  * 검색 아이콘 SVG
  */
 export const searchSvg = `
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
-<path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3692_13366)">
+<path d="M13.1841 13.3682L15.2499 15.434L17.3157 17.4998" stroke="#4B4B4B" stroke-width="1.5" stroke-linecap="round"/>
+<circle cx="8.28002" cy="8.09594" r="6.84594" stroke="#4B4B4B" stroke-width="1.5"/>
+</g>
+<defs>
+<clipPath id="clip0_3692_13366">
+<rect width="19" height="19" fill="white"/>
+</clipPath>
+</defs>
 </svg>
 `;
 
@@ -62,19 +78,16 @@ export const searchSvg = `
  * 메뉴 아이콘 SVG
  */
 export const menuSvg = `
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-<line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-<line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-</svg>
-`;
-
-/**
- * 모아동 로고 SVG
- */
-export const moadongLogoSvg = `
-<svg width="80" height="32" viewBox="0 0 80 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="2" y="2" width="76" height="28" rx="4" fill="#FF5414"/>
-<text x="40" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">모아동</text>
+<svg width="60" height="54" viewBox="0 0 60 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_3692_13371)">
+<path d="M3 3H57" stroke="#4B4B4B" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M3 27H57" stroke="#4B4B4B" stroke-width="4.5" stroke-linecap="round"/>
+<path d="M3 51H57" stroke="#4B4B4B" stroke-width="4.5" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_3692_13371">
+<rect width="60" height="54" fill="white"/>
+</clipPath>
+</defs>
 </svg>
 `;

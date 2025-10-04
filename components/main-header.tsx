@@ -2,7 +2,9 @@
  * 메인 화면 헤더 컴포넌트
  */
 
-import { SvgIcon, menuSvg, moadongLogoSvg, searchSvg } from '@/components/svg-icon';
+import MoadongLogo from '@/assets/icons/ic-moadong';
+import SearchIcon from '@/assets/icons/ic-검색';
+import MenuIcon from '@/assets/icons/ic-메뉴';
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
 import React from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
@@ -38,10 +40,10 @@ export function MainHeader({
     <View style={styles.container}>
       {/* 로고 */}
       <View style={styles.logoContainer}>
-        <SvgIcon 
-          xml={moadongLogoSvg}
+        <MoadongLogo 
           width={80} 
           height={32}
+          color="#FF5414"
         />
       </View>
 
@@ -59,9 +61,9 @@ export function MainHeader({
           onChangeText={onSearchChange}
           editable={false}
         />
-        <SvgIcon 
-          xml={searchSvg}
-          size={20} 
+        <SearchIcon 
+          width={20} 
+          height={20}
           color={Colors.light.icon}
         />
       </TouchableOpacity>
@@ -72,9 +74,9 @@ export function MainHeader({
         onPress={onMenuPress}
         activeOpacity={0.7}
       >
-        <SvgIcon 
-          xml={menuSvg}
-          size={24} 
+        <MenuIcon 
+          width={24} 
+          height={24}
           color={Colors.light.text}
         />
       </TouchableOpacity>
