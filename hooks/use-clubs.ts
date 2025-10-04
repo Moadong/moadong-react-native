@@ -80,21 +80,37 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
     try {
       const response = await clubService.searchClubs(finalParams);
       
+      console.log('🔍 useClubs Debug:', {
+        responseContent: response.content,
+        responseContentLength: response.content.length,
+        responseTotalElements: response.totalElements,
+        finalParams,
+        isPageZero: finalParams.page === 0,
+      });
+      
       // 페이지가 0이면 새로운 목록, 아니면 추가
       if (finalParams.page === 0) {
+        console.log('🔍 Setting new clubs:', response.content);
         setClubs(response.content);
       } else {
+        console.log('🔍 Adding to existing clubs:', response.content);
         setClubs((prev) => [...prev, ...response.content]);
       }
       
       setPageInfo(response);
+      
+      console.log('🔍 Response processed successfully:', {
+        contentLength: response.content.length,
+        totalElements: response.totalElements,
+        page: finalParams.page,
+      });
     } catch (err: any) {
       setError(err.message || '동아리 목록을 불러오는데 실패했습니다.');
       console.error('동아리 목록 조회 에러:', err);
     } finally {
       setLoading(false);
     }
-  }, [currentParams]);
+  }, []); // 의존성 배열을 비워서 무한 루프 방지
 
   /**
    * 현재 파라미터로 다시 가져오기 (Pull to refresh)
@@ -137,9 +153,16 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
    */
   useEffect(() => {
     if (autoFetch) {
-      fetchClubs();
+      console.log('🔍 Initial fetch triggered');
+      // 초기 파라미터로 직접 호출
+      fetchClubs({
+        category: initialCategory === '전체' ? undefined : initialCategory,
+        type: initialType,
+        page: 0,
+        size: 20,
+      });
     }
-  }, [autoFetch]); // fetchClubs는 의존성에서 제외 (무한 루프 방지)
+  }, [autoFetch, initialCategory, initialType]); // fetchClubs 제거
 
   return {
     clubs,
@@ -154,4 +177,3 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
     reset,
   };
 }
-

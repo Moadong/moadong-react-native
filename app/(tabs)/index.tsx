@@ -11,7 +11,8 @@ import { Tab, TabType } from '@/components/tab';
 import { Spacing } from '@/constants/theme';
 import { useClubs } from '@/hooks/use-clubs';
 import React, { useCallback, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
  * 메인 화면 컴포넌트
@@ -85,6 +86,32 @@ export default function MainScreen() {
     console.log('동아리 상세:', club);
   }, []);
 
+  /**
+   * 리스트 헤더 컴포넌트
+   */
+  const renderListHeader = () => (
+    <>
+      {/* 배너 섹션 */}
+      <View style={styles.bannerSection}>
+        <Banner />
+      </View>
+
+      {/* 카테고리 필터 섹션 */}
+      <View style={styles.categorySection}>
+        <CategoryFilter
+          selected={selectedCategory}
+          onSelect={handleCategoryChange}
+        />
+      </View>
+
+      {/* 탭 섹션 */}
+      <Tab
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
@@ -95,42 +122,19 @@ export default function MainScreen() {
         onSearchChange={setSearchValue}
       />
 
-      <ScrollView 
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* 배너 섹션 */}
-        <View style={styles.bannerSection}>
-          <Banner />
-        </View>
-
-        {/* 카테고리 필터 섹션 */}
-        <View style={styles.categorySection}>
-          <CategoryFilter
-            selected={selectedCategory}
-            onSelect={handleCategoryChange}
-          />
-        </View>
-
-        {/* 탭 섹션 */}
-        <Tab
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
+      {/* 동아리 목록 섹션 */}
+      <View style={styles.clubListSection}>
+        <ClubList
+          clubs={clubs}
+          loading={loading}
+          onRefresh={refetch}
+          onLoadMore={loadMore}
+          onClubPress={handleClubPress}
+          hasMore={hasMore}
+          error={error}
+          ListHeaderComponent={renderListHeader}
         />
-
-        {/* 동아리 목록 섹션 */}
-        <View style={styles.clubListSection}>
-          <ClubList
-            clubs={clubs}
-            loading={loading}
-            onRefresh={refetch}
-            onLoadMore={loadMore}
-            onClubPress={handleClubPress}
-            hasMore={hasMore}
-            error={error}
-          />
-        </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -140,9 +144,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  scrollView: {
-    flex: 1,
-  },
   bannerSection: {
     marginBottom: Spacing.md,
   },
@@ -151,6 +152,5 @@ const styles = StyleSheet.create({
   },
   clubListSection: {
     flex: 1,
-    minHeight: 400,
   },
 });

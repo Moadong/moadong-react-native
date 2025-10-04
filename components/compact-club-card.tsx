@@ -45,7 +45,7 @@ export function CompactClubCard({ club, onPress, style }: CompactClubCardProps) 
       {/* 동아리 이미지 */}
       <View style={styles.imageContainer}>
         <AppImage 
-          source={club.imageUrl ? { uri: club.imageUrl } : require('@/assets/images/icon.png')}
+          source={club.logo ? { uri: club.logo } : require('@/assets/images/icon.png')}
           style={styles.image}
           resizeMode="cover"
         />
@@ -60,23 +60,30 @@ export function CompactClubCard({ club, onPress, style }: CompactClubCardProps) 
 
         {/* 동아리 설명 */}
         <Text type="body2Regular" style={styles.description} numberOfLines={2}>
-          {club.description}
+          {club.introduction}
         </Text>
 
         {/* 카테고리 태그 */}
         <View style={styles.categoryContainer}>
-          {club.category.slice(0, 2).map((category, index) => (
+          <View style={styles.categoryTag}>
+            <Text type="caption1Medium" style={styles.categoryText}>
+              {club.category}
+            </Text>
+          </View>
+          {club.tags.slice(0, 1).map((tag, index) => (
             <View key={index} style={styles.categoryTag}>
               <Text type="caption1Medium" style={styles.categoryText}>
-                {category}
+                {tag}
               </Text>
             </View>
           ))}
         </View>
 
-        {/* 멤버 수 */}
+        {/* 모집 상태 */}
         <Text type="caption1Medium" style={styles.memberCount}>
-          멤버 {club.memberCount || 0}명
+          {club.recruitmentStatus === 'OPEN' ? '모집중' : 
+           club.recruitmentStatus === 'ALWAYS' ? '상시모집' :
+           club.recruitmentStatus === 'CLOSED' ? '모집마감' : '모집예정'}
         </Text>
       </View>
     </TouchableOpacity>

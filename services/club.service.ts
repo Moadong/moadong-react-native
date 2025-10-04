@@ -2,7 +2,7 @@
  * 동아리 관련 API 서비스
  */
 
-import { Club, ClubSearchParams, PageResponse } from '@/types/club.types';
+import { ApiResponse, Club, ClubSearchData, ClubSearchParams, PageResponse } from '@/types/club.types';
 import { api } from './api';
 
 /**
@@ -25,29 +25,55 @@ export const clubService = {
   searchClubs: async (params: ClubSearchParams = {}): Promise<PageResponse<Club>> => {
     const { keyword, category, type, page = 0, size = 20 } = params;
 
-    // 쿼리 파라미터 구성
+    // 실제 API 파라미터 구성
     const queryParams: Record<string, any> = {
-      page,
-      size,
+      // 모집상태: ALWAYS(상시모집), OPEN(모집중), CLOSED(모집마감), UPCOMING(모집예정)
+      recruitmentStatus: 'all', // 전체 검색
+      
+      // 분과: 중앙동아리/과동아리
+      division: 'all',
+      
+      // 종류: 봉사, 종교, 취미교양, 학술, 운동, 공연, 기타
+      category: category === '전체' || !category ? 'all' : category,
     };
 
-    if (keyword) {
-      queryParams.keyword = keyword;
+    // 키워드 검색 (이름, 태그, 소개에서 검색)
+    if (keyword && keyword.trim()) {
+      queryParams.keyword = keyword.trim();
     }
 
-    if (category && category !== 'ALL') {
-      queryParams.category = category;
-    }
-
-    if (type) {
-      queryParams.type = type;
-    }
-
-    const response = await api.get<PageResponse<Club>>('/clubs/search', {
+    const response = await api.get<ApiResponse<ClubSearchData>>('/api/club/search/', {
       params: queryParams,
     });
 
-    return response;
+    // API 응답을 PageResponse 형식으로 변환
+    console.log('🔍 API Response Debug:', {
+      responseData: response.data,
+      responseDataData: (response.data as any)?.data,
+      clubs: (response.data as any)?.data?.clubs,
+      clubsLength: (response.data as any)?.data?.clubs?.length,
+      totalCount: (response.data as any)?.data?.totalCount,
+    });
+    
+    const clubs = response.data.clubs;
+    const totalCount = response.data.totalCount;
+    
+    console.log('🔍 Processed Data:', {
+      clubsLength: clubs.length,
+      totalCount,
+      firstClub: clubs[0],
+    });
+    
+    return {
+      content: clubs,
+      totalElements: totalCount,
+      totalPages: Math.ceil(totalCount / size),
+      size,
+      number: page,
+      first: page === 0,
+      last: (page + 1) * size >= totalCount,
+      empty: clubs.length === 0,
+    };
   },
 
   /**
@@ -59,8 +85,8 @@ export const clubService = {
    * ```
    */
   getClubById: async (id: number): Promise<Club> => {
-    const response = await api.get<Club>(`/clubs/${id}`);
-    return response;
+    const response = await api.get<ApiResponse<Club>>(`/api/club/${id}/`);
+    return (response.data as any)?.data || {};
   },
 
   /**
@@ -72,10 +98,10 @@ export const clubService = {
    * ```
    */
   getPopularClubs: async (limit: number = 10): Promise<Club[]> => {
-    const response = await api.get<PageResponse<Club>>('/clubs/popular', {
+    const response = await api.get<ApiResponse<Club[]>>('/api/club/popular/', {
       params: { size: limit },
     });
-    return response.content;
+    return (response.data as any)?.data || [];
   },
 
   /**
@@ -87,8 +113,8 @@ export const clubService = {
    * ```
    */
   getRecommendedClubs: async (): Promise<Club[]> => {
-    const response = await api.get<Club[]>('/clubs/recommended');
-    return response;
+    const response = await api.get<ApiResponse<Club[]>>('/api/club/recommended/');
+    return (response.data as any)?.data || [];
   },
 };
 

@@ -30,6 +30,14 @@ interface ClubCardProps {
  * ```
  */
 export function ClubCard({ club, onPress, style }: ClubCardProps) {
+  // 디버깅 로그 추가
+  console.log('🔍 ClubCard Debug:', {
+    clubId: club.id,
+    clubName: club.name,
+    clubLogo: club.logo,
+    clubCategory: club.category,
+  });
+
   const handlePress = () => {
     onPress?.(club);
   };
@@ -43,7 +51,7 @@ export function ClubCard({ club, onPress, style }: ClubCardProps) {
       {/* 동아리 이미지 */}
       <View style={styles.imageContainer}>
         <AppImage 
-          source={club.imageUrl ? { uri: club.imageUrl } : require('@/assets/images/icon.png')}
+          source={club.logo ? { uri: club.logo } : require('@/assets/images/icon.png')}
           style={styles.image}
           resizeMode="cover"
         />
@@ -51,7 +59,7 @@ export function ClubCard({ club, onPress, style }: ClubCardProps) {
         {/* 동아리 타입 배지 */}
         <View style={styles.typeBadge}>
           <Text type="caption1SemiBold" style={styles.typeText}>
-            {club.type === 'central' ? '중앙' : '과동아리'}
+            {club.division}
           </Text>
         </View>
       </View>
@@ -65,31 +73,31 @@ export function ClubCard({ club, onPress, style }: ClubCardProps) {
 
         {/* 동아리 설명 */}
         <Text type="body2Regular" style={styles.description} numberOfLines={2}>
-          {club.description}
+          {club.introduction}
         </Text>
 
         {/* 카테고리 태그들 */}
         <View style={styles.categoryContainer}>
-          {club.category.slice(0, 3).map((category, index) => (
+          <View style={styles.categoryTag}>
+            <Text type="caption1Medium" style={styles.categoryText}>
+              {club.category}
+            </Text>
+          </View>
+          {club.tags.slice(0, 2).map((tag, index) => (
             <View key={index} style={styles.categoryTag}>
               <Text type="caption1Medium" style={styles.categoryText}>
-                {category}
+                {tag}
               </Text>
             </View>
           ))}
-          {club.category.length > 3 && (
-            <View style={styles.categoryTag}>
-              <Text type="caption1Medium" style={styles.categoryText}>
-                +{club.category.length - 3}
-              </Text>
-            </View>
-          )}
         </View>
 
-        {/* 멤버 수 및 등록 버튼 */}
+        {/* 모집 상태 및 등록 버튼 */}
         <View style={styles.footer}>
           <Text type="caption1Medium" style={styles.memberCount}>
-            멤버 {club.memberCount || 0}명
+            {club.recruitmentStatus === 'OPEN' ? '모집중' : 
+             club.recruitmentStatus === 'ALWAYS' ? '상시모집' :
+             club.recruitmentStatus === 'CLOSED' ? '모집마감' : '모집예정'}
           </Text>
           
           <TouchableOpacity style={styles.registerButton}>

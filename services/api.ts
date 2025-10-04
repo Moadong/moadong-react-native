@@ -9,7 +9,7 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } f
  * API Base URL
  * 환경변수로 관리 가능
  */
-const API_BASE_URL = 'https://yourun.shop/api';
+const API_BASE_URL = 'https://yourun.shop';
 
 /**
  * Axios 인스턴스 생성

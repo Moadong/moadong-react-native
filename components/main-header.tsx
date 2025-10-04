@@ -2,10 +2,7 @@
  * 메인 화면 헤더 컴포넌트
  */
 
-import { AppImage } from '@/components/app-image';
-import { Icon } from '@/components/icon';
-import { Text } from '@/components/themed-text';
-import { SvgIcon, moadongLogoSvg, searchSvg, menuSvg } from '@/components/svg-icon';
+import { SvgIcon, menuSvg, moadongLogoSvg, searchSvg } from '@/components/svg-icon';
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
 import React from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';

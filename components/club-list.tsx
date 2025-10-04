@@ -22,6 +22,7 @@ interface ClubListProps {
   hasMore?: boolean;
   error?: string | null;
   style?: any;
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
 /**
@@ -48,7 +49,17 @@ export function ClubList({
   hasMore = false,
   error,
   style,
+  ListHeaderComponent,
 }: ClubListProps) {
+  // 디버깅 로그 추가
+  console.log('🔍 ClubList Debug:', {
+    clubsLength: clubs.length,
+    clubs: clubs.slice(0, 2), // 처음 2개만 로그
+    loading,
+    error,
+    hasMore,
+  });
+
   /**
    * 빈 목록 렌더링
    */
@@ -116,12 +127,24 @@ export function ClubList({
     <View style={[styles.container, style]}>
       {error && renderErrorComponent()}
       
+      {/* 임시 테스트: FlatList 대신 간단한 View로 테스트 */}
+      <View style={styles.testContainer}>
+        <Text type="body1SemiBold">테스트: {clubs.length}개 동아리</Text>
+        {clubs.slice(0, 3).map((club, index) => (
+          <View key={club.id} style={styles.testItem}>
+            <Text type="body1Regular">{index + 1}. {club.name}</Text>
+            <Text type="caption1Medium">카테고리: {club.category}</Text>
+          </View>
+        ))}
+      </View>
+      
       <FlatList
         data={clubs}
         renderItem={renderClubCard}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         ListEmptyComponent={renderEmptyComponent}
         ListFooterComponent={renderFooterComponent}
+        ListHeaderComponent={ListHeaderComponent}
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -198,6 +221,20 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: '#fff',
     fontSize: 14,
+  },
+  testContainer: {
+    backgroundColor: '#f0f0f0',
+    padding: Spacing.md,
+    margin: Spacing.sm,
+    borderRadius: 8,
+  },
+  testItem: {
+    backgroundColor: '#fff',
+    padding: Spacing.sm,
+    marginVertical: Spacing.xs,
+    borderRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF5414',
   },
 });
 
