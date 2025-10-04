@@ -1,6 +1,14 @@
 import { BorderRadius, Spacing } from '@/constants/theme';
-import { useEffect, useRef, useState } from 'react';
-import { Dimensions, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Dimensions,
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { AppImage } from './app-image';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -49,69 +57,174 @@ export function Banner({
   autoPlayInterval = 3000,
   showIndicator = true,
 }: BannerProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout>();
+  const hasMultipleItems = items.length > 1;
+  const extendedItems = useMemo(() => {
+    if (!hasMultipleItems) {
+      return items;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    return [last, ...items, first];
+  }, [hasMultipleItems, items]);
+
+  const [currentIndex, setCurrentIndex] = useState(hasMultipleItems ? 1 : 0);
+  const listRef = useRef<FlatList<BannerItem>>(null);
+  const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentIndexRef = useRef(currentIndex);
 
   useEffect(() => {
-    if (autoPlay && items.length > 1) {
-      timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % items.length);
-      }, autoPlayInterval);
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
 
-      return () => {
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
-      };
+  useEffect(() => {
+    if (!hasMultipleItems) {
+      setCurrentIndex(0);
+      return;
     }
-  }, [autoPlay, autoPlayInterval, items.length]);
+
+    setCurrentIndex(1);
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToOffset({ offset: BANNER_WIDTH, animated: false });
+    });
+  }, [hasMultipleItems, items.length]);
+
+  const clearAutoPlay = () => {
+    if (autoPlayTimerRef.current) {
+      clearInterval(autoPlayTimerRef.current);
+      autoPlayTimerRef.current = null;
+    }
+  };
+
+  const startAutoPlay = () => {
+    if (!autoPlay || !hasMultipleItems) {
+      return;
+    }
+
+    clearAutoPlay();
+    autoPlayTimerRef.current = setInterval(() => {
+      const nextIndex = currentIndexRef.current + 1;
+      currentIndexRef.current = nextIndex;
+      setCurrentIndex(nextIndex);
+      listRef.current?.scrollToOffset({
+        offset: nextIndex * BANNER_WIDTH,
+        animated: true,
+      });
+    }, autoPlayInterval);
+  };
+
+  useEffect(() => {
+    startAutoPlay();
+    return clearAutoPlay;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, autoPlayInterval, hasMultipleItems]);
+
+  const handleMomentumScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    if (!hasMultipleItems) {
+      return;
+    }
+
+    const xOffset = event.nativeEvent.contentOffset.x;
+    const rawIndex = Math.round(xOffset / BANNER_WIDTH);
+    let nextIndex = rawIndex;
+
+    if (rawIndex === 0) {
+      nextIndex = extendedItems.length - 2;
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToOffset({
+          offset: nextIndex * BANNER_WIDTH,
+          animated: false,
+        });
+      });
+    } else if (rawIndex === extendedItems.length - 1) {
+      nextIndex = 1;
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToOffset({
+          offset: nextIndex * BANNER_WIDTH,
+          animated: false,
+        });
+      });
+    }
+
+    setCurrentIndex(nextIndex);
+  };
+
+  const handleScrollBeginDrag = () => {
+    clearAutoPlay();
+  };
+
+  const handleScrollEndDrag = () => {
+    startAutoPlay();
+  };
+
+  const normalizedIndex = hasMultipleItems
+    ? (currentIndex - 1 + items.length) % items.length
+    : currentIndex;
+
+  const scrollToNormalizedIndex = (targetIndex: number) => {
+    if (!hasMultipleItems) {
+      setCurrentIndex(targetIndex);
+      return;
+    }
+
+    if (targetIndex === normalizedIndex) {
+      return;
+    }
+
+    const diff = targetIndex - normalizedIndex;
+    const nextIndex = currentIndex + diff;
+
+    listRef.current?.scrollToOffset({
+      offset: nextIndex * BANNER_WIDTH,
+      animated: true,
+    });
+    currentIndexRef.current = nextIndex;
+    setCurrentIndex(nextIndex);
+    startAutoPlay();
+  };
 
   const handlePress = (item: BannerItem) => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
+    clearAutoPlay();
     item.onPress?.();
+    startAutoPlay();
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.bannerContainer}>
-        {items.map((item, index) => (
-          <Pressable
-            key={item.id}
-            onPress={() => handlePress(item)}
-            style={[
-              styles.banner,
-              {
-                opacity: index === currentIndex ? 1 : 0,
-                zIndex: index === currentIndex ? 1 : 0,
-              }
-            ]}
-          >
-            <AppImage
-              source={item.image}
-              width={BANNER_WIDTH}
-              height={BANNER_HEIGHT}
-              contentFit="cover"
-            />
-          </Pressable>
-        ))}
+        <FlatList
+          ref={listRef}
+          data={extendedItems}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          initialScrollIndex={hasMultipleItems ? 1 : 0}
+          style={styles.list}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          getItemLayout={(_, index) => ({
+            length: BANNER_WIDTH,
+            offset: BANNER_WIDTH * index,
+            index,
+          })}
+          snapToInterval={BANNER_WIDTH}
+          decelerationRate="fast"
+          onScrollBeginDrag={handleScrollBeginDrag}
+          onScrollEndDrag={handleScrollEndDrag}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          renderItem={({ item }) => (
+            <Pressable onPress={() => handlePress(item)} style={styles.banner}>
+              <AppImage
+                source={item.image}
+                width={BANNER_WIDTH}
+                height={BANNER_HEIGHT}
+                contentFit="cover"
+              />
+            </Pressable>
+          )}
+        />
       </View>
-
-      {showIndicator && items.length > 1 && (
-        <View style={styles.indicatorContainer}>
-          {items.map((item, index) => (
-            <Pressable
-              key={item.id}
-              onPress={() => setCurrentIndex(index)}
-              style={[
-                styles.indicator,
-                index === currentIndex && styles.indicatorActive,
-              ]}
-            />
-          ))}
-        </View>
-      )}
     </View>
   );
 }
@@ -144,18 +257,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   bannerContainer: {
-    position: 'relative',
     width: BANNER_WIDTH,
     height: BANNER_HEIGHT,
     borderRadius: BorderRadius.md,
     overflow: 'hidden',
   },
+  list: {
+    flexGrow: 0,
+  },
   banner: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
     width: BANNER_WIDTH,
     height: BANNER_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   simpleBanner: {
     borderRadius: BorderRadius.md,
@@ -179,4 +293,3 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
 });
-

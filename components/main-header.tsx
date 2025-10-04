@@ -41,8 +41,8 @@ export function MainHeader({
       {/* 로고 */}
       <View style={styles.logoContainer}>
         <MoadongLogo 
-          width={80}
-          height={32}
+          width={32}
+          height={26}
           color="#FF5414"
         />
       </View>
