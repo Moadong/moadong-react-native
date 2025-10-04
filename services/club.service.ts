@@ -47,22 +47,8 @@ export const clubService = {
     });
 
     // API 응답을 PageResponse 형식으로 변환
-    console.log('🔍 API Response Debug:', {
-      responseData: response.data,
-      responseDataData: (response.data as any)?.data,
-      clubs: (response.data as any)?.data?.clubs,
-      clubsLength: (response.data as any)?.data?.clubs?.length,
-      totalCount: (response.data as any)?.data?.totalCount,
-    });
-    
     const clubs = response.data.clubs;
     const totalCount = response.data.totalCount;
-    
-    console.log('🔍 Processed Data:', {
-      clubsLength: clubs.length,
-      totalCount,
-      firstClub: clubs[0],
-    });
     
     return {
       content: clubs,

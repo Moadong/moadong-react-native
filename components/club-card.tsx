@@ -30,14 +30,6 @@ interface ClubCardProps {
  * ```
  */
 export function ClubCard({ club, onPress, style }: ClubCardProps) {
-  // 디버깅 로그 추가
-  console.log('🔍 ClubCard Debug:', {
-    clubId: club.id,
-    clubName: club.name,
-    clubLogo: club.logo,
-    clubCategory: club.category,
-  });
-
   const handlePress = () => {
     onPress?.(club);
   };
