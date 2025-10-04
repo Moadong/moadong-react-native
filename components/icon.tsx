@@ -15,11 +15,6 @@ export type CategoryType =
   | '공연';
 
 /**
- * 일반 아이콘 타입
- */
-export type IconType = '검색' | '메뉴';
-
-/**
  * 카테고리 아이콘 Props
  */
 interface CategoryIconProps {
@@ -33,7 +28,7 @@ interface CategoryIconProps {
  * 일반 아이콘 Props
  */
 interface IconProps {
-  name: IconType;
+  source: any;
   size?: number;
   color?: string;
   style?: ImageStyle;
@@ -74,24 +69,16 @@ const categoryIconMap: Record<CategoryType, { default: any; selected: any }> = {
 };
 
 /**
- * 일반 아이콘 매핑
+ * 카테고리 색상 매핑
  */
-const iconMap: Record<IconType, any> = {
-  검색: require('@/assets/icons/ic-검색.svg'),
-  메뉴: require('@/assets/icons/ic-메뉴.svg'),
-};
-
-/**
- * 카테고리 컬러 매핑
- */
-export const categoryColorMap: Record<CategoryType, string> = {
-  전체: '#4A9FFF',
-  학술: TagColors.academic.main,
-  봉사: TagColors.volunteer.main,
-  운동: TagColors.sports.main,
-  종교: TagColors.religion.main,
-  취미교양: TagColors.hobby.main,
-  공연: TagColors.performance.main,
+export const categoryColorMap: Record<CategoryType, { main: string; light: string }> = {
+  전체: TagColors.academic,
+  학술: TagColors.academic,
+  봉사: TagColors.volunteer,
+  운동: TagColors.sports,
+  종교: TagColors.religion,
+  취미교양: TagColors.hobby,
+  공연: TagColors.performance,
 };
 
 /**
@@ -99,24 +86,26 @@ export const categoryColorMap: Record<CategoryType, string> = {
  * 
  * @example
  * ```tsx
- * <CategoryIcon category="학술" selected={false} size={40} />
- * <CategoryIcon category="봉사" selected={true} />
+ * <CategoryIcon category="학술" selected={true} size={24} />
  * ```
  */
 export function CategoryIcon({ 
   category, 
   selected = false, 
-  size = 40,
-  style,
+  size = 24, 
+  style 
 }: CategoryIconProps) {
-  const source = selected 
+  const iconSource = selected 
     ? categoryIconMap[category].selected 
     : categoryIconMap[category].default;
-  
+
   return (
     <Image
-      source={source}
-      style={[{ width: size, height: size }, style]}
+      source={iconSource}
+      style={[
+        { width: size, height: size },
+        style,
+      ]}
       contentFit="contain"
     />
   );
@@ -124,29 +113,47 @@ export function CategoryIcon({
 
 /**
  * 일반 아이콘 컴포넌트
+ * 동적으로 아이콘 소스를 받아서 렌더링
  * 
  * @example
  * ```tsx
- * <Icon name="검색" size={24} />
- * <Icon name="메뉴" size={24} />
+ * <Icon 
+ *   source={require('@/assets/icons/ic-검색.svg')} 
+ *   size={24} 
+ *   color="#FF5414" 
+ * />
  * ```
  */
 export function Icon({ 
-  name, 
-  size = 24,
-  style,
+  source, 
+  size = 24, 
+  color, 
+  style 
 }: IconProps) {
   return (
     <Image
-      source={iconMap[name]}
-      style={[{ width: size, height: size }, style]}
+      source={source}
+      style={[
+        { width: size, height: size },
+        color && { tintColor: color },
+        style,
+      ]}
       contentFit="contain"
     />
   );
 }
 
 /**
- * 배경색과 함께 표시되는 카테고리 아이콘 Props
+ * 배경이 있는 카테고리 아이콘 컴포넌트
+ * 
+ * @example
+ * ```tsx
+ * <CategoryIconWithBackground 
+ *   category="학술" 
+ *   selected={true} 
+ *   size={48} 
+ * />
+ * ```
  */
 interface CategoryIconWithBackgroundProps {
   category: CategoryType;
@@ -155,51 +162,38 @@ interface CategoryIconWithBackgroundProps {
   style?: ViewStyle;
 }
 
-/**
- * 배경색과 함께 표시되는 카테고리 아이콘
- * 
- * @example
- * ```tsx
- * <CategoryIconWithBackground category="학술" selected={false} />
- * <CategoryIconWithBackground category="봉사" selected={true} size={56} />
- * ```
- */
 export function CategoryIconWithBackground({ 
   category, 
-  selected = false,
-  size = 48,
-  style,
+  selected = false, 
+  size = 48, 
+  style 
 }: CategoryIconWithBackgroundProps) {
-  const backgroundColor = selected 
-    ? categoryColorMap[category] 
-    : 'rgba(0, 0, 0, 0.05)';
+  const colors = categoryColorMap[category];
+  const backgroundColor = selected ? colors.main : colors.light;
 
   return (
-    <View 
-      style={[
-        styles.iconContainer,
-        { 
-          backgroundColor,
-          width: size,
-          height: size,
-          borderRadius: size * 0.25,
-        },
-        style,
-      ]}
-    >
+    <View style={[
+      styles.iconBackground,
+      { 
+        width: size, 
+        height: size, 
+        backgroundColor,
+        borderRadius: size / 2,
+      },
+      style,
+    ]}>
       <CategoryIcon 
         category={category} 
-        selected={selected}
-        size={size * 0.6}
+        selected={selected} 
+        size={size * 0.5} 
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  iconContainer: {
+  iconBackground: {
     justifyContent: 'center',
     alignItems: 'center',
   },
 });
-

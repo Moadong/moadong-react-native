@@ -2,50 +2,34 @@ import { Image, ImageProps } from 'expo-image';
 import { StyleSheet } from 'react-native';
 
 /**
- * 이미지 타입
- */
-export type AppImageType = 
-  | 'banner-1'
-  | 'banner-2'
-  | 'logo'
-  | 'react-logo'
-  | 'react-logo-2x'
-  | 'react-logo-3x'
-  | 'partial-react-logo';
-
-/**
  * 앱 이미지 Props
  */
 interface AppImageProps extends Omit<ImageProps, 'source'> {
-  name: AppImageType;
+  source: any;
   width?: number;
   height?: number;
 }
 
 /**
- * 이미지 소스 매핑
- */
-const imageMap: Record<AppImageType, any> = {
-  'banner-1': require('@/assets/images/banner-1.png'),
-  'banner-2': require('@/assets/images/banner-2.png'),
-  'logo': require('@/assets/images/icon.png'),
-  'react-logo': require('@/assets/images/react-logo.png'),
-  'react-logo-2x': require('@/assets/images/react-logo@2x.png'),
-  'react-logo-3x': require('@/assets/images/react-logo@3x.png'),
-  'partial-react-logo': require('@/assets/images/partial-react-logo.png'),
-};
-
-/**
  * 앱 이미지 컴포넌트
+ * 동적으로 이미지 소스를 받아서 렌더링
  * 
  * @example
  * ```tsx
- * <AppImage name="banner-1" width={350} height={200} />
- * <AppImage name="logo" width={100} height={100} />
+ * <AppImage 
+ *   source={require('@/assets/images/banner-1.png')} 
+ *   width={350} 
+ *   height={200} 
+ * />
+ * <AppImage 
+ *   source={require('@/assets/icons/ic-moadong.svg')} 
+ *   width={80} 
+ *   height={32} 
+ * />
  * ```
  */
 export function AppImage({ 
-  name, 
+  source,
   width,
   height,
   style,
@@ -54,7 +38,7 @@ export function AppImage({
 }: AppImageProps) {
   return (
     <Image
-      source={imageMap[name]}
+      source={source}
       style={[
         width && height ? { width, height } : styles.defaultSize,
         style,
@@ -71,4 +55,3 @@ const styles = StyleSheet.create({
     height: 200,
   },
 });
-

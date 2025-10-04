@@ -2,16 +2,16 @@
  * 메인 화면 컴포넌트
  */
 
+import React, { useState, useCallback } from 'react';
+import { ScrollView, StyleSheet, View, SafeAreaView } from 'react-native';
+import { MainHeader } from '@/components/main-header';
 import { Banner } from '@/components/banner';
 import { CategoryFilter } from '@/components/category-filter';
-import { ClubList } from '@/components/club-list';
-import { CategoryType } from '@/components/icon';
-import { MainHeader } from '@/components/main-header';
 import { Tab, TabType } from '@/components/tab';
-import { Spacing } from '@/constants/theme';
+import { ClubList } from '@/components/club-list';
 import { useClubs } from '@/hooks/use-clubs';
-import React, { useCallback, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { CategoryType } from '@/components/icon';
+import { Spacing } from '@/constants/theme';
 
 /**
  * 메인 화면 컴포넌트
@@ -107,8 +107,8 @@ export default function MainScreen() {
         {/* 카테고리 필터 섹션 */}
         <View style={styles.categorySection}>
           <CategoryFilter
-            selected={selectedCategory}
-            onSelect={handleCategoryChange}
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
           />
         </View>
 

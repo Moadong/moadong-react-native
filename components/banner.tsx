@@ -12,7 +12,7 @@ const BANNER_HEIGHT = BANNER_WIDTH * 0.4; // 2.5:1 비율
  */
 interface BannerItem {
   id: string;
-  image: 'banner-1' | 'banner-2';
+  image: any; // require()로 받은 이미지 소스
   title?: string;
   onPress?: () => void;
 }
@@ -42,8 +42,8 @@ interface BannerProps {
  */
 export function Banner({ 
   items = [
-    { id: '1', image: 'banner-1' as const },
-    { id: '2', image: 'banner-2' as const },
+    { id: '1', image: require('@/assets/images/banner-1.png') },
+    { id: '2', image: require('@/assets/images/banner-2.png') },
   ],
   autoPlay = true,
   autoPlayInterval = 3000,
@@ -89,7 +89,7 @@ export function Banner({
             ]}
           >
             <AppImage
-              name={item.image}
+              source={item.image}
               width={BANNER_WIDTH}
               height={BANNER_HEIGHT}
               contentFit="cover"
@@ -120,16 +120,16 @@ export function Banner({
  * 심플한 단일 배너
  */
 export function SimpleBanner({ 
-  image = 'banner-1' as const,
+  image = require('@/assets/images/banner-1.png'),
   onPress,
 }: {
-  image?: 'banner-1' | 'banner-2';
+  image?: any; // require()로 받은 이미지 소스
   onPress?: () => void;
 }) {
   return (
     <Pressable onPress={onPress} style={styles.container}>
       <AppImage
-        name={image}
+        source={image}
         width={BANNER_WIDTH}
         height={BANNER_HEIGHT}
         contentFit="cover"

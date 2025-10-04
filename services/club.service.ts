@@ -43,16 +43,11 @@ export const clubService = {
       queryParams.type = type;
     }
 
-    try {
-      const response = await api.get<PageResponse<Club>>('/api/clubs/search', {
-        params: queryParams,
-      });
+    const response = await api.get<PageResponse<Club>>('/clubs/search', {
+      params: queryParams,
+    });
 
-      return response;
-    } catch (error) {
-      console.error('동아리 검색 실패:', error);
-      throw error;
-    }
+    return response;
   },
 
   /**
@@ -64,13 +59,8 @@ export const clubService = {
    * ```
    */
   getClubById: async (id: number): Promise<Club> => {
-    try {
-      const response = await api.get<Club>(`/api/clubs/${id}`);
-      return response;
-    } catch (error) {
-      console.error('동아리 상세 조회 실패:', error);
-      throw error;
-    }
+    const response = await api.get<Club>(`/clubs/${id}`);
+    return response;
   },
 
   /**
@@ -82,15 +72,10 @@ export const clubService = {
    * ```
    */
   getPopularClubs: async (limit: number = 10): Promise<Club[]> => {
-    try {
-      const response = await api.get<PageResponse<Club>>('/api/clubs/popular', {
-        params: { size: limit },
-      });
-      return response.content;
-    } catch (error) {
-      console.error('인기 동아리 조회 실패:', error);
-      throw error;
-    }
+    const response = await api.get<PageResponse<Club>>('/clubs/popular', {
+      params: { size: limit },
+    });
+    return response.content;
   },
 
   /**
@@ -102,13 +87,8 @@ export const clubService = {
    * ```
    */
   getRecommendedClubs: async (): Promise<Club[]> => {
-    try {
-      const response = await api.get<Club[]>('/api/clubs/recommended');
-      return response;
-    } catch (error) {
-      console.error('추천 동아리 조회 실패:', error);
-      throw error;
-    }
+    const response = await api.get<Club[]>('/clubs/recommended');
+    return response;
   },
 };
 
