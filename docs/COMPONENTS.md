@@ -84,7 +84,7 @@ import { AppImage } from '@/components/app-image';
 ### 카테고리 필터 (가로 스크롤)
 
 ```tsx
-import { CategoryFilter } from '@/components/category-filter';
+import { CategoryFilter } from '@/ui/home/components';
 import { useState } from 'react';
 import { CategoryType } from '@/components/icon';
 
@@ -107,7 +107,7 @@ export function HomeScreen() {
 ### 카테고리 그리드
 
 ```tsx
-import { CategoryGrid } from '@/components/category-filter';
+import { CategoryGrid } from '@/ui/home/components';
 import { useState } from 'react';
 import { CategoryType } from '@/components/icon';
 
@@ -127,7 +127,7 @@ export function CategorySelectScreen() {
 ### 배너 슬라이더
 
 ```tsx
-import { Banner } from '@/components/banner';
+import { Banner } from '@/ui/home/components';
 
 export function HomeScreen() {
   const banners = [
@@ -157,7 +157,7 @@ export function HomeScreen() {
 ### 심플 배너
 
 ```tsx
-import { SimpleBanner } from '@/components/banner';
+import { SimpleBanner } from '@/ui/home/components';
 
 export function EventScreen() {
   return (
@@ -290,4 +290,3 @@ const iconSize = width < 375 ? 32 : 40; // 작은 화면에서 더 작은 아이
 
 - [디자인 시스템 가이드](./DESIGN_SYSTEM.md)
 - [아이콘 네이밍 컨벤션](./ICON_NAMING.md)
-

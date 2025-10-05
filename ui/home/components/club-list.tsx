@@ -2,7 +2,7 @@
  * 동아리 목록 컴포넌트
  */
 
-import { ClubCard } from '@/components/club-card';
+import { ClubCard } from '@/ui/home/components';
 import { Text } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';

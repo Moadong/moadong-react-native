@@ -1,4 +1,5 @@
 import { BorderRadius, Spacing } from '@/constants/theme';
+import { BannerProps, HomeBannerItem } from '@/ui/home/model/banner';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
@@ -9,31 +10,11 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { AppImage } from './app-image';
+import { AppImage } from '@/components/app-image';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_WIDTH = SCREEN_WIDTH;
 const BANNER_HEIGHT = BANNER_WIDTH * 0.5;
-
-/**
- * 배너 아이템
- */
-interface BannerItem {
-  id: string;
-  image: any; // require()로 받은 이미지 소스
-  title?: string;
-  onPress?: () => void;
-}
-
-/**
- * 배너 Props
- */
-interface BannerProps {
-  items?: BannerItem[];
-  autoPlay?: boolean;
-  autoPlayInterval?: number;
-  showIndicator?: boolean;
-}
 
 /**
  * 배너 컴포넌트
@@ -58,7 +39,7 @@ export function Banner({
   showIndicator = true,
 }: BannerProps) {
   const hasMultipleItems = items.length > 1;
-  const extendedItems = useMemo(() => {
+  const extendedItems = useMemo<HomeBannerItem[]>(() => {
     if (!hasMultipleItems) {
       return items;
     }
@@ -68,7 +49,7 @@ export function Banner({
   }, [hasMultipleItems, items]);
 
   const [currentIndex, setCurrentIndex] = useState(hasMultipleItems ? 1 : 0);
-  const listRef = useRef<FlatList<BannerItem>>(null);
+  const listRef = useRef<FlatList<HomeBannerItem>>(null);
   const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentIndexRef = useRef(currentIndex);
 
@@ -184,7 +165,7 @@ export function Banner({
     startAutoPlay();
   };
 
-  const handlePress = (item: BannerItem) => {
+  const handlePress = (item: HomeBannerItem) => {
     clearAutoPlay();
     item.onPress?.();
     startAutoPlay();
@@ -198,6 +179,11 @@ export function Banner({
           data={extendedItems}
           keyExtractor={(item, index) => `${item.id}-${index}`}
           initialScrollIndex={hasMultipleItems ? 1 : 0}
+          initialNumToRender={extendedItems.length}
+          maxToRenderPerBatch={extendedItems.length}
+          windowSize={extendedItems.length + 2}
+          removeClippedSubviews={false}
+          scrollEventThrottle={16}
           style={styles.list}
           horizontal
           pagingEnabled

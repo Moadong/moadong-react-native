@@ -1,7 +1,7 @@
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { CategoryIcon, CategoryType, categoryColorMap } from './icon';
-import { Text } from './themed-text';
+import { CategoryIcon, CategoryType, categoryColorMap } from '@/components/icon';
+import { Text } from '@/components/themed-text';
 
 /**
  * 카테고리 필터 Props
@@ -199,4 +199,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
