@@ -4,26 +4,26 @@
 
 ### 기본 형식
 ```
-ic-{카테고리명}[-clicked].svg
+ic-{카테고리명}[-selected].svg
 ```
 
 - **접두사**: `ic-` (icon의 약자)
 - **카테고리명**: 한글 그대로 사용
 - **상태**: 
   - 기본 상태: 접미사 없음 (Light 버전, 비활성)
-  - 선택 상태: `-clicked` (Dark 버전, 활성)
+  - 선택 상태: `-selected` (Dark 버전, 활성)
 
 ### 예시
 
 | 카테고리 | 기본 상태 (Light) | 선택 상태 (Dark) |
 |---------|------------------|-----------------|
-| 전체 | `ic-전체.svg` | `ic-전체-clicked.svg` |
-| 학술 | `ic-학술.svg` | `ic-학술-clicked.svg` |
-| 봉사 | `ic-봉사.svg` | `ic-봉사-clicked.svg` |
-| 운동 | `ic-운동.svg` | `ic-운동-clicked.svg` |
-| 종교 | `ic-종교.svg` | `ic-종교-clicked.svg` |
-| 취미교양 | `ic-취미교양.svg` | `ic-취미교양-clicked.svg` |
-| 공연 | `ic-공연.svg` | `ic-공연-clicked.svg` |
+| 전체 | `ic-전체.svg` | `ic-전체-selected.svg` |
+| 학술 | `ic-학술.svg` | `ic-학술-selected.svg` |
+| 봉사 | `ic-봉사.svg` | `ic-봉사-selected.svg` |
+| 운동 | `ic-운동.svg` | `ic-운동-selected.svg` |
+| 종교 | `ic-종교.svg` | `ic-종교-selected.svg` |
+| 취미교양 | `ic-취미교양.svg` | `ic-취미교양-selected.svg` |
+| 공연 | `ic-공연.svg` | `ic-공연-selected.svg` |
 
 ## 🔄 파일 이름 변경 방법
 
@@ -40,9 +40,9 @@ bash scripts/rename-icons.sh
 
 Figma에서 다운로드한 원본 파일명:
 - `전체 모바일.svg` → `ic-전체.svg`
-- `전체.svg` → `ic-전체-clicked.svg`
+- `전체.svg` → `ic-전체-selected.svg`
 - `학술 모바일.svg` → `ic-학술.svg`
-- `학술 모바일 (1).svg` → `ic-학술-clicked.svg`
+- `학술 모바일 (1).svg` → `ic-학술-selected.svg`
 - (나머지 동일한 패턴)
 
 ## 📦 React Native에서 사용하기
@@ -72,31 +72,31 @@ interface CategoryIconProps {
 const iconMap: Record<CategoryType, { default: any; selected: any }> = {
   전체: {
     default: require('@/assets/icons/ic-전체.svg'),
-    selected: require('@/assets/icons/ic-전체-clicked.svg'),
+    selected: require('@/assets/icons/ic-전체-selected.svg'),
   },
   학술: {
     default: require('@/assets/icons/ic-학술.svg'),
-    selected: require('@/assets/icons/ic-학술-clicked.svg'),
+    selected: require('@/assets/icons/ic-학술-selected.svg'),
   },
   봉사: {
     default: require('@/assets/icons/ic-봉사.svg'),
-    selected: require('@/assets/icons/ic-봉사-clicked.svg'),
+    selected: require('@/assets/icons/ic-봉사-selected.svg'),
   },
   운동: {
     default: require('@/assets/icons/ic-운동.svg'),
-    selected: require('@/assets/icons/ic-운동-clicked.svg'),
+    selected: require('@/assets/icons/ic-운동-selected.svg'),
   },
   종교: {
     default: require('@/assets/icons/ic-종교.svg'),
-    selected: require('@/assets/icons/ic-종교-clicked.svg'),
+    selected: require('@/assets/icons/ic-종교-selected.svg'),
   },
   취미교양: {
     default: require('@/assets/icons/ic-취미교양.svg'),
-    selected: require('@/assets/icons/ic-취미교양-clicked.svg'),
+    selected: require('@/assets/icons/ic-취미교양-selected.svg'),
   },
   공연: {
     default: require('@/assets/icons/ic-공연.svg'),
-    selected: require('@/assets/icons/ic-공연-clicked.svg'),
+    selected: require('@/assets/icons/ic-공연-selected.svg'),
   },
 };
 

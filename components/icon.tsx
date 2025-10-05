@@ -1,22 +1,22 @@
-import AllIconDefault from '@/assets/icons/ic-전체.svg';
-import AllIconSelected from '@/assets/icons/ic-전체-clicked.svg';
-import PerformanceIconDefault from '@/assets/icons/ic-공연.svg';
-import PerformanceIconSelected from '@/assets/icons/ic-공연-clicked.svg';
-import ReligionIconDefault from '@/assets/icons/ic-종교.svg';
-import ReligionIconSelected from '@/assets/icons/ic-종교-clicked.svg';
-import HobbyIconDefault from '@/assets/icons/ic-취미교양.svg';
-import HobbyIconSelected from '@/assets/icons/ic-취미교양-clicked.svg';
-import VolunteerIconDefault from '@/assets/icons/ic-봉사.svg';
-import VolunteerIconSelected from '@/assets/icons/ic-봉사-clicked.svg';
-import AcademicIconDefault from '@/assets/icons/ic-학술.svg';
-import AcademicIconSelected from '@/assets/icons/ic-학술-clicked.svg';
-import SportsIconDefault from '@/assets/icons/ic-운동.svg';
-import SportsIconSelected from '@/assets/icons/ic-운동-clicked.svg';
+import PerformanceIconDefault from '@/assets/icons/ic-공연-default.svg';
+import PerformanceIconSelected from '@/assets/icons/ic-공연-selected.svg';
+import VolunteerIconDefault from '@/assets/icons/ic-봉사-default.svg';
+import VolunteerIconSelected from '@/assets/icons/ic-봉사-selected.svg';
+import SportsIconDefault from '@/assets/icons/ic-운동-default.svg';
+import SportsIconSelected from '@/assets/icons/ic-운동-selected.svg';
+import AllIconDefault from '@/assets/icons/ic-전체-default.svg';
+import AllIconSelected from '@/assets/icons/ic-전체-selected.svg';
+import ReligionIconDefault from '@/assets/icons/ic-종교-default.svg';
+import ReligionIconSelected from '@/assets/icons/ic-종교-selected.svg';
+import HobbyIconDefault from '@/assets/icons/ic-취미교양-default.svg';
+import HobbyIconSelected from '@/assets/icons/ic-취미교양-selected.svg';
+import AcademicIconDefault from '@/assets/icons/ic-학술-default.svg';
+import AcademicIconSelected from '@/assets/icons/ic-학술-selected.svg';
 import { TagColors } from '@/constants/theme';
 import { Image } from 'expo-image';
 import React from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
 import type { ImageSourcePropType, ImageStyle, StyleProp } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import type { SvgProps } from 'react-native-svg';
 
 /**

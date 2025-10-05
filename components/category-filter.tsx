@@ -67,8 +67,8 @@ function CategoryFilterItem({
   onPress 
 }: CategoryFilterItemProps) {
   const backgroundColor = selected 
-    ? categoryColorMap[category] 
-    : 'rgba(0, 0, 0, 0.05)';
+    ? 'rgba(0, 0, 0, 0.05)'
+    : 'rgba(0, 0, 0, 0.00)' ;
 
   return (
     <Pressable 
@@ -94,8 +94,9 @@ function CategoryFilterItem({
         type="caption1Medium"
         style={[
           styles.label,
-          selected && { color: categoryColorMap[category] }
+          selected && { color: categoryColorMap[category].main }
         ]}
+
       >
         {category}
       </Text>
