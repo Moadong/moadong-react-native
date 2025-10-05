@@ -12,8 +12,8 @@ import {
 import { AppImage } from './app-image';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const BANNER_WIDTH = SCREEN_WIDTH - (Spacing.md * 2);
-const BANNER_HEIGHT = BANNER_WIDTH * 0.4; // 2.5:1 비율
+const BANNER_WIDTH = SCREEN_WIDTH;
+const BANNER_HEIGHT = BANNER_WIDTH * 0.5;
 
 /**
  * 배너 아이템
@@ -254,13 +254,8 @@ export function SimpleBanner({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.md,
   },
   bannerContainer: {
-    width: BANNER_WIDTH,
-    height: BANNER_HEIGHT,
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
   },
   list: {
     flexGrow: 0,
