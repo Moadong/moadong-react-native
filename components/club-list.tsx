@@ -6,7 +6,7 @@ import { ClubCard } from '@/components/club-card';
 import { Text } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 /**
@@ -20,6 +20,7 @@ interface ClubListProps {
   onClubPress?: (club: Club) => void;
   error?: string | null;
   style?: any;
+  headerComponent?: ReactElement | null;
 }
 
 /**
@@ -32,6 +33,7 @@ interface ClubListProps {
  *   loading={loading}
  *   onRefresh={refetch}
  *   onClubPress={(club) => navigation.navigate('ClubDetail', { club })}
+ *   headerComponent={<MyHeader />}
  * />
  * ```
  */
@@ -43,6 +45,7 @@ export function ClubList({
   onClubPress,
   error,
   style,
+  headerComponent,
 }: ClubListProps) {
   /**
    * 빈 목록 렌더링
@@ -100,6 +103,7 @@ export function ClubList({
         renderItem={renderClubCard}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={renderEmptyComponent}
+        ListHeaderComponent={headerComponent}
         refreshControl={
           onRefresh ? (
             <RefreshControl

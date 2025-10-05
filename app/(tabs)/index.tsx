@@ -11,7 +11,7 @@ import { Tab, TabType } from '@/components/tab';
 import { Spacing } from '@/constants/theme';
 import { useClubs } from '@/hooks/use-clubs';
 import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
@@ -82,12 +82,8 @@ export default function MainScreen() {
     console.log('동아리 상세:', club);
   }, []);
 
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-      >
+  const headerComponent = (
+    <View>
       {/* 헤더 */}
       <MainHeader
         onSearchPress={handleSearchPress}
@@ -110,22 +106,27 @@ export default function MainScreen() {
       </View>
 
       {/* 탭 섹션 */}
-      <Tab
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
-
-      {/* 동아리 목록 섹션 */}
-      <View style={styles.clubListSection}>
-        <ClubList
-          clubs={clubs}
-          loading={loading}
-          onRefresh={refetch}
-          onClubPress={handleClubPress}
-          error={error}
+      <View style={styles.tabSection}>
+        <Tab
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
         />
       </View>
-      </ScrollView>
+    </View>
+  );
+
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ClubList
+        clubs={clubs}
+        loading={loading}
+        onRefresh={refetch}
+        onClubPress={handleClubPress}
+        error={error}
+        style={styles.clubListSection}
+        headerComponent={headerComponent}
+      />
     </SafeAreaView>
   );
 }
@@ -139,6 +140,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   categorySection: {
+    marginBottom: Spacing.sm,
+  },
+  tabSection: {
     marginBottom: Spacing.sm,
   },
   clubListSection: {
