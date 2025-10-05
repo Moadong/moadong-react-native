@@ -11,7 +11,7 @@ import { Tab, TabType } from '@/components/tab';
 import { Spacing } from '@/constants/theme';
 import { useClubs } from '@/hooks/use-clubs';
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
@@ -30,8 +30,6 @@ export default function MainScreen() {
     error,
     fetchClubs,
     refetch,
-    loadMore,
-    hasMore,
   } = useClubs({
     initialCategory: selectedCategory,
     initialType: activeTab,
@@ -46,7 +44,6 @@ export default function MainScreen() {
     fetchClubs({
       category: selectedCategory === '전체' ? undefined : selectedCategory,
       type: tab,
-      page: 0,
     });
   }, [selectedCategory, fetchClubs]);
 
@@ -58,7 +55,6 @@ export default function MainScreen() {
     fetchClubs({
       category: category === '전체' ? undefined : category,
       type: activeTab,
-      page: 0,
     });
   }, [activeTab, fetchClubs]);
 
@@ -89,6 +85,9 @@ export default function MainScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+      >
       {/* 헤더 */}
       <MainHeader
         onSearchPress={handleSearchPress}
@@ -122,12 +121,11 @@ export default function MainScreen() {
           clubs={clubs}
           loading={loading}
           onRefresh={refetch}
-          onLoadMore={loadMore}
           onClubPress={handleClubPress}
-          hasMore={hasMore}
           error={error}
         />
       </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

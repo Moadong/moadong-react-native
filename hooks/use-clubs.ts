@@ -4,7 +4,7 @@
 
 import { CategoryType } from '@/components/icon';
 import { clubService } from '@/services/club.service';
-import { Club, ClubSearchParams, PageResponse } from '@/types/club.types';
+import { Club, ClubSearchParams } from '@/types/club.types';
 import { useCallback, useEffect, useState } from 'react';
 
 /**
@@ -23,12 +23,8 @@ interface UseClubsReturn {
   clubs: Club[];
   loading: boolean;
   error: string | null;
-  totalPages: number;
-  currentPage: number;
-  hasMore: boolean;
   fetchClubs: (params?: ClubSearchParams) => Promise<void>;
   refetch: () => Promise<void>;
-  loadMore: () => Promise<void>;
   reset: () => void;
 }
 
@@ -59,12 +55,9 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pageInfo, setPageInfo] = useState<PageResponse<Club> | null>(null);
   const [currentParams, setCurrentParams] = useState<ClubSearchParams>({
     category: initialCategory === '전체' ? undefined : initialCategory,
     type: initialType,
-    page: 0,
-    size: 20,
   });
 
   /**
@@ -79,15 +72,7 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
 
     try {
       const response = await clubService.searchClubs(finalParams);
-      
-      // 페이지가 0이면 새로운 목록, 아니면 추가
-      if (finalParams.page === 0) {
-        setClubs(response.content);
-      } else {
-        setClubs((prev) => [...prev, ...response.content]);
-      }
-      
-      setPageInfo(response);
+      setClubs(response.content);
     } catch (err: any) {
       setError(err.message || '동아리 목록을 불러오는데 실패했습니다.');
       console.error('동아리 목록 조회 에러:', err);
@@ -100,22 +85,8 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
    * 현재 파라미터로 다시 가져오기 (Pull to refresh)
    */
   const refetch = useCallback(async () => {
-    await fetchClubs({ ...currentParams, page: 0 });
+    await fetchClubs({ ...currentParams });
   }, [currentParams, fetchClubs]);
-
-  /**
-   * 다음 페이지 로드 (무한 스크롤)
-   */
-  const loadMore = useCallback(async () => {
-    if (!pageInfo || pageInfo.last || loading) {
-      return;
-    }
-
-    await fetchClubs({
-      ...currentParams,
-      page: currentParams.page! + 1,
-    });
-  }, [pageInfo, loading, currentParams, fetchClubs]);
 
   /**
    * 상태 초기화
@@ -123,12 +94,9 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
   const reset = useCallback(() => {
     setClubs([]);
     setError(null);
-    setPageInfo(null);
     setCurrentParams({
       category: initialCategory === '전체' ? undefined : initialCategory,
       type: initialType,
-      page: 0,
-      size: 20,
     });
   }, [initialCategory, initialType]);
 
@@ -141,8 +109,6 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
       fetchClubs({
         category: initialCategory === '전체' ? undefined : initialCategory,
         type: initialType,
-        page: 0,
-        size: 20,
       });
     }
   }, [autoFetch, initialCategory, initialType]);
@@ -151,12 +117,8 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
     clubs,
     loading,
     error,
-    totalPages: pageInfo?.totalPages || 0,
-    currentPage: pageInfo?.number || 0,
-    hasMore: pageInfo ? !pageInfo.last : false,
     fetchClubs,
     refetch,
-    loadMore,
     reset,
   };
 }

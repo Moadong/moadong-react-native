@@ -29,8 +29,6 @@ export default function MainScreen() {
     error,
     fetchClubs,
     refetch,
-    loadMore,
-    hasMore,
   } = useClubs({
     initialCategory: selectedCategory,
     initialType: activeTab,
@@ -45,7 +43,6 @@ export default function MainScreen() {
     fetchClubs({
       category: selectedCategory === '전체' ? undefined : selectedCategory,
       type: tab,
-      page: 0,
     });
   }, [selectedCategory, fetchClubs]);
 
@@ -57,7 +54,6 @@ export default function MainScreen() {
     fetchClubs({
       category: category === '전체' ? undefined : category,
       type: activeTab,
-      page: 0,
     });
   }, [activeTab, fetchClubs]);
 
@@ -120,16 +116,14 @@ export default function MainScreen() {
 
         {/* 동아리 목록 섹션 */}
         <View style={styles.clubListSection}>
-          <ClubList
-            clubs={clubs}
-            loading={loading}
-            onRefresh={refetch}
-            onLoadMore={loadMore}
-            onClubPress={handleClubPress}
-            hasMore={hasMore}
-            error={error}
-          />
-        </View>
+        <ClubList
+          clubs={clubs}
+          loading={loading}
+          onRefresh={refetch}
+          onClubPress={handleClubPress}
+          error={error}
+        />
+      </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -23,7 +23,7 @@ export const clubService = {
    * ```
    */
   searchClubs: async (params: ClubSearchParams = {}): Promise<PageResponse<Club>> => {
-    const { keyword, category, type, page = 0, size = 20 } = params;
+    const { keyword, category } = params;
 
     // 실제 API 파라미터 구성
     const queryParams: Record<string, any> = {
@@ -49,15 +49,15 @@ export const clubService = {
     // API 응답을 PageResponse 형식으로 변환
     const clubs = response.data.clubs;
     const totalCount = response.data.totalCount;
-    
+
     return {
       content: clubs,
       totalElements: totalCount,
-      totalPages: Math.ceil(totalCount / size),
-      size,
-      number: page,
-      first: page === 0,
-      last: (page + 1) * size >= totalCount,
+      totalPages: 1,
+      size: clubs.length,
+      number: 0,
+      first: true,
+      last: true,
       empty: clubs.length === 0,
     };
   },
@@ -103,4 +103,3 @@ export const clubService = {
     return (response.data as any)?.data || [];
   },
 };
-

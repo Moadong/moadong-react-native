@@ -7,7 +7,7 @@ import { Text } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';
 import React from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 /**
  * 동아리 목록 Props
@@ -17,9 +17,7 @@ interface ClubListProps {
   loading?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void;
-  onLoadMore?: () => void;
   onClubPress?: (club: Club) => void;
-  hasMore?: boolean;
   error?: string | null;
   style?: any;
 }
@@ -33,7 +31,6 @@ interface ClubListProps {
  *   clubs={clubs}
  *   loading={loading}
  *   onRefresh={refetch}
- *   onLoadMore={loadMore}
  *   onClubPress={(club) => navigation.navigate('ClubDetail', { club })}
  * />
  * ```
@@ -43,9 +40,7 @@ export function ClubList({
   loading = false,
   refreshing = false,
   onRefresh,
-  onLoadMore,
   onClubPress,
-  hasMore = false,
   error,
   style,
 }: ClubListProps) {
@@ -59,22 +54,6 @@ export function ClubList({
       </Text>
     </View>
   );
-
-  /**
-   * 로딩 푸터 렌더링
-   */
-  const renderFooterComponent = () => {
-    if (!loading || clubs.length === 0) return null;
-    
-    return (
-      <View style={styles.footerContainer}>
-        <ActivityIndicator size="small" color="#FF5414" />
-        <Text type="caption1Medium" style={styles.footerText}>
-          더 많은 동아리를 불러오는 중...
-        </Text>
-      </View>
-    );
-  };
 
   /**
    * 에러 상태 렌더링
@@ -121,7 +100,6 @@ export function ClubList({
         renderItem={renderClubCard}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={renderEmptyComponent}
-        ListFooterComponent={renderFooterComponent}
         refreshControl={
           onRefresh ? (
             <RefreshControl
@@ -132,8 +110,6 @@ export function ClubList({
             />
           ) : undefined
         }
-        onEndReached={hasMore ? onLoadMore : undefined}
-        onEndReachedThreshold={0.1}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
       />
@@ -157,16 +133,6 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#999',
     textAlign: 'center',
-  },
-  footerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
-  },
-  footerText: {
-    color: '#999',
   },
   errorContainer: {
     backgroundColor: '#FFEBEE',
@@ -200,4 +166,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-
