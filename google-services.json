@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "514481945377",
+    "project_id": "moadong-isgood",
+    "storage_bucket": "moadong-isgood.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514481945377:android:5a1cbdc85cae8e392fdc60",
+        "android_client_info": {
+          "package_name": "com.moa.moadong"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQKlngsv-7xzmhf-7sSkNep5VSXWi6p9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
