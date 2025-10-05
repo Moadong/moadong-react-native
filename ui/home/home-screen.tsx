@@ -2,8 +2,11 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useRouter } from 'expo-router';
+
 import { CategoryType } from '@/components/icon';
 import { Spacing } from '@/constants/theme';
+import { Club } from '@/types/club.types';
 import {
   Banner,
   CategoryFilter,
@@ -22,6 +25,7 @@ export function HomeScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('central');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('전체');
   const [searchValue, setSearchValue] = useState('');
+  const router = useRouter();
 
   // 동아리 데이터 훅
   const {
@@ -77,10 +81,13 @@ export function HomeScreen() {
   /**
    * 동아리 카드 클릭 핸들러
    */
-  const handleClubPress = useCallback((club: any) => {
-    // TODO: 동아리 상세 화면으로 이동
-    console.log('동아리 상세:', club);
-  }, []);
+  const handleClubPress = useCallback((club: Club) => {
+    if (!club?.id) {
+      return;
+    }
+
+    router.push(`/club/${club.id}`);
+  }, [router]);
 
   const headerComponent = (
     <View>
