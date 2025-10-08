@@ -1,6 +1,8 @@
 import { CategoryIcon, CategoryType, categoryColorMap } from '@/components/icon';
 import { MoaText } from '@/components/moa-text';
-import { Pressable, ScrollView } from 'react-native';
+import { Row } from '@/components/ui';
+import { BorderRadius } from '@/constants/theme';
+import { Pressable } from 'react-native';
 import styled from 'styled-components/native';
 
 /**
@@ -35,11 +37,7 @@ export function CategoryFilter({
     : ['학술', '봉사', '운동', '종교', '취미교양', '공연'];
 
   return (
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
-    >
+    <Row justify="space-between" style={{ paddingHorizontal: 16 }}>
       {categories.map((category) => (
         <CategoryFilterItem
           key={category}
@@ -48,7 +46,7 @@ export function CategoryFilter({
           onPress={() => onSelect?.(category)}
         />
       ))}
-    </ScrollView>
+    </Row>
   );
 }
 
@@ -72,14 +70,14 @@ function CategoryFilterItem({
 
   return (
     <ItemPressable onPress={onPress}>
-      <IconContainer backgroundColor={backgroundColor}>
+      <IconContainer backgroundColor={backgroundColor} style={{ borderRadius: BorderRadius.sm }}>
         <CategoryIcon 
           category={category} 
           selected={selected}
-          size={32}
+          size={40}
         />
       </IconContainer>
-      <LabelText selected={selected} category={category}>
+      <LabelText type="caption1Medium" selected={selected} category={category}>
         {category}
       </LabelText>
     </ItemPressable>
