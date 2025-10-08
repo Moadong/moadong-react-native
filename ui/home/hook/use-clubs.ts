@@ -101,7 +101,7 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
   }, [initialCategory, initialType]);
 
   /**
-   * 초기 데이터 로드
+   * 초기 데이터 로드 
    */
   useEffect(() => {
     if (autoFetch) {
@@ -111,7 +111,7 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
         type: initialType,
       });
     }
-  }, [autoFetch, initialCategory, initialType]);
+  }, [autoFetch]);
 
   return {
     clubs,

@@ -59,13 +59,14 @@ export function HomeScreen() {
    */
   const handleCategoryChange = useCallback((category: CategoryType) => {
     setSelectedCategory(category);
-    const keyword = searchValue.trim();
+    // 카테고리 변경 시 검색 키워드 초기화
+    setSearchValue('');
     fetchClubs({
       category: category === '전체' ? undefined : category,
       type: activeTab,
-      keyword: keyword ? keyword : undefined,
+      keyword: undefined, // 키워드 초기화
     });
-  }, [activeTab, fetchClubs, searchValue]);
+  }, [activeTab, fetchClubs]);
 
   /**
    * 검색 핸들러
@@ -95,7 +96,12 @@ export function HomeScreen() {
   }, [router]);
 
   const handleSearchFocus = useCallback(() => {
-    listRef.current?.scrollToIndex({ index: 0, animated: true });
+    try {
+      listRef.current?.scrollToIndex({ index: 0, animated: true });
+    } catch (error) {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }
+    
     const keyword = searchValue.trim();
     fetchClubs({
       category: selectedCategory === '전체' ? undefined : selectedCategory,

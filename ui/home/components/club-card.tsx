@@ -4,10 +4,11 @@
 
 import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
-import { Spacing } from '@/constants/theme';
+import { Column, Row } from '@/components/ui';
 import { Club } from '@/types/club.types';
 import React from 'react';
-import { ImageStyle, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
+import styled from 'styled-components/native';
 
 /**
  * 동아리 카드 Props
@@ -73,174 +74,168 @@ export function ClubCard({ club, onPress, style }: ClubCardProps) {
   };
 
   return (
-    <TouchableOpacity 
-      style={[styles.container, style]} 
+    <StyledTouchableOpacity 
+      style={style} 
       onPress={handlePress}
       activeOpacity={0.8}
     >
-      {/* 동아리 이미지 */}
-      <View style={styles.imageContainer}>
-        <MoaImage 
-          source={club.logo ? { uri: club.logo } : require('@/assets/images/icon.png')}
-          style={styles.image}
-          resizeMode="cover"
-        />
-      </View>
+      {/* Row 레이아웃: 이미지 + 정보 */}
+      <Row gap={20} align="flex-start">
+        {/* 동아리 이미지 */}
+        <ImageContainer>
+          <MoaImage 
+            source={club.logo ? { uri: club.logo } : require('@/assets/images/icon.png')}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        </ImageContainer>
 
-      {/* 동아리 정보 */}
-      <View style={styles.content}>
-        {/* 동아리 이름 */}
-        <MoaText type="body1SemiBold" style={styles.name} numberOfLines={1}>
-          {club.name}
-        </MoaText>
+        {/* 동아리 정보 Column */}
+        <Column gap={4} style={{ flex: 1 }}>
+          {/* 동아리 이름 */}
+          <ClubName type="body1SemiBold" numberOfLines={1}>
+            {club.name}
+          </ClubName>
 
-        {/* 동아리 설명 */}
-        <MoaText type="body2Regular" style={styles.description} numberOfLines={2}>
-          {club.introduction}
-        </MoaText>
+          {/* 동아리 설명 */}
+          <Description type="body2Regular" numberOfLines={2}>
+            {club.introduction}
+          </Description>
+        </Column>
+      </Row>
 
-        {/* 하단 정보 */}
-        <View style={styles.footer}>
-          {/* 모집 상태 */}
-          <View style={[
-            styles.statusBadge,
-            { backgroundColor: getStatusColor(club.recruitmentStatus) }
-          ]}>
-            <MoaText type="caption1SemiBold" style={styles.statusText}>
-              {club.recruitmentStatus === 'OPEN' ? '모집중' : 
-               club.recruitmentStatus === 'ALWAYS' ? '상시모집' :
-               club.recruitmentStatus === 'CLOSED' ? '모집마감' : '모집예정'}
-            </MoaText>
-          </View>
+       {/* 하단 정보 */}
+       <FooterContainer>
+            {/* 모집 상태 */}
+            <StatusBadge backgroundColor={getStatusColor(club.recruitmentStatus)}>
+              <StatusText type="caption1SemiBold">
+                {club.recruitmentStatus === 'OPEN' ? '모집중' : 
+                 club.recruitmentStatus === 'ALWAYS' ? '상시모집' :
+                 club.recruitmentStatus === 'CLOSED' ? '모집마감' : '모집예정'}
+              </StatusText>
+            </StatusBadge>
 
-          {/* 카테고리 태그들 */}
-          <View style={styles.tagsContainer}>
-            <View style={[
-              styles.categoryTag,
-              { backgroundColor: getCategoryColor(club.category) }
-            ]}>
-              <MoaText type="caption1SemiBold" style={styles.categoryText}>
-                #{club.category}
-              </MoaText>
-            </View>
-            {/* 추가 태그들 (예: 프로젝트, 소프트웨어 등) */}
-            <View style={styles.additionalTag}>
-              <MoaText type="caption1SemiBold" style={styles.additionalTagText}>
-                #프로젝트
-              </MoaText>
-            </View>
-            <View style={styles.additionalTag}>
-              <MoaText type="caption1SemiBold" style={styles.additionalTagText}>
-                #소프트웨어
-              </MoaText>
-            </View>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
+            {/* 카테고리 태그들 */}
+            <TagsContainer>
+              <CategoryTag backgroundColor={getCategoryColor(club.category)}>
+                <CategoryText type="caption1SemiBold">
+                  #{club.category}
+                </CategoryText>
+              </CategoryTag>
+              {/* 추가 태그들 (예: 프로젝트, 소프트웨어 등) */}
+
+              {club.tags.slice(0, 1).map((tag, index) => (
+                <AdditionalTag key={index}>
+                  <AdditionalTagText type="caption1SemiBold">
+                    #{tag}
+                  </AdditionalTagText>
+                </AdditionalTag>
+              ))}
+            </TagsContainer>
+          </FooterContainer>
+    </StyledTouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    marginHorizontal: Spacing.md,
-    marginVertical: Spacing.sm,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  imageContainer: {
-    width: 66,
-    height: 66,
-    borderRadius: 6,
-    overflow: 'hidden',
-    marginBottom: 16,
-    backgroundColor: '#F2F2F2',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  } as ImageStyle,
-  content: {
-    width: '100%',
-    gap: 4,
-  },
-  name: {
-    color: '#111111',
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 28,
-    letterSpacing: -0.4,
-  },
-  description: {
-    color: '#989898',
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: -0.28,
-    marginBottom: 16,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-    width: '100%',
-  },
-  statusBadge: {
-    paddingHorizontal: 26,
-    paddingVertical: 8,
-    borderRadius: 8,
-    height: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  statusText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
-    letterSpacing: -0.28,
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    flex: 1,
-  },
-  categoryTag: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  categoryText: {
-    color: '#4B4B4B',
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
-    letterSpacing: -0.28,
-  },
-  additionalTag: {
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  additionalTagText: {
-    color: '#4B4B4B',
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20,
-    letterSpacing: -0.28,
-  },
-});
+// Styled Components 
+const StyledTouchableOpacity = styled(TouchableOpacity)`
+  background-color: #FFFFFF;
+  border-radius: 14px;
+  margin-horizontal: 16px;
+  margin-vertical: 8px;
+  padding-horizontal: 20px;
+  padding-vertical: 20px;
+  shadow-color: #000;
+  shadow-offset: 0px 0px;
+  shadow-opacity: 0.1;
+  shadow-radius: 8px;
+  elevation: 3;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const ImageContainer = styled.View`
+  width: 66px;
+  height: 66px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #F2F2F2;
+`;
+
+const ClubName = styled(MoaText)`
+  color: #111111;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.4px;
+`;
+
+const Description = styled(MoaText)`
+  color: #989898;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  margin-bottom: 16px;
+`;
+
+const FooterContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+`;
+
+const StatusBadge = styled.View<{ backgroundColor: string }>`
+  height: 28px;
+  width: 66px;
+  border-radius: 8px;
+  justify-content: center;
+  align-items: center;
+  background-color: ${(props: { backgroundColor: string }) => props.backgroundColor};
+`;
+
+const StatusText = styled(MoaText)`
+  color: #FFFFFF;
+  font-size: 14px;
+`;
+
+const TagsContainer = styled.View`
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+`;
+
+const CategoryTag = styled.View<{ backgroundColor: string }>`
+  padding-horizontal: 8px;
+  padding-vertical: 4px;
+  border-radius: 6px;
+  height: 28px;
+  justify-content: center;
+  align-items: center;
+  background-color: ${(props: { backgroundColor: string }) => props.backgroundColor};
+`;
+
+const CategoryText = styled(MoaText)`
+  color: #4B4B4B;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+`;
+
+const AdditionalTag = styled.View`
+  background-color: #F5F5F5;
+  padding-horizontal: 8px;
+  padding-vertical: 4px;
+  border-radius: 6px;
+`;
+
+const AdditionalTagText = styled(MoaText)`
+  color: #4B4B4B;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+`;
 
