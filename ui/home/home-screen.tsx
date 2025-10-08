@@ -1,11 +1,11 @@
 import React, { RefObject, useCallback, useRef, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import styled from 'styled-components/native';
 
 import { useRouter } from 'expo-router';
 
 import { CategoryType } from '@/components/icon';
-import { Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';
 import {
   Banner,
@@ -130,32 +130,32 @@ export function HomeScreen() {
   }, [fetchClubs, selectedCategory, activeTab]);
 
   const headerComponent = (
-    <View>
+    <HeaderContainer>
       {/* 배너 섹션 */}
-      <View style={styles.bannerSection}>
+      <BannerSection>
         <Banner />
-      </View>
+      </BannerSection>
 
       {/* 카테고리 필터 섹션 */}
-      <View style={styles.categorySection}>
+      <CategorySection>
         <CategoryFilter
           selected={selectedCategory}
           onSelect={handleCategoryChange}
         />
-      </View>
+      </CategorySection>
 
       {/* 탭 섹션 */}
-      <View style={styles.tabSection}>
+      <TabSection>
         <Tab
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
-      </View>
-    </View>
+      </TabSection>
+    </HeaderContainer>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Container>
       {/* 헤더 */}
       <MainHeader
         onSearchPress={handleSearchPress}
@@ -171,31 +171,32 @@ export function HomeScreen() {
         onRefresh={refetch}
         onClubPress={handleClubPress}
         error={error}
-        style={styles.clubListSection}
+        style={{ flex: 1 }}
         headerComponent={headerComponent}
         listRef={listRef as RefObject<FlatList<Club>>}
       />
-    </SafeAreaView>
+    </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  bannerSection: {
-    marginBottom: Spacing.md,
-  },
-  categorySection: {
-    marginBottom: Spacing.sm,
-  },
-  tabSection: {
-    marginBottom: Spacing.sm,
-  },
-  clubListSection: {
-    flex: 1,
-  },
-});
+// Styled Components
+const Container = styled(SafeAreaView)`
+  flex: 1;
+  background-color: #fff;
+`;
+
+const HeaderContainer = styled.View``;
+
+const BannerSection = styled.View`
+  margin-bottom: 16px;
+`;
+
+const CategorySection = styled.View`
+  margin-bottom: 8px;
+`;
+
+const TabSection = styled.View`
+  margin-bottom: 8px;
+`;
 
 export default HomeScreen;

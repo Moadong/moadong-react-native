@@ -3,9 +3,10 @@
  */
 
 import { MoaText } from '@/components/moa-text';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
+import styled from 'styled-components/native';
 
 /**
  * 탭 타입
@@ -34,73 +35,50 @@ interface TabProps {
  */
 export function Tab({ activeTab, onTabChange, style }: TabProps) {
   return (
-    <View style={[styles.container, style]}>
-      <TouchableOpacity
-        style={[
-          styles.tab,
-          activeTab === 'central' && styles.activeTab
-        ]}
+    <Container style={style}>
+      <TabTouchable
+        isActive={activeTab === 'central'}
         onPress={() => onTabChange('central')}
         activeOpacity={0.7}
       >
-        <MoaText 
-          type="body1SemiBold" 
-          style={[
-            styles.tabText,
-            activeTab === 'central' && styles.activeTabText
-          ]}
-        >
+        <TabText isActive={activeTab === 'central'}>
           중앙동아리
-        </MoaText>
-      </TouchableOpacity>
+        </TabText>
+      </TabTouchable>
 
-      <TouchableOpacity
-        style={[
-          styles.tab,
-          activeTab === 'department' && styles.activeTab
-        ]}
+      <TabTouchable
+        isActive={activeTab === 'department'}
         onPress={() => onTabChange('department')}
         activeOpacity={0.7}
       >
-        <MoaText 
-          type="body1SemiBold" 
-          style={[
-            styles.tabText,
-            activeTab === 'department' && styles.activeTabText
-          ]}
-        >
+        <TabText isActive={activeTab === 'department'}>
           과동아리
-        </MoaText>
-      </TouchableOpacity>
-    </View>
+        </TabText>
+      </TabTouchable>
+    </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: Colors.light.background,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: Spacing.sm,
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  activeTab: {
-    borderBottomColor: Colors.light.tint,
-  },
-  tabText: {
-    color: Colors.light.icon,
-    fontSize: 14,
-  },
-  activeTabText: {
-    color: Colors.light.tint,
-  },
-});
+// Styled Components
+const Container = styled.View`
+  flex-direction: row;
+  background-color: ${Colors.light.background};
+  padding-horizontal: 16px;
+  padding-vertical: 8px;
+  border-bottom-width: 1px;
+  border-bottom-color: #F0F0F0;
+`;
+
+const TabTouchable = styled(TouchableOpacity)<{ isActive: boolean }>`
+  flex: 1;
+  padding-vertical: 8px;
+  align-items: center;
+  border-bottom-width: 2px;
+  border-bottom-color: ${(props: { isActive: boolean }) => props.isActive ? Colors.light.tint : 'transparent'};
+`;
+
+const TabText = styled(MoaText)<{ isActive: boolean }>`
+  color: ${(props: { isActive: boolean }) => props.isActive ? Colors.light.tint : Colors.light.icon};
+  font-size: 14px;
+`;
 

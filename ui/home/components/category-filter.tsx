@@ -1,7 +1,7 @@
 import { CategoryIcon, CategoryType, categoryColorMap } from '@/components/icon';
 import { MoaText } from '@/components/moa-text';
-import { BorderRadius, Spacing } from '@/constants/theme';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView } from 'react-native';
+import styled from 'styled-components/native';
 
 /**
  * 카테고리 필터 Props
@@ -38,7 +38,7 @@ export function CategoryFilter({
     <ScrollView 
       horizontal 
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={{ paddingHorizontal: 16, gap: 16 }}
     >
       {categories.map((category) => (
         <CategoryFilterItem
@@ -71,36 +71,18 @@ function CategoryFilterItem({
     : 'rgba(0, 0, 0, 0.00)' ;
 
   return (
-    <Pressable 
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.item,
-        { opacity: pressed ? 0.7 : 1 }
-      ]}
-    >
-      <View 
-        style={[
-          styles.iconContainer,
-          { backgroundColor }
-        ]}
-      >
+    <ItemPressable onPress={onPress}>
+      <IconContainer backgroundColor={backgroundColor}>
         <CategoryIcon 
           category={category} 
           selected={selected}
           size={32}
         />
-      </View>
-      <MoaText 
-        type="caption1Medium"
-        style={[
-          styles.label,
-          selected && { color: categoryColorMap[category].main }
-        ]}
-
-      >
+      </IconContainer>
+      <LabelText selected={selected} category={category}>
         {category}
-      </MoaText>
-    </Pressable>
+      </LabelText>
+    </ItemPressable>
   );
 }
 
@@ -115,7 +97,7 @@ export function CategoryGrid({
   const categories: CategoryType[] = ['전체', '학술', '봉사', '운동', '종교', '취미교양', '공연'];
 
   return (
-    <View style={styles.grid}>
+    <GridContainer>
       {categories.map((category) => {
         const isSelected = selected === category;
         const backgroundColor = isSelected 
@@ -123,79 +105,73 @@ export function CategoryGrid({
           : 'rgba(0, 0, 0, 0.05)';
 
         return (
-          <Pressable
+          <GridItemPressable
             key={category}
             onPress={() => onSelect?.(category)}
-            style={[
-              styles.gridItem,
-              { width: `${100 / columns}%` }
-            ]}
+            width={`${100 / columns}%`}
           >
-            <View 
-              style={[
-                styles.gridIconContainer,
-                { backgroundColor }
-              ]}
-            >
+            <GridIconContainer backgroundColor={backgroundColor}>
               <CategoryIcon 
                 category={category} 
                 selected={isSelected}
                 size={40}
               />
-            </View>
-            <MoaText 
-              type="caption1Medium"
-              style={[
-                styles.gridLabel,
-                isSelected && { color: categoryColorMap[category] }
-              ]}
-            >
+            </GridIconContainer>
+            <GridLabelText selected={isSelected} category={category}>
               {category}
-            </MoaText>
-          </Pressable>
+            </GridLabelText>
+          </GridItemPressable>
         );
       })}
-    </View>
+    </GridContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.md,
-  },
-  item: {
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  label: {
-    textAlign: 'center',
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: Spacing.md,
-  },
-  gridItem: {
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-  },
-  gridIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: BorderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xs,
-  },
-  gridLabel: {
-    textAlign: 'center',
-  },
-});
+// Styled Components
+const ItemPressable = styled(Pressable)`
+  align-items: center;
+  gap: 4px;
+`;
+
+const IconContainer = styled.View<{ backgroundColor: string }>`
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  justify-content: center;
+  align-items: center;
+  background-color: ${(props: { backgroundColor: string }) => props.backgroundColor};
+`;
+
+const LabelText = styled(MoaText)<{ selected: boolean; category: CategoryType }>`
+  text-align: center;
+  color: ${(props: { selected: boolean; category: CategoryType }) => 
+    props.selected ? categoryColorMap[props.category].main : undefined};
+`;
+
+const GridContainer = styled.View`
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 16px;
+`;
+
+const GridItemPressable = styled(Pressable)<{ width: string }>`
+  align-items: center;
+  padding-vertical: 16px;
+  width: ${(props: { width: string }) => props.width};
+`;
+
+const GridIconContainer = styled.View<{ backgroundColor: string }>`
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 4px;
+  background-color: ${(props: { backgroundColor: string }) => props.backgroundColor};
+`;
+
+const GridLabelText = styled(MoaText)<{ selected: boolean; category: CategoryType }>`
+  text-align: center;
+  color: ${(props: { selected: boolean; category: CategoryType }) => 
+    props.selected ? categoryColorMap[props.category] : undefined};
+`;

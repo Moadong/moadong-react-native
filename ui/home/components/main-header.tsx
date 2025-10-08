@@ -5,9 +5,10 @@
 import MenuIcon from '@/assets/icons/ic-menu.svg';
 import MoadongLogo from '@/assets/icons/ic-moadong.svg';
 import SearchIcon from '@/assets/icons/ic-search.svg';
-import { BorderRadius, Colors, Spacing } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import React, { useRef } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { TextInput, TouchableOpacity } from 'react-native';
+import styled from 'styled-components/native';
 
 /**
  * 메인 헤더 Props
@@ -43,34 +44,32 @@ export function MainHeader({
   const inputRef = useRef<TextInput | null>(null);
 
   return (
-    <View style={styles.container}>
+    <Container>
       {/* 로고 */}
-      <View style={styles.logoContainer}>
+      <LogoContainer>
         <MoadongLogo 
           width={32}
           height={26}
           color="#FF5414"
         />
-      </View>
+      </LogoContainer>
 
       {/* 검색 바 */}
-      <TouchableOpacity 
-        style={styles.searchContainer}
+      <SearchTouchable 
         onPress={() => {
           onSearchPress?.();
           inputRef.current?.focus();
         }}
         activeOpacity={0.7}
       >
-        <TextInput
+        <SearchInput
           ref={inputRef}
-          style={styles.searchInput}
           placeholder="어떤 동아리를 찾으세요?"
           placeholderTextColor={Colors.light.icon}
           value={searchValue}
           onChangeText={onSearchChange}
           onFocus={onSearchFocus}
-          onSubmitEditing={({ nativeEvent }) => onSearchSubmit?.(nativeEvent.text)}
+          onSubmitEditing={({ nativeEvent }: { nativeEvent: { text: string } }) => onSearchSubmit?.(nativeEvent.text)}
           returnKeyType="search"
           blurOnSubmit
           autoCorrect={false}
@@ -81,11 +80,10 @@ export function MainHeader({
           height={20}
           color={Colors.light.icon}
         />
-      </TouchableOpacity>
+      </SearchTouchable>
 
       {/* 메뉴 버튼 */}
-      <TouchableOpacity 
-        style={styles.menuButton}
+      <MenuTouchable 
         onPress={onMenuPress}
         activeOpacity={0.7}
       >
@@ -94,47 +92,46 @@ export function MainHeader({
           height={24}
           color={Colors.light.text}
         />
-      </TouchableOpacity>
-    </View>
+      </MenuTouchable>
+    </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.light.background,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  logoContainer: {
-    marginRight: Spacing.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F8F8',
-    borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    marginRight: Spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: Colors.light.text,
-    paddingVertical: 0,
-  },
-  iconText: {
-    fontSize: 20,
-    color: Colors.light.icon,
-  },
-  menuButton: {
-    padding: Spacing.sm,
-  },
-});
+// Styled Components
+const Container = styled.View`
+  flex-direction: row;
+  align-items: center;
+  padding-horizontal: 16px;
+  padding-vertical: 8px;
+  background-color: ${Colors.light.background};
+  border-bottom-width: 1px;
+  border-bottom-color: #F0F0F0;
+`;
+
+const LogoContainer = styled.View`
+  margin-right: 16px;
+  justify-content: center;
+  align-items: center;
+`;
+
+const SearchTouchable = styled(TouchableOpacity)`
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  background-color: #F8F8F8;
+  border-radius: 12px;
+  padding-horizontal: 16px;
+  padding-vertical: 8px;
+  margin-right: 8px;
+`;
+
+const SearchInput = styled(TextInput)`
+  flex: 1;
+  font-size: 14px;
+  color: ${Colors.light.text};
+  padding-vertical: 0px;
+`;
+
+const MenuTouchable = styled(TouchableOpacity)`
+  padding: 8px;
+`;

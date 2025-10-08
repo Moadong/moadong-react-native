@@ -3,11 +3,11 @@
  */
 
 import { MoaText } from '@/components/moa-text';
-import { Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';
 import { ClubCard } from '@/ui/home/components';
 import React, { ReactElement, RefObject } from 'react';
-import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import styled from 'styled-components/native';
 
 /**
  * 동아리 목록 Props
@@ -53,11 +53,11 @@ export function ClubList({
    * 빈 목록 렌더링
    */
   const renderEmptyComponent = () => (
-    <View style={styles.emptyContainer}>
-      <MoaText type="body1Regular" style={styles.emptyText}>
+    <EmptyContainer>
+      <EmptyText>
         {loading ? '동아리를 불러오는 중...' : '등록된 동아리가 없습니다.'}
-      </MoaText>
-    </View>
+      </EmptyText>
+    </EmptyContainer>
   );
 
   /**
@@ -67,22 +67,19 @@ export function ClubList({
     if (!error) return null;
     
     return (
-      <View style={styles.errorContainer}>
-        <MoaText type="body1Regular" style={styles.errorTitle}>
+      <ErrorContainer>
+        <ErrorTitle>
           동아리 목록을 불러오지 못했어요
-        </MoaText>
-        <MoaText type="body2Regular" style={styles.errorMessage}>
+        </ErrorTitle>
+        <ErrorMessage>
           새로고침 해주세요
-        </MoaText>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={onRefresh}
-        >
-          <MoaText type="body1SemiBold" style={styles.retryButtonText}>
+        </ErrorMessage>
+        <RetryButton onPress={onRefresh}>
+          <RetryButtonText>
             새로고침
-          </MoaText>
-        </TouchableOpacity>
-      </View>
+          </RetryButtonText>
+        </RetryButton>
+      </ErrorContainer>
     );
   };
 
@@ -97,7 +94,7 @@ export function ClubList({
   );
 
   return (
-    <View style={[styles.container, style]}>
+    <Container style={style}>
       {error && renderErrorComponent()}
       
       <FlatList
@@ -119,58 +116,61 @@ export function ClubList({
         }
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ paddingVertical: 8 }}
       />
-    </View>
+    </Container>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  listContent: {
-    paddingVertical: Spacing.sm,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: Spacing.xl * 2,
-  },
-  emptyText: {
-    color: '#999',
-    textAlign: 'center',
-  },
-  errorContainer: {
-    backgroundColor: '#FFEBEE',
-    padding: Spacing.lg,
-    margin: Spacing.md,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderLeftWidth: 4,
-    borderLeftColor: '#F44336',
-  },
-  errorTitle: {
-    color: '#D32F2F',
-    textAlign: 'center',
-    marginBottom: Spacing.sm,
-    fontWeight: '600',
-  },
-  errorMessage: {
-    color: '#D32F2F',
-    textAlign: 'center',
-    marginBottom: Spacing.md,
-    opacity: 0.8,
-  },
-  retryButton: {
-    backgroundColor: '#F44336',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 14,
-  },
-});
+// Styled Components
+const Container = styled.View`
+  flex: 1;
+`;
+
+const EmptyContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding-vertical: 64px;
+`;
+
+const EmptyText = styled(MoaText)`
+  color: #999;
+  text-align: center;
+`;
+
+const ErrorContainer = styled.View`
+  background-color: #FFEBEE;
+  padding: 24px;
+  margin: 16px;
+  border-radius: 12px;
+  align-items: center;
+  border-left-width: 4px;
+  border-left-color: #F44336;
+`;
+
+const ErrorTitle = styled(MoaText)`
+  color: #D32F2F;
+  text-align: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+`;
+
+const ErrorMessage = styled(MoaText)`
+  color: #D32F2F;
+  text-align: center;
+  margin-bottom: 16px;
+  opacity: 0.8;
+`;
+
+const RetryButton = styled(TouchableOpacity)`
+  background-color: #F44336;
+  padding-horizontal: 24px;
+  padding-vertical: 12px;
+  border-radius: 8px;
+`;
+
+const RetryButtonText = styled(MoaText)`
+  color: #fff;
+  font-size: 14px;
+`;
