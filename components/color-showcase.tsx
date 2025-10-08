@@ -1,7 +1,7 @@
 import { BorderRadius, MainColors, Spacing, TagColors } from '@/constants/theme';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Text } from './themed-text';
-import { ThemedView } from './themed-view';
+import { MoaText } from './moa-text';
+import { MoaView } from './moa-view';
 
 /**
  * 컬러 시스템을 시각적으로 확인할 수 있는 컴포넌트
@@ -11,13 +11,13 @@ export function ColorShowcase() {
   return (
     <ScrollView style={styles.container}>
       {/* Main Colors */}
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           Main Colors (메인 컬러)
-        </Text>
-        <Text type="body2Regular" style={styles.description}>
+        </MoaText>
+        <MoaText type="body2Regular" style={styles.description}>
           앱의 주요 컬러로 사용되는 오렌지 계열 컬러
-        </Text>
+        </MoaText>
 
         <View style={styles.colorGrid}>
           <ColorCard
@@ -46,16 +46,16 @@ export function ColorShowcase() {
             description="메인 컬러 5"
           />
         </View>
-      </ThemedView>
+      </MoaView>
 
       {/* Tag Colors */}
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           Tag Colors (태그 컬러)
-        </Text>
-        <Text type="body2Regular" style={styles.description}>
+        </MoaText>
+        <MoaText type="body2Regular" style={styles.description}>
           동아리 카테고리별로 사용되는 컬러 시스템
-        </Text>
+        </MoaText>
 
         <View style={styles.tagSection}>
           <TagColorCard
@@ -95,59 +95,59 @@ export function ColorShowcase() {
             category="performance"
           />
         </View>
-      </ThemedView>
+      </MoaView>
 
       {/* Usage Example */}
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           실제 사용 예시
-        </Text>
+        </MoaText>
 
         {/* 태그 예시 */}
         <View style={styles.exampleRow}>
           <View style={[styles.tag, { backgroundColor: TagColors.volunteer.main }]}>
-            <Text type="caption1SemiBold" style={styles.tagText}>
+            <MoaText type="caption1SemiBold" style={styles.tagText}>
               봉사
-            </Text>
+            </MoaText>
           </View>
           <View style={[styles.tag, { backgroundColor: TagColors.academic.main }]}>
-            <Text type="caption1SemiBold" style={styles.tagText}>
+            <MoaText type="caption1SemiBold" style={styles.tagText}>
               학술
-            </Text>
+            </MoaText>
           </View>
           <View style={[styles.tag, { backgroundColor: TagColors.sports.main }]}>
-            <Text type="caption1SemiBold" style={styles.tagText}>
+            <MoaText type="caption1SemiBold" style={styles.tagText}>
               운동
-            </Text>
+            </MoaText>
           </View>
         </View>
 
         {/* 배지 예시 */}
         <View style={styles.exampleRow}>
           <View style={[styles.badge, { backgroundColor: TagColors.volunteer.light }]}>
-            <Text type="body2Regular" style={{ color: TagColors.volunteer.main }}>
+            <MoaText type="body2Regular" style={{ color: TagColors.volunteer.main }}>
               봉사
-            </Text>
+            </MoaText>
           </View>
           <View style={[styles.badge, { backgroundColor: TagColors.academic.light }]}>
-            <Text type="body2Regular" style={{ color: TagColors.academic.main }}>
+            <MoaText type="body2Regular" style={{ color: TagColors.academic.main }}>
               학술
-            </Text>
+            </MoaText>
           </View>
           <View style={[styles.badge, { backgroundColor: TagColors.hobby.light }]}>
-            <Text type="body2Regular" style={{ color: TagColors.hobby.main }}>
+            <MoaText type="body2Regular" style={{ color: TagColors.hobby.main }}>
               취미교양
-            </Text>
+            </MoaText>
           </View>
         </View>
 
         {/* 버튼 예시 */}
         <View style={[styles.button, { backgroundColor: MainColors.main }]}>
-          <Text type="body1SemiBold" style={styles.buttonText}>
+          <MoaText type="body1SemiBold" style={styles.buttonText}>
             메인 버튼
-          </Text>
+          </MoaText>
         </View>
-      </ThemedView>
+      </MoaView>
     </ScrollView>
   );
 }
@@ -165,15 +165,15 @@ function ColorCard({
   return (
     <View style={styles.colorCard}>
       <View style={[styles.colorSwatch, { backgroundColor: color }]} />
-      <Text type="body1SemiBold" style={styles.colorName}>
+      <MoaText type="body1SemiBold" style={styles.colorName}>
         {name}
-      </Text>
-      <Text type="caption1Medium" style={styles.colorValue}>
+      </MoaText>
+      <MoaText type="caption1Medium" style={styles.colorValue}>
         {color}
-      </Text>
-      <Text type="caption1Medium" style={styles.colorDescription}>
+      </MoaText>
+      <MoaText type="caption1Medium" style={styles.colorDescription}>
         {description}
-      </Text>
+      </MoaText>
     </View>
   );
 }
@@ -196,18 +196,18 @@ function TagColorCard({
         <View style={[styles.tagColorSwatch, { backgroundColor: mainColor }]} />
         <View style={[styles.tagColorSwatch, { backgroundColor: lightColor }]} />
       </View>
-      <Text type="body1SemiBold" style={styles.tagName}>
+      <MoaText type="body1SemiBold" style={styles.tagName}>
         {name}
-      </Text>
-      <Text type="caption1Medium" style={styles.tagCategory}>
+      </MoaText>
+      <MoaText type="caption1Medium" style={styles.tagCategory}>
         {category}
-      </Text>
-      <Text type="caption1Medium" style={styles.colorValue}>
+      </MoaText>
+      <MoaText type="caption1Medium" style={styles.colorValue}>
         Main: {mainColor}
-      </Text>
-      <Text type="caption1Medium" style={styles.colorValue}>
+      </MoaText>
+      <MoaText type="caption1Medium" style={styles.colorValue}>
         Light: {lightColor}
-      </Text>
+      </MoaText>
     </View>
   );
 }

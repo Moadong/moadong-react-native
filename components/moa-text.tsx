@@ -20,7 +20,7 @@ export type TypographyType =
   | 'caption1SemiBold'
   | 'caption1Medium';
 
-export type ThemedTextProps = TextProps & {
+export type MoaTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?: TypographyType;
@@ -35,13 +35,13 @@ export type ThemedTextProps = TextProps & {
  * <Text type="body1Regular">본문</Text>
  * ```
  */
-export function Text({
+export function MoaText({
   style,
   lightColor,
   darkColor,
   type = 'body1Regular',
   ...rest
-}: ThemedTextProps) {
+}: MoaTextProps) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
   
   // 타이포그래피 스타일 가져오기

@@ -2,18 +2,18 @@ import { Link } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Text } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { MoaText } from '@/components/moa-text';
+import { MoaView } from '@/components/moa-view';
 
 export default function ModalScreen() {
   return (
     <SafeAreaView style={styles.container}>
-      <ThemedView style={styles.content}>
-        <Text type="heading2">This is a modal</Text>
+      <MoaView style={styles.content}>
+        <MoaText type="heading2">This is a modal</MoaText>
         <Link href="/" dismissTo style={styles.link}>
-          <Text type="body1Regular" style={{ color: '#0a7ea4' }}>Go to home screen</Text>
+          <MoaText type="body1Regular" style={{ color: '#0a7ea4' }}>Go to home screen</MoaText>
         </Link>
-      </ThemedView>
+      </MoaView>
     </SafeAreaView>
   );
 }

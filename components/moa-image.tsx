@@ -28,7 +28,7 @@ interface AppImageProps extends Omit<ImageProps, 'source'> {
  * />
  * ```
  */
-export function AppImage({ 
+export function MoaImage({ 
   source,
   width,
   height,

@@ -3,8 +3,8 @@
  * 메인 화면에서 사용할 컴팩트한 카드
  */
 
-import { AppImage } from '@/components/app-image';
-import { Text } from '@/components/themed-text';
+import { MoaImage } from '@/components/moa-image';
+import { MoaText } from '@/components/moa-text';
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';
 import React from 'react';
@@ -44,7 +44,7 @@ export function CompactClubCard({ club, onPress, style }: CompactClubCardProps) 
     >
       {/* 동아리 이미지 */}
       <View style={styles.imageContainer}>
-        <AppImage 
+        <MoaImage 
           source={club.logo ? { uri: club.logo } : require('@/assets/images/icon.png')}
           style={styles.image}
           resizeMode="cover"
@@ -54,37 +54,37 @@ export function CompactClubCard({ club, onPress, style }: CompactClubCardProps) 
       {/* 동아리 정보 */}
       <View style={styles.content}>
         {/* 동아리 이름 */}
-        <Text type="body1SemiBold" style={styles.name} numberOfLines={1}>
+        <MoaText type="body1SemiBold" style={styles.name} numberOfLines={1}>
           {club.name}
-        </Text>
+        </MoaText>
 
         {/* 동아리 설명 */}
-        <Text type="body2Regular" style={styles.description} numberOfLines={2}>
+        <MoaText type="body2Regular" style={styles.description} numberOfLines={2}>
           {club.introduction}
-        </Text>
+        </MoaText>
 
         {/* 카테고리 태그 */}
         <View style={styles.categoryContainer}>
           <View style={styles.categoryTag}>
-            <Text type="caption1Medium" style={styles.categoryText}>
+            <MoaText type="caption1Medium" style={styles.categoryText}>
               {club.category}
-            </Text>
+            </MoaText>
           </View>
           {club.tags.slice(0, 1).map((tag, index) => (
             <View key={index} style={styles.categoryTag}>
-              <Text type="caption1Medium" style={styles.categoryText}>
+              <MoaText type="caption1Medium" style={styles.categoryText}>
                 {tag}
-              </Text>
+              </MoaText>
             </View>
           ))}
         </View>
 
         {/* 모집 상태 */}
-        <Text type="caption1Medium" style={styles.memberCount}>
+        <MoaText type="caption1Medium" style={styles.memberCount}>
           {club.recruitmentStatus === 'OPEN' ? '모집중' : 
            club.recruitmentStatus === 'ALWAYS' ? '상시모집' :
            club.recruitmentStatus === 'CLOSED' ? '모집마감' : '모집예정'}
-        </Text>
+        </MoaText>
       </View>
     </TouchableOpacity>
   );

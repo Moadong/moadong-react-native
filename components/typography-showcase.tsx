@@ -1,7 +1,7 @@
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Text } from './themed-text';
-import { ThemedView } from './themed-view';
+import { MoaText } from './moa-text';
+import { MoaView } from './moa-view';
 
 /**
  * 타이포그래피 시스템을 시각적으로 확인할 수 있는 컴포넌트
@@ -10,145 +10,145 @@ import { ThemedView } from './themed-view';
 export function TypographyShowcase() {
   return (
     <ScrollView style={styles.container}>
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           Headings (제목)
-        </Text>
+        </MoaText>
         
         <View style={styles.item}>
-          <Text type="heading1">Heading 1 - 40px Bold</Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          <MoaText type="heading1">Heading 1 - 40px Bold</MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             heading1 • 40px • Bold • -0.5 letter spacing
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="heading2">Heading 2 - 36px Bold</Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          <MoaText type="heading2">Heading 2 - 36px Bold</MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             heading2 • 36px • Bold • -0.5 letter spacing
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="heading3">Heading 3 - 28px Bold</Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          <MoaText type="heading3">Heading 3 - 28px Bold</MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             heading3 • 28px • Bold • -0.3 letter spacing
-          </Text>
+          </MoaText>
         </View>
-      </ThemedView>
+      </MoaView>
 
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           Titles (섹션 제목)
-        </Text>
+        </MoaText>
         
         <View style={styles.item}>
-          <Text type="title1">Title 1 - 24px Bold</Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          <MoaText type="title1">Title 1 - 24px Bold</MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             title1 • 24px • Bold • -0.3 letter spacing
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="title2">Title 2 - 20px Bold</Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          <MoaText type="title2">Title 2 - 20px Bold</MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             title2 • 20px • Bold • -0.2 letter spacing
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="title3">Title 3 - 18px Bold</Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          <MoaText type="title3">Title 3 - 18px Bold</MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             title3 • 18px • Bold • -0.2 letter spacing
-          </Text>
+          </MoaText>
         </View>
-      </ThemedView>
+      </MoaView>
 
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           Body (본문)
-        </Text>
+        </MoaText>
         
         <View style={styles.item}>
-          <Text type="body1SemiBold">
+          <MoaText type="body1SemiBold">
             Body 1 SemiBold - 16px SemiBold
-          </Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          </MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             body1SemiBold • 16px • SemiBold (600)
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="body1Medium">
+          <MoaText type="body1Medium">
             Body 1 Medium - 16px Medium
-          </Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          </MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             body1Medium • 16px • Medium (500)
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="body1Regular">
+          <MoaText type="body1Regular">
             Body 1 Regular - 16px Regular (기본)
-          </Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          </MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             body1Regular • 16px • Regular (400) • 가장 많이 사용
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="body2Regular">
+          <MoaText type="body2Regular">
             Body 2 Regular - 14px Regular
-          </Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          </MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             body2Regular • 14px • Regular (400)
-          </Text>
+          </MoaText>
         </View>
-      </ThemedView>
+      </MoaView>
 
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           Caption (작은 텍스트)
-        </Text>
+        </MoaText>
         
         <View style={styles.item}>
-          <Text type="caption1SemiBold">
+          <MoaText type="caption1SemiBold">
             Caption 1 SemiBold - 12px SemiBold
-          </Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          </MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             caption1SemiBold • 12px • SemiBold (600)
-          </Text>
+          </MoaText>
         </View>
 
         <View style={styles.item}>
-          <Text type="caption1Medium">
+          <MoaText type="caption1Medium">
             Caption 1 Medium - 12px Medium
-          </Text>
-          <Text type="caption1Medium" style={styles.meta}>
+          </MoaText>
+          <MoaText type="caption1Medium" style={styles.meta}>
             caption1Medium • 12px • Medium (500)
-          </Text>
+          </MoaText>
         </View>
-      </ThemedView>
+      </MoaView>
 
-      <ThemedView style={styles.section}>
-        <Text type="title1" style={styles.sectionTitle}>
+      <MoaView style={styles.section}>
+        <MoaText type="title1" style={styles.sectionTitle}>
           실제 사용 예시
-        </Text>
+        </MoaText>
         
-        <ThemedView style={styles.card}>
-          <Text type="title2">카드 제목입니다</Text>
-          <Text type="body1Regular" style={styles.cardText}>
+        <MoaView style={styles.card}>
+          <MoaText type="title2">카드 제목입니다</MoaText>
+          <MoaText type="body1Regular" style={styles.cardText}>
             이것은 일반 본문 텍스트입니다. 가장 많이 사용되는 스타일로, 
             여러 줄에 걸쳐 내용을 표시할 때 사용합니다.
-          </Text>
-          <Text type="body1SemiBold">
+          </MoaText>
+          <MoaText type="body1SemiBold">
             강조가 필요한 중요한 내용
-          </Text>
-          <Text type="caption1Medium" style={styles.cardMeta}>
+          </MoaText>
+          <MoaText type="caption1Medium" style={styles.cardMeta}>
             2024.10.04 • 모아동
-          </Text>
-        </ThemedView>
-      </ThemedView>
+          </MoaText>
+        </MoaView>
+      </MoaView>
     </ScrollView>
   );
 }

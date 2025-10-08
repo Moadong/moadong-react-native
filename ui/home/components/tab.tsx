@@ -2,7 +2,7 @@
  * 탭 컴포넌트
  */
 
-import { Text } from '@/components/themed-text';
+import { MoaText } from '@/components/moa-text';
 import { Colors, Spacing } from '@/constants/theme';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -43,7 +43,7 @@ export function Tab({ activeTab, onTabChange, style }: TabProps) {
         onPress={() => onTabChange('central')}
         activeOpacity={0.7}
       >
-        <Text 
+        <MoaText 
           type="body1SemiBold" 
           style={[
             styles.tabText,
@@ -51,7 +51,7 @@ export function Tab({ activeTab, onTabChange, style }: TabProps) {
           ]}
         >
           중앙동아리
-        </Text>
+        </MoaText>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -62,7 +62,7 @@ export function Tab({ activeTab, onTabChange, style }: TabProps) {
         onPress={() => onTabChange('department')}
         activeOpacity={0.7}
       >
-        <Text 
+        <MoaText 
           type="body1SemiBold" 
           style={[
             styles.tabText,
@@ -70,7 +70,7 @@ export function Tab({ activeTab, onTabChange, style }: TabProps) {
           ]}
         >
           과동아리
-        </Text>
+        </MoaText>
       </TouchableOpacity>
     </View>
   );

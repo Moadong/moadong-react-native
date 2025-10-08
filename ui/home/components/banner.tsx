@@ -1,3 +1,4 @@
+import { MoaImage } from '@/components/moa-image';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { BannerProps, HomeBannerItem } from '@/ui/home/model/banner';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -10,7 +11,6 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { AppImage } from '@/components/app-image';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_WIDTH = SCREEN_WIDTH;
@@ -201,7 +201,7 @@ export function Banner({
           onMomentumScrollEnd={handleMomentumScrollEnd}
           renderItem={({ item }) => (
             <Pressable onPress={() => handlePress(item)} style={styles.banner}>
-              <AppImage
+              <MoaImage
                 source={item.image}
                 width={BANNER_WIDTH}
                 height={BANNER_HEIGHT}
@@ -227,7 +227,7 @@ export function SimpleBanner({
 }) {
   return (
     <Pressable onPress={onPress} style={styles.container}>
-      <AppImage
+      <MoaImage
         source={image}
         width={BANNER_WIDTH}
         height={BANNER_HEIGHT}

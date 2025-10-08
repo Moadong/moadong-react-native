@@ -2,10 +2,10 @@
  * 동아리 목록 컴포넌트
  */
 
-import { ClubCard } from '@/ui/home/components';
-import { Text } from '@/components/themed-text';
+import { MoaText } from '@/components/moa-text';
 import { Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';
+import { ClubCard } from '@/ui/home/components';
 import React, { ReactElement, RefObject } from 'react';
 import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -54,9 +54,9 @@ export function ClubList({
    */
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      <Text type="body1Regular" style={styles.emptyText}>
+      <MoaText type="body1Regular" style={styles.emptyText}>
         {loading ? '동아리를 불러오는 중...' : '등록된 동아리가 없습니다.'}
-      </Text>
+      </MoaText>
     </View>
   );
 
@@ -68,19 +68,19 @@ export function ClubList({
     
     return (
       <View style={styles.errorContainer}>
-        <Text type="body1Regular" style={styles.errorTitle}>
+        <MoaText type="body1Regular" style={styles.errorTitle}>
           동아리 목록을 불러오지 못했어요
-        </Text>
-        <Text type="body2Regular" style={styles.errorMessage}>
+        </MoaText>
+        <MoaText type="body2Regular" style={styles.errorMessage}>
           새로고침 해주세요
-        </Text>
+        </MoaText>
         <TouchableOpacity 
           style={styles.retryButton}
           onPress={onRefresh}
         >
-          <Text type="body1SemiBold" style={styles.retryButtonText}>
+          <MoaText type="body1SemiBold" style={styles.retryButtonText}>
             새로고침
-          </Text>
+          </MoaText>
         </TouchableOpacity>
       </View>
     );

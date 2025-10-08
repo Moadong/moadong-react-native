@@ -1,7 +1,7 @@
+import { CategoryIcon, CategoryType, categoryColorMap } from '@/components/icon';
+import { MoaText } from '@/components/moa-text';
 import { BorderRadius, Spacing } from '@/constants/theme';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { CategoryIcon, CategoryType, categoryColorMap } from '@/components/icon';
-import { Text } from '@/components/themed-text';
 
 /**
  * 카테고리 필터 Props
@@ -90,7 +90,7 @@ function CategoryFilterItem({
           size={32}
         />
       </View>
-      <Text 
+      <MoaText 
         type="caption1Medium"
         style={[
           styles.label,
@@ -99,7 +99,7 @@ function CategoryFilterItem({
 
       >
         {category}
-      </Text>
+      </MoaText>
     </Pressable>
   );
 }
@@ -143,7 +143,7 @@ export function CategoryGrid({
                 size={40}
               />
             </View>
-            <Text 
+            <MoaText 
               type="caption1Medium"
               style={[
                 styles.gridLabel,
@@ -151,7 +151,7 @@ export function CategoryGrid({
               ]}
             >
               {category}
-            </Text>
+            </MoaText>
           </Pressable>
         );
       })}

@@ -2,9 +2,9 @@ import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
 import { ExternalLink } from '@/components/external-link';
+import { MoaText } from '@/components/moa-text';
+import { MoaView } from '@/components/moa-view';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { Text } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Collapsible } from '@/components/ui/collapsible';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
@@ -21,76 +21,76 @@ export default function TabTwoScreen() {
           style={styles.headerImage}
         />
       }>
-      <ThemedView style={styles.titleContainer}>
-        <Text
+      <MoaView style={styles.titleContainer}>
+        <MoaText
           type="heading2"
           style={{
             fontFamily: Fonts.rounded,
           }}>
           Explore
-        </Text>
-      </ThemedView>
-      <Text>This app includes example code to help you get started.</Text>
+        </MoaText>
+      </MoaView>
+      <MoaText>This app includes example code to help you get started.</MoaText>
       <Collapsible title="File-based routing">
-        <Text>
+        <MoaText>
           This app has two screens:{' '}
-          <Text type="body1SemiBold">app/(tabs)/index.tsx</Text> and{' '}
-          <Text type="body1SemiBold">app/(tabs)/explore.tsx</Text>
-        </Text>
-        <Text>
-          The layout file in <Text type="body1SemiBold">app/(tabs)/_layout.tsx</Text>{' '}
+          <MoaText type="body1SemiBold">app/(tabs)/index.tsx</MoaText> and{' '}
+          <MoaText type="body1SemiBold">app/(tabs)/explore.tsx</MoaText>
+        </MoaText>
+        <MoaText>
+          The layout file in <MoaText type="body1SemiBold">app/(tabs)/_layout.tsx</MoaText>{' '}
           sets up the tab navigator.
-        </Text>
+        </MoaText>
         <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <Text type="body1Regular" style={{ color: '#0a7ea4' }}>Learn more</Text>
+          <MoaText type="body1Regular" style={{ color: '#0a7ea4' }}>Learn more</MoaText>
         </ExternalLink>
       </Collapsible>
       <Collapsible title="Android, iOS, and web support">
-        <Text>
+        <MoaText>
           You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <Text type="body1SemiBold">w</Text> in the terminal running this project.
-        </Text>
+          <MoaText type="body1SemiBold">w</MoaText> in the terminal running this project.
+        </MoaText>
       </Collapsible>
       <Collapsible title="Images">
-        <Text>
-          For static images, you can use the <Text type="body1SemiBold">@2x</Text> and{' '}
-          <Text type="body1SemiBold">@3x</Text> suffixes to provide files for
+        <MoaText>
+          For static images, you can use the <MoaText type="body1SemiBold">@2x</MoaText> and{' '}
+          <MoaText type="body1SemiBold">@3x</MoaText> suffixes to provide files for
           different screen densities
-        </Text>
+        </MoaText>
         <Image
           source={require('@/assets/images/react-logo.png')}
           style={{ width: 100, height: 100, alignSelf: 'center' }}
         />
         <ExternalLink href="https://reactnative.dev/docs/images">
-          <Text type="body1Regular" style={{ color: '#0a7ea4' }}>Learn more</Text>
+          <MoaText type="body1Regular" style={{ color: '#0a7ea4' }}>Learn more</MoaText>
         </ExternalLink>
       </Collapsible>
       <Collapsible title="Light and dark mode components">
-        <Text>
+        <MoaText>
           This template has light and dark mode support. The{' '}
-          <Text type="body1SemiBold">useColorScheme()</Text> hook lets you inspect
+          <MoaText type="body1SemiBold">useColorScheme()</MoaText> hook lets you inspect
           what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </Text>
+        </MoaText>
         <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <Text type="body1Regular" style={{ color: '#0a7ea4' }}>Learn more</Text>
+          <MoaText type="body1Regular" style={{ color: '#0a7ea4' }}>Learn more</MoaText>
         </ExternalLink>
       </Collapsible>
       <Collapsible title="Animations">
-        <Text>
+        <MoaText>
           This template includes an example of an animated component. The{' '}
-          <Text type="body1SemiBold">components/HelloWave.tsx</Text> component uses
+          <MoaText type="body1SemiBold">components/HelloWave.tsx</MoaText> component uses
           the powerful{' '}
-          <Text type="body1SemiBold" style={{ fontFamily: Fonts.mono }}>
+          <MoaText type="body1SemiBold" style={{ fontFamily: Fonts.mono }}>
             react-native-reanimated
-          </Text>{' '}
+          </MoaText>{' '}
           library to create a waving hand animation.
-        </Text>
+        </MoaText>
         {Platform.select({
           ios: (
-            <Text>
-              The <Text type="body1SemiBold">components/ParallaxScrollView.tsx</Text>{' '}
+            <MoaText>
+              The <MoaText type="body1SemiBold">components/ParallaxScrollView.tsx</MoaText>{' '}
               component provides a parallax effect for the header image.
-            </Text>
+            </MoaText>
           ),
         })}
       </Collapsible>
