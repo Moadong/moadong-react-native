@@ -17,12 +17,23 @@ export default function ClubWebViewScreen() {
     return `https://develop.moadong.com/club/${id}`;
   }, [id]);
 
+  const handleLoadEnd = () => {
+    // 약간의 지연을 두어 콘텐츠가 완전히 렌더링되도록 함
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 200);
+  };
+
   return (
     <Container>
       <WebView
         source={{ uri }}
-        style={{ flex: 1 }}
-        onLoadEnd={() => setIsLoading(false)}
+        style={{ flex: 1, backgroundColor: '#fff' }}
+        onLoadEnd={handleLoadEnd}
+        startInLoadingState={false}
+        scalesPageToFit={true}
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
       />
       {isLoading && (
         <SkeletonContainer pointerEvents="none">
