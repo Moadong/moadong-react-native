@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { RefObject, useCallback, useRef, useState } from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useRouter } from 'expo-router';
@@ -25,6 +25,7 @@ export function HomeScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('central');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('전체');
   const [searchValue, setSearchValue] = useState('');
+  const listRef = useRef<FlatList<Club> | null>(null);
   const router = useRouter();
 
   // 동아리 데이터 훅
@@ -45,22 +46,26 @@ export function HomeScreen() {
    */
   const handleTabChange = useCallback((tab: TabType) => {
     setActiveTab(tab);
+    const keyword = searchValue.trim();
     fetchClubs({
       category: selectedCategory === '전체' ? undefined : selectedCategory,
       type: tab,
+      keyword: keyword ? keyword : undefined,
     });
-  }, [selectedCategory, fetchClubs]);
+  }, [selectedCategory, fetchClubs, searchValue]);
 
   /**
    * 카테고리 변경 핸들러
    */
   const handleCategoryChange = useCallback((category: CategoryType) => {
     setSelectedCategory(category);
+    const keyword = searchValue.trim();
     fetchClubs({
       category: category === '전체' ? undefined : category,
       type: activeTab,
+      keyword: keyword ? keyword : undefined,
     });
-  }, [activeTab, fetchClubs]);
+  }, [activeTab, fetchClubs, searchValue]);
 
   /**
    * 검색 핸들러
@@ -88,6 +93,35 @@ export function HomeScreen() {
 
     router.push(`/club/${club.id}`);
   }, [router]);
+
+  const handleSearchFocus = useCallback(() => {
+    listRef.current?.scrollToIndex({ index: 0, animated: true });
+    const keyword = searchValue.trim();
+    fetchClubs({
+      category: selectedCategory === '전체' ? undefined : selectedCategory,
+      type: activeTab,
+      keyword: keyword ? keyword : undefined,
+    });
+  }, [searchValue, fetchClubs, selectedCategory, activeTab]);
+
+  const handleSearchChange = useCallback((text: string) => {
+    setSearchValue(text);
+  }, []);
+
+  const handleSearchSubmit = useCallback((text: string) => {
+    const keyword = text.trim();
+    try {
+      listRef.current?.scrollToIndex({ index: 0, animated: true });
+    } catch (error) {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }
+    
+    fetchClubs({
+      category: selectedCategory === '전체' ? undefined : selectedCategory,
+      type: activeTab,
+      keyword: keyword ? keyword : undefined,
+    });
+  }, [fetchClubs, selectedCategory, activeTab]);
 
   const headerComponent = (
     <View>
@@ -121,7 +155,9 @@ export function HomeScreen() {
         onSearchPress={handleSearchPress}
         onMenuPress={handleMenuPress}
         searchValue={searchValue}
-        onSearchChange={setSearchValue}
+        onSearchChange={handleSearchChange}
+        onSearchFocus={handleSearchFocus}
+        onSearchSubmit={handleSearchSubmit}
       />
       <ClubList
         clubs={clubs}
@@ -131,6 +167,7 @@ export function HomeScreen() {
         error={error}
         style={styles.clubListSection}
         headerComponent={headerComponent}
+        listRef={listRef as RefObject<FlatList<Club>>}
       />
     </SafeAreaView>
   );

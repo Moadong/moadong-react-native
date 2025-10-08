@@ -6,7 +6,7 @@ import { ClubCard } from '@/ui/home/components';
 import { Text } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { Club } from '@/types/club.types';
-import React, { ReactElement } from 'react';
+import React, { ReactElement, RefObject } from 'react';
 import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 /**
@@ -21,6 +21,7 @@ interface ClubListProps {
   error?: string | null;
   style?: any;
   headerComponent?: ReactElement | null;
+  listRef?: RefObject<FlatList<Club>>;
 }
 
 /**
@@ -46,6 +47,7 @@ export function ClubList({
   error,
   style,
   headerComponent,
+  listRef,
 }: ClubListProps) {
   /**
    * 빈 목록 렌더링
@@ -99,6 +101,7 @@ export function ClubList({
       {error && renderErrorComponent()}
       
       <FlatList
+        ref={listRef}
         data={clubs}
         renderItem={renderClubCard}
         keyExtractor={(item) => item.id}
@@ -115,6 +118,7 @@ export function ClubList({
           ) : undefined
         }
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.listContent}
       />
     </View>

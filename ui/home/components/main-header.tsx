@@ -6,7 +6,7 @@ import MenuIcon from '@/assets/icons/ic-menu.svg';
 import MoadongLogo from '@/assets/icons/ic-moadong.svg';
 import SearchIcon from '@/assets/icons/ic-search.svg';
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
-import React from 'react';
+import React, { useRef } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 /**
@@ -17,6 +17,8 @@ interface MainHeaderProps {
   onMenuPress?: () => void;
   searchValue?: string;
   onSearchChange?: (text: string) => void;
+  onSearchFocus?: () => void;
+  onSearchSubmit?: (text: string) => void;
 }
 
 /**
@@ -34,8 +36,12 @@ export function MainHeader({
   onSearchPress, 
   onMenuPress, 
   searchValue = '',
-  onSearchChange 
+  onSearchChange,
+  onSearchFocus,
+  onSearchSubmit,
 }: MainHeaderProps) {
+  const inputRef = useRef<TextInput | null>(null);
+
   return (
     <View style={styles.container}>
       {/* 로고 */}
@@ -50,16 +56,25 @@ export function MainHeader({
       {/* 검색 바 */}
       <TouchableOpacity 
         style={styles.searchContainer}
-        onPress={onSearchPress}
+        onPress={() => {
+          onSearchPress?.();
+          inputRef.current?.focus();
+        }}
         activeOpacity={0.7}
       >
         <TextInput
+          ref={inputRef}
           style={styles.searchInput}
           placeholder="어떤 동아리를 찾으세요?"
           placeholderTextColor={Colors.light.icon}
           value={searchValue}
           onChangeText={onSearchChange}
-          editable={false}
+          onFocus={onSearchFocus}
+          onSubmitEditing={({ nativeEvent }) => onSearchSubmit?.(nativeEvent.text)}
+          returnKeyType="search"
+          blurOnSubmit
+          autoCorrect={false}
+          autoCapitalize="none"
         />
         <SearchIcon
           width={20}
