@@ -5,7 +5,7 @@
  * - 토큰 갱신 / 메시지 리스너 관리
  */
 
-import { FirebaseApp, getApps, initializeApp } from '@react-native-firebase/app';
+import { getApps, initializeApp } from '@react-native-firebase/app';
 import {
   AuthorizationStatus,
   FirebaseMessagingTypes,
@@ -16,10 +16,25 @@ import {
   requestPermission,
   setBackgroundMessageHandler,
 } from '@react-native-firebase/messaging';
+import * as Notifications from 'expo-notifications';
 import { PermissionsAndroid, Platform } from 'react-native';
 
 import { firebaseConfig } from '@/constants/firebase-config';
 import { api } from './api';
+
+// Firebase App 타입
+type FirebaseApp = any;
+
+// 알림 핸들러 설정
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 let firebaseAppPromise: Promise<FirebaseApp> | null = null;
 let messagingModule: FirebaseMessagingTypes.Module | null = null;
@@ -179,12 +194,41 @@ export const initializeFcm = async (): Promise<(() => void) | undefined> => {
 };
 
 /**
+ * 로컬 알림 표시
+ */
+const showLocalNotification = async (
+  title: string,
+  body: string,
+  data?: any
+): Promise<void> => {
+  try {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        data,
+        sound: true,
+      },
+      trigger: null, // 즉시 표시
+    });
+    console.log('✅ 로컬 알림 표시 완료');
+  } catch (error) {
+    console.error('❌ 로컬 알림 표시 실패:', error);
+  }
+};
+
+/**
  * 포그라운드 메시지 리스너 등록
  */
 export const setupForegroundMessageHandler = async (): Promise<() => void> => {
   const messaging = await ensureMessagingModule();
   const unsubscribe = onMessage(messaging, async (remoteMessage) => {
     console.log('📩 포그라운드 메시지 수신:', remoteMessage);
+
+    // 알림 표시
+    const title = remoteMessage.notification?.title || '새 알림';
+    const body = remoteMessage.notification?.body || '';
+    await showLocalNotification(title, body, remoteMessage.data);
   });
 
   return unsubscribe;
@@ -197,5 +241,10 @@ export const registerBackgroundMessageHandler = async (): Promise<void> => {
   const messaging = await ensureMessagingModule();
   setBackgroundMessageHandler(messaging, async (remoteMessage) => {
     console.log('📩 백그라운드 메시지 수신:', remoteMessage);
+    
+    // 백그라운드에서도 알림 표시
+    const title = remoteMessage.notification?.title || '새 알림';
+    const body = remoteMessage.notification?.body || '';
+    await showLocalNotification(title, body, remoteMessage.data);
   });
 };

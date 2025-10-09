@@ -15,7 +15,7 @@ import {
   Tab,
   TabType,
 } from '@/ui/home/components';
-import { useClubs } from '@/ui/home/hook';
+import { useClubs, useSubscribedClubs } from '@/ui/home/hook';
 
 /**
  * 홈 화면 컴포넌트
@@ -40,6 +40,12 @@ export function HomeScreen() {
     initialType: activeTab,
     autoFetch: true,
   });
+
+  // 구독 동아리 훅
+  const {
+    isSubscribed,
+    toggleSubscribe,
+  } = useSubscribedClubs();
 
   /**
    * 탭 변경 핸들러
@@ -170,6 +176,8 @@ export function HomeScreen() {
         loading={loading}
         onRefresh={refetch}
         onClubPress={handleClubPress}
+        isSubscribed={isSubscribed}
+        onSubscribeToggle={toggleSubscribe}
         error={error}
         style={{ flex: 1 }}
         headerComponent={headerComponent}

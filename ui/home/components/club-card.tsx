@@ -6,6 +6,7 @@ import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import { Column, Row } from '@/components/ui';
 import { Club } from '@/types/club.types';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
@@ -16,6 +17,8 @@ import styled from 'styled-components/native';
 interface ClubCardProps {
   club: Club;
   onPress?: (club: Club) => void;
+  isSubscribed?: boolean;
+  onSubscribeToggle?: (clubId: string) => void;
   style?: any;
 }
 
@@ -65,12 +68,19 @@ const getCategoryColor = (category: string) => {
  * <ClubCard 
  *   club={clubData}
  *   onPress={(club) => navigation.navigate('ClubDetail', { club })}
+ *   isSubscribed={isSubscribed(club.id)}
+ *   onSubscribeToggle={toggleSubscribe}
  * />
  * ```
  */
-export function ClubCard({ club, onPress, style }: ClubCardProps) {
+export function ClubCard({ club, onPress, isSubscribed = false, onSubscribeToggle, style }: ClubCardProps) {
   const handlePress = () => {
     onPress?.(club);
+  };
+
+  const handleSubscribePress = (e: any) => {
+    e.stopPropagation();
+    onSubscribeToggle?.(club.id);
   };
 
   return (
@@ -79,7 +89,7 @@ export function ClubCard({ club, onPress, style }: ClubCardProps) {
       onPress={handlePress}
       activeOpacity={0.8}
     >
-      {/* Row 레이아웃: 이미지 + 정보 */}
+      {/* Row 레이아웃: 이미지 + 정보 + 구독 아이콘 */}
       <Row gap={20} align="flex-start">
         {/* 동아리 이미지 */}
         <ImageContainer>
@@ -102,6 +112,15 @@ export function ClubCard({ club, onPress, style }: ClubCardProps) {
             {club.introduction}
           </Description>
         </Column>
+
+        {/* 구독 아이콘 */}
+        <SubscribeButton onPress={handleSubscribePress} activeOpacity={0.6}>
+          <Ionicons
+            name={isSubscribed ? 'heart' : 'heart-outline'}
+            size={24}
+            color={isSubscribed ? '#FF5414' : '#C5C5C5'}
+          />
+        </SubscribeButton>
       </Row>
 
        {/* 하단 정보 */}
@@ -239,3 +258,8 @@ const AdditionalTagText = styled(MoaText)`
   letter-spacing: -0.28px;
 `;
 
+const SubscribeButton = styled(TouchableOpacity)`
+  padding: 8px;
+  justify-content: center;
+  align-items: center;
+`;

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-firebase/app": "^23.4.0",
     "@react-native-firebase/auth": "^23.4.0",
     "@react-native-firebase/crashlytics": "^23.4.0",
@@ -30,6 +31,7 @@
     "expo-image": "~3.0.8",
     "expo-linear-gradient": "~15.0.7",
     "expo-linking": "~8.0.8",
+    "expo-notifications": "^0.32.12",
     "expo-router": "~6.0.10",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",
