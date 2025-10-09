@@ -5,6 +5,7 @@
  * - 토큰 갱신 / 메시지 리스너 관리
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApps, initializeApp } from '@react-native-firebase/app';
 import {
   AuthorizationStatus,
@@ -35,6 +36,8 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+const FCM_TOKEN_KEY = '@fcm_token';
 
 let firebaseAppPromise: Promise<FirebaseApp> | null = null;
 let messagingModule: FirebaseMessagingTypes.Module | null = null;
@@ -117,10 +120,45 @@ export const requestUserPermission = async (): Promise<boolean> => {
 };
 
 /**
+ * 로컬 저장소에서 FCM 토큰 가져오기
+ */
+const getStoredFcmToken = async (): Promise<string | null> => {
+  try {
+    const storedToken = await AsyncStorage.getItem(FCM_TOKEN_KEY);
+    return storedToken;
+  } catch (error) {
+    console.error('❌ 저장된 FCM 토큰 로드 실패:', error);
+    return null;
+  }
+};
+
+/**
+ * 로컬 저장소에 FCM 토큰 저장
+ */
+const storeFcmToken = async (token: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
+    console.log('✅ FCM 토큰 저장 완료');
+  } catch (error) {
+    console.error('❌ FCM 토큰 저장 실패:', error);
+  }
+};
+
+/**
  * FCM 토큰 발급 및 캐싱
  */
 export const getFcmToken = async (): Promise<string | null> => {
   try {
+    // 1. 로컬 저장소에서 먼저 확인
+    const storedToken = await getStoredFcmToken();
+    if (storedToken) {
+      console.log('✅ 저장된 FCM 토큰 사용:', storedToken.substring(0, 20) + '...');
+      currentToken = storedToken;
+      return storedToken;
+    }
+
+    // 2. 저장된 토큰이 없으면 새로 발급
+    console.log('📱 새 FCM 토큰 발급 중...');
     const messaging = await ensureMessagingModule();
     await messaging.registerDeviceForRemoteMessages();
     const token = await getToken(messaging);
@@ -130,7 +168,10 @@ export const getFcmToken = async (): Promise<string | null> => {
       return null;
     }
 
+    // 3. 새 토큰 저장
+    await storeFcmToken(token);
     currentToken = token;
+    console.log('✅ 새 FCM 토큰 발급 완료');
     return token;
   } catch (error) {
     console.error('❌ FCM 토큰 발급 실패:', error);
@@ -180,6 +221,7 @@ export const initializeFcm = async (): Promise<(() => void) | undefined> => {
     const messaging = await ensureMessagingModule();
     const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
       currentToken = newToken;
+      await storeFcmToken(newToken); // 새 토큰 저장
       await sendFcmTokenToServer(newToken);
     });
 
