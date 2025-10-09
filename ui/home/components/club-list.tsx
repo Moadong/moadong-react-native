@@ -95,7 +95,6 @@ export function ClubList({
 
   return (
     <Container style={style}>
-      {error && renderErrorComponent()}
       
       <FlatList
         ref={listRef}
@@ -116,8 +115,10 @@ export function ClubList({
         }
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingVertical: 8 }}
+        contentContainerStyle={{ paddingVertical: 0}}
       />
+
+      {error && renderErrorComponent()}
     </Container>
   );
 }
