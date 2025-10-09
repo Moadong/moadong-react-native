@@ -16,7 +16,7 @@ import {
   requestPermission,
   setBackgroundMessageHandler,
 } from '@react-native-firebase/messaging';
-import { Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 import { firebaseConfig } from '@/constants/firebase-config';
 import { api } from './api';
@@ -90,10 +90,11 @@ export const requestUserPermission = async (): Promise<boolean> => {
       }
 
       return enabled;
+    } else if (Platform.OS === 'android') {
+      const enabled = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+      return enabled === PermissionsAndroid.RESULTS.GRANTED;
     }
-
-    // Android는 기본적으로 권한이 부여됨
-    return true;
+    return false;
   } catch (error) {
     console.error('❌ FCM 권한 요청 실패:', error);
     return false;
