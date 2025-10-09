@@ -106,6 +106,7 @@ export const requestUserPermission = async (): Promise<boolean> => {
 export const getFcmToken = async (): Promise<string | null> => {
   try {
     const messaging = await ensureMessagingModule();
+    await messaging.registerDeviceForRemoteMessages();
     const token = await getToken(messaging);
 
     if (!token) {

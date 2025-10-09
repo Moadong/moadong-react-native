@@ -11,7 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.moa.moadong"
+      "bundleIdentifier": "com.moa.moadong",
+      "entitlements": {
+        "aps-environment": "development"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,8 +34,15 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
+      ["expo-build-properties",
+        {
+            "ios": {
+                "useFrameworks": "static",
+                "buildReactNativeFromSource": true
+            }
+        }
+      ],
+      ["expo-splash-screen",
         {
           "image": "./assets/images/icon.png",
           "imageWidth": 200,
@@ -42,16 +52,7 @@
             "backgroundColor": "#000000"
           }
         }
-      ],
-      [
-        "expo-build-properties",
-        {
-            "ios": {
-                "useFrameworks": "static",
-                "forceStaticLinking": ["RNFBApp"]
-            }
-        }
-      ],
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

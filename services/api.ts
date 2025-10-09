@@ -4,18 +4,25 @@
 
 import { ApiErrorResponse } from '@/types/club.types';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import Constants from 'expo-constants';
+
+const BASE_URL = Constants.expoConfig?.extra?.BASE_URL;
+if (!BASE_URL) {
+  console.warn(
+    '⚠️ BASE_URL 환경 변수가 설정되어 있지 않습니다. 기본값으로 http://localhost:3000 을 사용합니다.',
+  );
+}
 
 /**
  * API Base URL
  * 환경변수로 관리 가능
  */
-const API_BASE_URL = 'http://122.34.12.224:8083';
 
 /**
  * Axios 인스턴스 생성
  */
 const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -144,4 +151,3 @@ export const api = {
   patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig) =>
     apiClient.patch<T>(url, data, config).then((res) => res.data),
 };
-
