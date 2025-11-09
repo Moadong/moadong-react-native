@@ -80,7 +80,7 @@ export function useSubscribedClubs(): UseSubscribedClubsReturn {
         return;
       }
 
-      await api.post('/api/fcm/subscribe', {
+      await api.put('/api/fcm/subscribe', {
         fcmToken,
         clubIds: subscribedClubIds,
       });
@@ -121,7 +121,7 @@ export function useSubscribedClubs(): UseSubscribedClubsReturn {
             return;
           }
 
-          await api.post('/api/fcm/subscribe', {
+          await api.put('/api/fcm/subscribe', {
             fcmToken,
             clubIds: newClubIds,
           });
