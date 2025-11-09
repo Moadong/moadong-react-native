@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import styled from 'styled-components/native';
 
-const baseUrl = process.env.EXPO_PUBLIC_BASE_URL || 'http://localhost:3000';
+const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://develop.moadong.com';
 
 const pageConfig: Record<string, { title: string; path: string }> = {
   introduce: {
@@ -32,7 +32,7 @@ export default function WebViewScreen() {
   const [error, setError] = useState(false);
 
   const config = pageConfig[slug || ''];
-  const url = config ? `${baseUrl}${config.path}` : '';
+  const url = config ? `${webviewUrl}${config.path}` : '';
 
   const handleBack = () => {
     if (router.canGoBack()) {

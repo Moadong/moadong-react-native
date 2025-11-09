@@ -1,5 +1,5 @@
-import ClubDetailSkeleton from '@/components/skeletons/club-detail-skeleton';
 import { MoaText } from '@/components/moa-text';
+import ClubDetailSkeleton from '@/components/skeletons/club-detail-skeleton';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -13,13 +13,15 @@ export default function ClubWebViewScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [isLoading, setIsLoading] = useState(true);
 
+  const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
+
   const uri = useMemo(() => {
     if (!id || typeof id !== 'string') {
-      return 'https://develop.moadong.com/club';
+      return `${webviewUrl}/club`;
     }
 
-    return `https://develop.moadong.com/club/${id}`;
-  }, [id]);
+    return `${webviewUrl}/club/${id}`;
+  }, [id, webviewUrl]);
 
   const handleLoadEnd = () => {
     // 약간의 지연을 두어 콘텐츠가 완전히 렌더링되도록 함

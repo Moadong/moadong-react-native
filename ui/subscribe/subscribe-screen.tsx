@@ -44,7 +44,7 @@ export function SubscribeScreen() {
    */
   if (loading && subscribedClubs.length === 0) {
     return (
-      <Container>
+      <Container edges={['top']}>
         <Header>
           <HeaderTitle type="title1">구독</HeaderTitle>
         </Header>
@@ -60,7 +60,7 @@ export function SubscribeScreen() {
    */
   if (error && subscribedClubs.length === 0) {
     return (
-      <Container>
+      <Container edges={['top']}>
         <Header>
           <HeaderTitle type="title1">구독</HeaderTitle>
         </Header>
@@ -79,7 +79,7 @@ export function SubscribeScreen() {
    */
   if (subscribedClubs.length === 0) {
     return (
-      <Container>
+      <Container edges={['top']}>
         <Header>
           <HeaderTitle type="title1">구독</HeaderTitle>
         </Header>
@@ -92,7 +92,7 @@ export function SubscribeScreen() {
    * 구독한 동아리 목록 표시
    */
   return (
-    <Container>
+    <Container edges={['top']}>
       <Header>
         <HeaderTitle type="title1">구독</HeaderTitle>
       </Header>

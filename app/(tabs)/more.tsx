@@ -36,7 +36,7 @@ export default function MoreScreen() {
   };
 
   return (
-    <Container>
+    <Container edges={['top']}>
       <Header>
         <HeaderTitle type="title1">더보기</HeaderTitle>
       </Header>

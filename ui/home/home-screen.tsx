@@ -153,7 +153,7 @@ export function HomeScreen() {
   );
 
   return (
-    <Container>
+    <Container edges={['top']}>
       {/* 헤더 */}
       <MainHeader
         onSearchPress={handleSearchPress}
