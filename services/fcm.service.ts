@@ -12,6 +12,7 @@ import {
   FirebaseMessagingTypes,
   getMessaging,
   getToken,
+  getAPNSToken,
   onMessage,
   onTokenRefresh,
   requestPermission,
@@ -145,6 +146,33 @@ const storeFcmToken = async (token: string): Promise<void> => {
 };
 
 /**
+ * APNS 토큰 조회 (iOS 전용)
+ */
+export const getApnsToken = async (): Promise<string | null> => {
+  try {
+    if (Platform.OS !== 'ios') {
+      console.log('ℹ️ APNS 토큰은 iOS에서만 사용 가능합니다.');
+      return null;
+    }
+
+    const messaging = await ensureMessagingModule();
+    const apnsToken = await getAPNSToken(messaging);
+
+    if (apnsToken) {
+      console.log('🍎 APNS Device Token:', apnsToken);
+      console.log('🍎 APNS Token (처음 20자):', apnsToken.substring(0, 20) + '...');
+      return apnsToken;
+    } else {
+      console.warn('⚠️ APNS 토큰을 가져올 수 없습니다.');
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ APNS 토큰 조회 실패:', error);
+    return null;
+  }
+};
+
+/**
  * FCM 토큰 발급 및 캐싱
  */
 export const getFcmToken = async (): Promise<string | null> => {
@@ -211,6 +239,11 @@ export const initializeFcm = async (): Promise<(() => void) | undefined> => {
       return undefined;
     }
 
+    // iOS의 경우 APNS 토큰 조회 및 로그 출력
+    if (Platform.OS === 'ios') {
+      await getApnsToken();
+    }
+
     const initialToken = await getFcmToken();
     if (!initialToken) {
       return undefined;
@@ -223,6 +256,11 @@ export const initializeFcm = async (): Promise<(() => void) | undefined> => {
       currentToken = newToken;
       await storeFcmToken(newToken); // 새 토큰 저장
       await sendFcmTokenToServer(newToken);
+      
+      // 토큰 갱신 시에도 APNS 토큰 조회 (iOS만)
+      if (Platform.OS === 'ios') {
+        await getApnsToken();
+      }
     });
 
     return unsubscribe;
