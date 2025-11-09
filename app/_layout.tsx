@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { CustomSplashScreen } from '@/components/custom-splash-screen';
+import { SubscribedClubsProvider } from '@/contexts/subscribed-clubs-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFcm } from '@/hooks/use-fcm';
 
@@ -61,22 +62,25 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="club/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        <StatusBar style="auto" />
-        
-        {/* 커스텀 스플래시 스크린 */}
-        {showSplash && (
-          <CustomSplashScreen 
-            isReady={appIsReady} 
-            onFinish={onFinishSplash}
-          />
-        )}
-      </ThemeProvider>
+      <SubscribedClubsProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="club/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="webview/[slug]" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          </Stack>
+          <StatusBar style="auto" />
+          
+          {/* 커스텀 스플래시 스크린 */}
+          {showSplash && (
+            <CustomSplashScreen 
+              isReady={appIsReady} 
+              onFinish={onFinishSplash}
+            />
+          )}
+        </ThemeProvider>
+      </SubscribedClubsProvider>
     </SafeAreaProvider>
   );
 }

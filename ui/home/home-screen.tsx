@@ -83,14 +83,6 @@ export function HomeScreen() {
   }, []);
 
   /**
-   * 메뉴 핸들러
-   */
-  const handleMenuPress = useCallback(() => {
-    // TODO: 메뉴 열기
-    console.log('메뉴 열기');
-  }, []);
-
-  /**
    * 동아리 카드 클릭 핸들러
    */
   const handleClubPress = useCallback((club: Club) => {
@@ -165,7 +157,6 @@ export function HomeScreen() {
       {/* 헤더 */}
       <MainHeader
         onSearchPress={handleSearchPress}
-        onMenuPress={handleMenuPress}
         searchValue={searchValue}
         onSearchChange={handleSearchChange}
         onSearchFocus={handleSearchFocus}

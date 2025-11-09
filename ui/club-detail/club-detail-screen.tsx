@@ -1,11 +1,15 @@
 import ClubDetailSkeleton from '@/components/skeletons/club-detail-skeleton';
-import Constants from 'expo-constants';
-import { useLocalSearchParams } from 'expo-router';
+import { MoaText } from '@/components/moa-text';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
+import { TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import styled from 'styled-components/native';
 
 export default function ClubWebViewScreen() {
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,31 +28,78 @@ export default function ClubWebViewScreen() {
     }, 200);
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/(tabs)');
+    }
+  };
+
   return (
-    <Container>
-      <WebView
-        source={{ uri }}
-        style={{ flex: 1, backgroundColor: '#fff' }}
-        onLoadEnd={handleLoadEnd}
-        startInLoadingState={false}
-        scalesPageToFit={true}
-        showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
-      />
-      {isLoading && (
-        <SkeletonContainer pointerEvents="none">
-          <ClubDetailSkeleton />
-        </SkeletonContainer>
-      )}
+    <Container edges={['top', 'bottom']}>
+      <Header>
+        <BackButton onPress={handleBack} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={24} color="#111111" />
+        </BackButton>
+        <HeaderTitle type="title2">동아리 상세</HeaderTitle>
+        <PlaceholderView />
+      </Header>
+
+      <WebViewContainer>
+        <WebView
+          source={{ uri }}
+          style={{ flex: 1, backgroundColor: '#fff' }}
+          onLoadEnd={handleLoadEnd}
+          startInLoadingState={false}
+          scalesPageToFit={true}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        />
+        {isLoading && (
+          <SkeletonContainer pointerEvents="none">
+            <ClubDetailSkeleton />
+          </SkeletonContainer>
+        )}
+      </WebViewContainer>
     </Container>
   );
 }
 
 // Styled Components
-const Container = styled.View`
+const Container = styled(SafeAreaView)`
   flex: 1;
-  margin-top: ${Constants.statusBarHeight}px;
   background-color: #fff;
+`;
+
+const Header = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-horizontal: 16px;
+  padding-vertical: 12px;
+  border-bottom-width: 1px;
+  border-bottom-color: #F0F0F0;
+  background-color: #fff;
+`;
+
+const BackButton = styled(TouchableOpacity)`
+  padding: 4px;
+`;
+
+const HeaderTitle = styled(MoaText)`
+  color: #111111;
+  flex: 1;
+  text-align: center;
+`;
+
+const PlaceholderView = styled.View`
+  width: 32px;
+`;
+
+const WebViewContainer = styled.View`
+  flex: 1;
+  position: relative;
 `;
 
 const SkeletonContainer = styled.View`
