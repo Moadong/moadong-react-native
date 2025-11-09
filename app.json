@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.moa.moadong",
+      "bundleIdentifier": "com.moadong.moadong",
       "entitlements": {
         "aps-environment": "development"
       }
@@ -25,7 +25,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.moa.moadong",
+      "package": "com.moadong.moadong",
       "googleServicesFile": "./google-services.json"
     },
     "web": {
