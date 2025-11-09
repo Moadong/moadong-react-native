@@ -1,5 +1,7 @@
+import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import ClubDetailSkeleton from '@/components/skeletons/club-detail-skeleton';
+import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -12,6 +14,7 @@ export default function ClubWebViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [isLoading, setIsLoading] = useState(true);
+  const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
 
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
@@ -22,6 +25,10 @@ export default function ClubWebViewScreen() {
 
     return `${webviewUrl}/club/${id}`;
   }, [id, webviewUrl]);
+
+  const subscribed = useMemo(() => {
+    return id ? isSubscribed(id) : false;
+  }, [id, isSubscribed]);
 
   const handleLoadEnd = () => {
     // 약간의 지연을 두어 콘텐츠가 완전히 렌더링되도록 함
@@ -38,6 +45,12 @@ export default function ClubWebViewScreen() {
     }
   };
 
+  const handleSubscribeToggle = () => {
+    if (id && typeof id === 'string') {
+      toggleSubscribe(id);
+    }
+  };
+
   return (
     <Container edges={['top', 'bottom']}>
       <Header>
@@ -45,7 +58,17 @@ export default function ClubWebViewScreen() {
           <Ionicons name="arrow-back" size={24} color="#111111" />
         </BackButton>
         <HeaderTitle type="title2">동아리 상세</HeaderTitle>
-        <PlaceholderView />
+        <SubscribeButton onPress={handleSubscribeToggle} activeOpacity={0.6}>
+          <MoaImage
+            source={
+              subscribed
+                ? require('@/assets/icons/ic-subscribe-selected.png')
+                : require('@/assets/icons/ic-subscribe-unselected.png')
+            }
+            style={{ width: 24, height: 24 }}
+            contentFit="contain"
+          />
+        </SubscribeButton>
       </Header>
 
       <WebViewContainer>
@@ -95,8 +118,10 @@ const HeaderTitle = styled(MoaText)`
   text-align: center;
 `;
 
-const PlaceholderView = styled.View`
-  width: 32px;
+const SubscribeButton = styled(TouchableOpacity)`
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
 `;
 
 const WebViewContainer = styled.View`

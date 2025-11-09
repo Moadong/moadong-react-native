@@ -2,8 +2,8 @@ import { MoaText } from '@/components/moa-text';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
 interface MenuItem {
@@ -29,6 +29,7 @@ const menuItems: MenuItem[] = [
 ];
 
 export default function MoreScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
 
   const handleMenuPress = (route: string) => {
@@ -36,7 +37,7 @@ export default function MoreScreen() {
   };
 
   return (
-    <Container edges={['top']}>
+    <Container style={{ paddingTop: insets.top }}>
       <Header>
         <HeaderTitle type="title1">더보기</HeaderTitle>
       </Header>
@@ -63,7 +64,7 @@ export default function MoreScreen() {
 }
 
 // Styled Components
-const Container = styled(SafeAreaView)`
+const Container = styled(View)`
   flex: 1;
   background-color: #fff;
 `;

@@ -37,45 +37,45 @@ export function CustomSplashScreen({ onFinish, isReady }: CustomSplashScreenProp
     
     // 1. 로고 페이드인 + 스케일 애니메이션
     logoOpacity.value = withTiming(1, {
-      duration: 600,
+      duration: 500,
       easing: Easing.out(Easing.ease),
     });
     
     logoScale.value = withSpring(1, {
-      damping: 10,
-      stiffness: 100,
-      mass: 0.8,
+      damping: 12,
+      stiffness: 120,
+      mass: 0.7,
     });
 
     // 2. 텍스트 페이드인 + 슬라이드업 (로고 애니메이션 후)
     textOpacity.value = withDelay(
-      400,
+      300,
       withTiming(1, {
-        duration: 500,
+        duration: 400,
         easing: Easing.out(Easing.ease),
       })
     );
 
     textTranslateY.value = withDelay(
-      400,
+      300,
       withTiming(0, {
-        duration: 500,
+        duration: 400,
         easing: Easing.out(Easing.ease),
       })
     );
 
-    // 3. 전체 페이드아웃 (모든 애니메이션 완료 후)
+    // 3. 전체 페이드아웃 (2.2초 후 시작, 총 2.5초)
     fadeOutOpacity.value = withDelay(
-      1500, // 로고와 텍스트 애니메이션이 완료된 후 잠시 대기
+      2200, // 2.2초 동안 애니메이션 표시
       withTiming(
         0,
         {
-          duration: 400,
-          easing: Easing.out(Easing.ease),
+          duration: 300,
+          easing: Easing.in(Easing.ease),
         },
         (finished) => {
           if (finished) {
-            // 애니메이션 완료 후 네이티브 스플래시 숨기고 콜백 실행
+            // 애니메이션 완료 후 콜백 실행
             console.log('✅ 커스텀 스플래시 애니메이션 완료');
             runOnJS(onFinish)();
           }

@@ -6,8 +6,8 @@ import { MoaText } from '@/components/moa-text';
 import { Club } from '@/types/club.types';
 import { useRouter } from 'expo-router';
 import React, { RefObject, useCallback, useRef } from 'react';
-import { ActivityIndicator, FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, FlatList, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { EmptyState, SubscribedClubList } from './components';
 import { useSubscribeScreen } from './hook';
@@ -16,6 +16,7 @@ import { useSubscribeScreen } from './hook';
  * 구독 화면 메인 컴포넌트
  */
 export function SubscribeScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const listRef = useRef<FlatList<Club> | null>(null);
 
@@ -44,7 +45,7 @@ export function SubscribeScreen() {
    */
   if (loading && subscribedClubs.length === 0) {
     return (
-      <Container edges={['top']}>
+      <Container style={{ paddingTop: insets.top }}>
         <Header>
           <HeaderTitle type="title1">구독</HeaderTitle>
         </Header>
@@ -60,7 +61,7 @@ export function SubscribeScreen() {
    */
   if (error && subscribedClubs.length === 0) {
     return (
-      <Container edges={['top']}>
+      <Container style={{ paddingTop: insets.top }}>
         <Header>
           <HeaderTitle type="title1">구독</HeaderTitle>
         </Header>
@@ -79,7 +80,7 @@ export function SubscribeScreen() {
    */
   if (subscribedClubs.length === 0) {
     return (
-      <Container edges={['top']}>
+      <Container style={{ paddingTop: insets.top }}>
         <Header>
           <HeaderTitle type="title1">구독</HeaderTitle>
         </Header>
@@ -92,7 +93,7 @@ export function SubscribeScreen() {
    * 구독한 동아리 목록 표시
    */
   return (
-    <Container edges={['top']}>
+    <Container style={{ paddingTop: insets.top }}>
       <Header>
         <HeaderTitle type="title1">구독</HeaderTitle>
       </Header>
@@ -110,7 +111,7 @@ export function SubscribeScreen() {
 }
 
 // Styled Components
-const Container = styled(SafeAreaView)`
+const Container = styled(View)`
   flex: 1;
   background-color: #fff;
 `;

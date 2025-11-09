@@ -1,6 +1,6 @@
 import React, { RefObject, useCallback, useRef, useState } from 'react';
-import { FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FlatList, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 
 import { useRouter } from 'expo-router';
@@ -21,12 +21,16 @@ import { useClubs, useSubscribedClubs } from '@/ui/home/hook';
  * 홈 화면 컴포넌트
  */
 export function HomeScreen() {
+  // SafeArea insets
+  const insets = useSafeAreaInsets();
+
   // 상태 관리
   const [activeTab, setActiveTab] = useState<TabType>('central');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('전체');
   const [searchValue, setSearchValue] = useState('');
   const listRef = useRef<FlatList<Club> | null>(null);
   const router = useRouter();
+  const hasScrolledOnFocus = useRef(false); // 검색 포커스 시 스크롤 애니메이션 실행 여부
 
   // 동아리 데이터 훅
   const {
@@ -94,10 +98,14 @@ export function HomeScreen() {
   }, [router]);
 
   const handleSearchFocus = useCallback(() => {
-    try {
-      listRef.current?.scrollToIndex({ index: 0, animated: true });
-    } catch (error) {
-      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    // 최초 1회만 스크롤 애니메이션 실행
+    if (!hasScrolledOnFocus.current) {
+      try {
+        listRef.current?.scrollToIndex({ index: 0, animated: true });
+      } catch (error) {
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+      }
+      hasScrolledOnFocus.current = true;
     }
     
     const keyword = searchValue.trim();
@@ -114,6 +122,7 @@ export function HomeScreen() {
 
   const handleSearchSubmit = useCallback((text: string) => {
     const keyword = text.trim();
+    // 검색 제출 시에는 항상 스크롤 (검색 결과를 보기 위해)
     try {
       listRef.current?.scrollToIndex({ index: 0, animated: true });
     } catch (error) {
@@ -153,7 +162,7 @@ export function HomeScreen() {
   );
 
   return (
-    <Container edges={['top']}>
+    <Container style={{ paddingTop: insets.top }}>
       {/* 헤더 */}
       <MainHeader
         onSearchPress={handleSearchPress}
@@ -179,7 +188,7 @@ export function HomeScreen() {
 }
 
 // Styled Components
-const Container = styled(SafeAreaView)`
+const Container = styled(View)`
   flex: 1;
   background-color: #fff;
 `;
