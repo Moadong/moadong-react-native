@@ -5,9 +5,10 @@
 
 import { MoaText } from '@/components/moa-text';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import styled from 'styled-components/native';
@@ -33,6 +34,13 @@ export default function WebViewScreen() {
 
   const config = pageConfig[slug || ''];
   const url = config ? `${webviewUrl}${config.path}` : '';
+
+  // UserAgent 생성
+  const userAgent = useMemo(() => {
+    const appVersion = Constants.expoConfig?.version || '1.0.0';
+    const platform = Platform.OS === 'ios' ? 'iOS' : 'Android';
+    return `MoadongApp/${appVersion} (${platform})`;
+  }, []);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -88,6 +96,7 @@ export default function WebViewScreen() {
       <WebView
         source={{ uri: url }}
         style={{ flex: 1 }}
+        userAgent={userAgent}
         onLoadStart={() => setLoading(true)}
         onLoadEnd={() => setLoading(false)}
         onError={() => {

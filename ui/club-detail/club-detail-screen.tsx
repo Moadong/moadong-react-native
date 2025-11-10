@@ -3,9 +3,10 @@ import { MoaText } from '@/components/moa-text';
 import ClubDetailSkeleton from '@/components/skeletons/club-detail-skeleton';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import styled from 'styled-components/native';
@@ -29,6 +30,13 @@ export default function ClubWebViewScreen() {
   const subscribed = useMemo(() => {
     return id ? isSubscribed(id) : false;
   }, [id, isSubscribed]);
+
+  // UserAgent 생성
+  const userAgent = useMemo(() => {
+    const appVersion = Constants.expoConfig?.version || '1.0.0';
+    const platform = Platform.OS === 'ios' ? 'iOS' : 'Android';
+    return `MoadongApp/${appVersion} (${platform})`;
+  }, []);
 
   const handleLoadEnd = () => {
     // 약간의 지연을 두어 콘텐츠가 완전히 렌더링되도록 함
@@ -75,6 +83,7 @@ export default function ClubWebViewScreen() {
         <WebView
           source={{ uri }}
           style={{ flex: 1, backgroundColor: '#fff' }}
+          userAgent={userAgent}
           onLoadEnd={handleLoadEnd}
           startInLoadingState={false}
           scalesPageToFit={true}
