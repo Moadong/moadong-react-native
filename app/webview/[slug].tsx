@@ -15,7 +15,10 @@ import styled from 'styled-components/native';
 
 const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://develop.moadong.com';
 
-const pageConfig: Record<string, { title: string; path: string }> = {
+const pageConfig: Record<
+  string,
+  { title: string; path?: string; url?: string }
+> = {
   introduce: {
     title: '서비스 소개',
     path: '/introduce',
@@ -24,16 +27,23 @@ const pageConfig: Record<string, { title: string; path: string }> = {
     title: '총 동아리 연합회',
     path: '/club-union',
   },
+  'privacy-policy': {
+    title: '개인정보 처리방침',
+    url: 'https://honorable-cough-8f9.notion.site/2a8aad23209680e7892ffd94b52c2a29?source=copy_link',
+  },
 };
 
 export default function WebViewScreen() {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const [loading, setLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState(false);
 
   const config = pageConfig[slug || ''];
-  const url = config ? `${webviewUrl}${config.path}` : '';
+  const url = config
+    ? config.url ?? (config.path ? `${webviewUrl}${config.path}` : '')
+    : '';
 
   // UserAgent 생성
   const userAgent = useMemo(() => {
@@ -72,17 +82,10 @@ export default function WebViewScreen() {
       <Header>
         <BackButton onPress={handleBack} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={24} color="#111111" />
-        </BackButton>
+        </BackButton> 
         <HeaderTitle type="title2">{config.title}</HeaderTitle>
         <PlaceholderView />
       </Header>
-
-      {loading && (
-        <LoadingContainer>
-          <ActivityIndicator size="large" color="#FF5414" />
-          <LoadingText type="body1Regular">로딩 중...</LoadingText>
-        </LoadingContainer>
-      )}
 
       {error && (
         <ErrorContainer>
@@ -93,20 +96,37 @@ export default function WebViewScreen() {
         </ErrorContainer>
       )}
 
-      <WebView
-        source={{ uri: url }}
-        style={{ flex: 1 }}
-        userAgent={userAgent}
-        onLoadStart={() => setLoading(true)}
-        onLoadEnd={() => setLoading(false)}
-        onError={() => {
-          setError(true);
-          setLoading(false);
-        }}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        startInLoadingState={true}
-      />
+      <WebViewWrapper>
+        {loading && !hasLoadedOnce && !error && (
+          <LoadingContainer>
+            <ActivityIndicator size="large" color="#FF5414" />
+            <LoadingText type="body1Regular">로딩 중...</LoadingText>
+          </LoadingContainer>
+        )}
+
+        <StyledWebView
+          source={{ uri: url }}
+          userAgent={userAgent}
+          onLoadStart={() => {
+            if (!hasLoadedOnce) {
+              setLoading(true);
+              setError(false);
+            }
+          }}
+          onLoadEnd={() => {
+            setLoading(false);
+            if (!hasLoadedOnce) {
+              setHasLoadedOnce(true);
+            }
+          }}
+          onError={() => {
+            setError(true);
+            setLoading(false);
+          }}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+        />
+      </WebViewWrapper>
     </Container>
   );
 }
@@ -141,21 +161,31 @@ const PlaceholderView = styled.View`
   width: 32px;
 `;
 
+const WebViewWrapper = styled.View`
+  flex: 1;
+  position: relative;
+`;
+
 const LoadingContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  justify-content: center;
-  align-items: center;
-  background-color: #fff;
   z-index: 10;
 `;
 
 const LoadingText = styled(MoaText)`
   margin-top: 12px;
   color: #666666;
+`;
+
+const StyledWebView = styled(WebView)`
+  flex: 1;
 `;
 
 const ErrorContainer = styled.View`

@@ -1,5 +1,7 @@
+import MoadongIcon from '@/assets/icons/ic-moadong.svg';
 import { MoaText } from '@/components/moa-text';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
@@ -26,18 +28,29 @@ const menuItems: MenuItem[] = [
     icon: 'people-outline',
     route: '/webview/club-union',
   },
+  {
+    id: 'privacy-policy',
+    title: '개인정보 처리방침',
+    icon: 'document-text-outline',
+    route: '/webview/privacy-policy',
+  },
 ];
 
 export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const appVersion =
+    Constants.expoConfig?.version ??
+    Constants.nativeAppVersion ??
+    Constants.manifest?.version ??
+    '알 수 없음';
 
   const handleMenuPress = (route: string) => {
     router.push(route as any);
   };
 
   return (
-    <Container style={{ paddingTop: insets.top }}>
+    <Container style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <Header>
         <HeaderTitle type="title1">더보기</HeaderTitle>
       </Header>
@@ -58,6 +71,15 @@ export default function MoreScreen() {
             <Ionicons name="chevron-forward" size={20} color="#C5C5C5" />
           </MenuItem>
         ))}
+        <VersionItem>
+          <MenuItemContent>
+            <IconContainer>
+              <MoadongIcon width={24} height={24} color="#FF5414" />
+            </IconContainer>
+            <MenuItemText type="body1Regular">앱 버전</MenuItemText>
+          </MenuItemContent>
+          <VersionValue type="body2Regular">{appVersion}</VersionValue>
+        </VersionItem>
       </MenuList>
     </Container>
   );
@@ -82,6 +104,7 @@ const HeaderTitle = styled(MoaText)`
 
 const MenuList = styled.View`
   padding-top: 8px;
+  flex: 1;
 `;
 
 const MenuItem = styled(TouchableOpacity)`
@@ -113,5 +136,19 @@ const IconContainer = styled.View`
 const MenuItemText = styled(MoaText)`
   color: #111111;
   font-size: 16px;
+`;
+
+const VersionItem = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-horizontal: 16px;
+  padding-vertical: 16px;
+  border-bottom-width: 1px;
+  border-bottom-color: #ffffff;
+`;
+
+const VersionValue = styled(MoaText)`
+  color: #888888;
 `;
 
