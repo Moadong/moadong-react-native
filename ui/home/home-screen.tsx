@@ -5,6 +5,7 @@ import styled from 'styled-components/native';
 
 import { useRouter } from 'expo-router';
 
+import { MoaText } from '@/components/moa-text';
 import { CategoryType } from '@/components/icon';
 import { Club } from '@/types/club.types';
 import {
@@ -39,6 +40,7 @@ export function HomeScreen() {
     error,
     fetchClubs,
     refetch,
+    clearClubs,
   } = useClubs({
     initialCategory: selectedCategory,
     initialType: activeTab,
@@ -56,13 +58,18 @@ export function HomeScreen() {
    */
   const handleTabChange = useCallback((tab: TabType) => {
     setActiveTab(tab);
+    if (tab === 'department') {
+      clearClubs();
+      return;
+    }
+
     const keyword = searchValue.trim();
     fetchClubs({
       category: selectedCategory === '전체' ? undefined : selectedCategory,
       type: tab,
       keyword: keyword ? keyword : undefined,
     });
-  }, [selectedCategory, fetchClubs, searchValue]);
+  }, [selectedCategory, fetchClubs, searchValue, clearClubs]);
 
   /**
    * 카테고리 변경 핸들러
@@ -71,12 +78,16 @@ export function HomeScreen() {
     setSelectedCategory(category);
     // 카테고리 변경 시 검색 키워드 초기화
     setSearchValue('');
+    if (activeTab === 'department') {
+      clearClubs();
+      return;
+    }
     fetchClubs({
       category: category === '전체' ? undefined : category,
       type: activeTab,
       keyword: undefined, // 키워드 초기화
     });
-  }, [activeTab, fetchClubs]);
+  }, [activeTab, fetchClubs, clearClubs]);
 
   /**
    * 검색 핸들러
@@ -108,6 +119,10 @@ export function HomeScreen() {
       hasScrolledOnFocus.current = true;
     }
     
+    if (activeTab === 'department') {
+      return;
+    }
+
     const keyword = searchValue.trim();
     fetchClubs({
       category: selectedCategory === '전체' ? undefined : selectedCategory,
@@ -121,6 +136,10 @@ export function HomeScreen() {
   }, []);
 
   const handleSearchSubmit = useCallback((text: string) => {
+    if (activeTab === 'department') {
+      return;
+    }
+
     const keyword = text.trim();
     // 검색 제출 시에는 항상 스크롤 (검색 결과를 보기 위해)
     try {
@@ -171,18 +190,27 @@ export function HomeScreen() {
         onSearchFocus={handleSearchFocus}
         onSearchSubmit={handleSearchSubmit}
       />
-      <ClubList
-        clubs={clubs}
-        loading={loading}
-        onRefresh={refetch}
-        onClubPress={handleClubPress}
-        isSubscribed={isSubscribed}
-        onSubscribeToggle={toggleSubscribe}
-        error={error}
-        style={{ flex: 1 }}
-        headerComponent={headerComponent}
-        listRef={listRef as RefObject<FlatList<Club>>}
-      />
+      {activeTab === 'department' ? (
+        <ComingSoonContainer>
+          <ComingSoonTitle type="title3">아직 준비중이에요</ComingSoonTitle>
+          <ComingSoonDescription type="body2Regular">
+            과동아리 정보는 곧 만나보실 수 있어요.
+          </ComingSoonDescription>
+        </ComingSoonContainer>
+      ) : (
+        <ClubList
+          clubs={clubs}
+          loading={loading}
+          onRefresh={refetch}
+          onClubPress={handleClubPress}
+          isSubscribed={isSubscribed}
+          onSubscribeToggle={toggleSubscribe}
+          error={error}
+          style={{ flex: 1 }}
+          headerComponent={headerComponent}
+          listRef={listRef as RefObject<FlatList<Club>>}
+        />
+      )}
     </Container>
   );
 }
@@ -205,6 +233,25 @@ const CategorySection = styled.View`
 
 const TabSection = styled.View`
   margin-bottom: 8px;
+`;
+
+const ComingSoonContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding-horizontal: 24px;
+  padding-vertical: 40px;
+`;
+
+const ComingSoonTitle = styled(MoaText)`
+  color: #3A3A3A;
+  margin-bottom: 8px;
+`;
+
+const ComingSoonDescription = styled(MoaText)`
+  color: #818181;
+  text-align: center;
+  line-height: 20px;
 `;
 
 export default HomeScreen;

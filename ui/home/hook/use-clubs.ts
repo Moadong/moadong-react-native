@@ -89,6 +89,15 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
   }, [currentParams, fetchClubs]);
 
   /**
+   * 동아리 목록 비우기
+   */
+  const clearClubs = useCallback(() => {
+    setClubs([]);
+    setLoading(false);
+    setError(null);
+  }, []);
+
+  /**
    * 상태 초기화
    */
   const reset = useCallback(() => {
@@ -119,6 +128,7 @@ export function useClubs(options: UseClubsOptions = {}): UseClubsReturn {
     error,
     fetchClubs,
     refetch,
+    clearClubs,
     reset,
   };
 }
