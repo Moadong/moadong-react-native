@@ -3,7 +3,7 @@
  */
 
 import { api } from '@/services/api';
-import { getFcmToken } from '@/services/fcm.service';
+import { checkNotificationPermission, getFcmToken, requestUserPermission } from '@/services/fcm.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
@@ -18,6 +18,8 @@ interface SubscribedClubsContextType {
   toggleSubscribe: (clubId: string) => Promise<void>;
   syncWithServer: () => Promise<void>;
   loading: boolean;
+  showPermissionDialog: boolean;
+  setShowPermissionDialog: (show: boolean) => void;
 }
 
 /**
@@ -38,6 +40,7 @@ interface SubscribedClubsProviderProps {
 export function SubscribedClubsProvider({ children }: SubscribedClubsProviderProps) {
   const [subscribedClubIds, setSubscribedClubIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
 
   /**
    * 로컬 스토리지에서 구독 목록 로드
@@ -103,7 +106,32 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
    * 구독 토글
    */
   const toggleSubscribe = useCallback(async (clubId: string) => {
-    const newClubIds = subscribedClubIds.includes(clubId)
+    const isCurrentlySubscribed = subscribedClubIds.includes(clubId);
+    
+    // 구독 추가 시도인 경우에만 권한 체크
+    if (!isCurrentlySubscribed) {
+      // 1. 현재 권한 상태 확인
+      const permission = await checkNotificationPermission();
+      
+      if (!permission.granted) {
+        // 2. 권한이 없고 다시 물어볼 수 있는 경우 시스템 다이얼로그 표시
+        if (permission.canAskAgain) {
+          const granted = await requestUserPermission();
+          if (!granted) {
+            // 시스템 다이얼로그에서도 거부됨 - 커스텀 다이얼로그 표시
+            setShowPermissionDialog(true);
+            return;
+          }
+          // 권한 허용됨 - 계속 진행
+        } else {
+          // 3. 다시 물어볼 수 없는 경우 (이미 거부됨) - 커스텀 다이얼로그 표시
+          setShowPermissionDialog(true);
+          return;
+        }
+      }
+    }
+
+    const newClubIds = isCurrentlySubscribed
       ? subscribedClubIds.filter((id) => id !== clubId)
       : [...subscribedClubIds, clubId];
 
@@ -145,6 +173,8 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
     toggleSubscribe,
     syncWithServer,
     loading,
+    showPermissionDialog,
+    setShowPermissionDialog,
   };
 
   return (

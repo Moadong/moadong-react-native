@@ -26,6 +26,7 @@ interface UseClubsReturn {
   fetchClubs: (params?: ClubSearchParams) => Promise<void>;
   refetch: () => Promise<void>;
   reset: () => void;
+  clearClubs: () => void;
 }
 
 /**

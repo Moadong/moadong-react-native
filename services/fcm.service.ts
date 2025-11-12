@@ -87,6 +87,42 @@ const ensureMessagingModule = async (): Promise<FirebaseMessagingTypes.Module> =
 };
 
 /**
+ * 알림 권한 상태 확인 (요청하지 않고 현재 상태만 확인)
+ */
+export const checkNotificationPermission = async (): Promise<{
+  granted: boolean;
+  canAskAgain: boolean;
+}> => {
+  try {
+    const messaging = await ensureMessagingModule();
+
+    if (Platform.OS === 'ios') {
+      const status = await messaging.hasPermission();
+      const granted =
+        status === AuthorizationStatus.AUTHORIZED ||
+        status === AuthorizationStatus.PROVISIONAL;
+      
+      // iOS에서는 DENIED 상태일 때 다시 물어볼 수 없음
+      const canAskAgain = status === AuthorizationStatus.NOT_DETERMINED;
+      
+      return { granted, canAskAgain };
+    } else if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+      
+      // Android에서는 권한이 없을 때 다시 요청 가능 여부를 확인하기 어려우므로
+      // 일단 권한이 없으면 다시 물어볼 수 있다고 가정
+      return { granted, canAskAgain: !granted };
+    }
+    return { granted: false, canAskAgain: false };
+  } catch (error) {
+    console.error('❌ 알림 권한 상태 확인 실패:', error);
+    return { granted: false, canAskAgain: false };
+  }
+};
+
+/**
  * 사용자 알림 권한 요청
  */
 export const requestUserPermission = async (): Promise<boolean> => {

@@ -24,6 +24,7 @@ interface ClubListProps {
   style?: any;
   headerComponent?: ReactElement | null;
   listRef?: RefObject<FlatList<Club>>;
+  isDepartmentTab?: boolean;
 }
 
 /**
@@ -52,17 +53,28 @@ export function ClubList({
   style,
   headerComponent,
   listRef,
+  isDepartmentTab = false,
 }: ClubListProps) {
   /**
    * 빈 목록 렌더링
    */
-  const renderEmptyComponent = () => (
-    <EmptyContainer>
-      <EmptyText>
-        {loading ? '동아리를 불러오는 중...' : '등록된 동아리가 없습니다.'}
-      </EmptyText>
-    </EmptyContainer>
-  );
+  const renderEmptyComponent = () => {
+    if (isDepartmentTab) {
+      return (
+        <EmptyContainer>
+          <EmptyText>아직 준비중이에요</EmptyText>
+        </EmptyContainer>
+      );
+    }
+
+    return (
+      <EmptyContainer>
+        <EmptyText>
+          {loading ? '동아리를 불러오는 중...' : '동아리 검색 결과가 없습니다.'}
+        </EmptyText>
+      </EmptyContainer>
+    );
+  };
 
   /**
    * 에러 상태 렌더링
@@ -144,6 +156,17 @@ const EmptyContainer = styled.View`
 const EmptyText = styled(MoaText)`
   color: #999;
   text-align: center;
+`;
+
+const EmptyTitle = styled(MoaText)`
+  color: #3A3A3A;
+  margin-bottom: 8px;
+`;
+
+const EmptyDescription = styled(MoaText)`
+  color: #818181;
+  text-align: center;
+  line-height: 20px;
 `;
 
 const ErrorContainer = styled.View`

@@ -1,12 +1,12 @@
 import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
-import ClubDetailSkeleton from '@/components/skeletons/club-detail-skeleton';
+import { PermissionDialog } from '@/components/permission-dialog';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Platform, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import styled from 'styled-components/native';
@@ -15,7 +15,7 @@ export default function ClubWebViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [isLoading, setIsLoading] = useState(true);
-  const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
+  const { isSubscribed, toggleSubscribe, showPermissionDialog, setShowPermissionDialog } = useSubscribedClubsContext();
 
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
@@ -91,11 +91,18 @@ export default function ClubWebViewScreen() {
           showsVerticalScrollIndicator={false}
         />
         {isLoading && (
-          <SkeletonContainer pointerEvents="none">
-            <ClubDetailSkeleton />
-          </SkeletonContainer>
+          <LoadingContainer pointerEvents="none">
+            <ActivityIndicator size="large" color="#FF5414" />
+            <LoadingText type="body1Regular">로딩 중...</LoadingText>
+          </LoadingContainer>
         )}
       </WebViewContainer>
+      
+      {/* 알림 권한 다이얼로그 */}
+      <PermissionDialog
+        visible={showPermissionDialog}
+        onClose={() => setShowPermissionDialog(false)}
+      />
     </Container>
   );
 }
@@ -138,13 +145,18 @@ const WebViewContainer = styled.View`
   position: relative;
 `;
 
-const SkeletonContainer = styled.View`
+const LoadingContainer = styled.View`
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  padding-horizontal: 0px;
-  padding-vertical: 0px;
+  justify-content: center;
+  align-items: center;
   background-color: #fff;
+`;
+
+const LoadingText = styled(MoaText)`
+  margin-top: 12px;
+  color: #666666;
 `;

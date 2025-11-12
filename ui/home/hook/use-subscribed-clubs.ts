@@ -14,6 +14,8 @@ interface UseSubscribedClubsReturn {
   toggleSubscribe: (clubId: string) => Promise<void>;
   syncWithServer: () => Promise<void>;
   loading: boolean;
+  showPermissionDialog: boolean;
+  setShowPermissionDialog: (show: boolean) => void;
 }
 
 /**
@@ -44,6 +46,8 @@ export function useSubscribedClubs(): UseSubscribedClubsReturn {
     toggleSubscribe: context.toggleSubscribe,
     syncWithServer: context.syncWithServer,
     loading: context.loading,
+    showPermissionDialog: context.showPermissionDialog,
+    setShowPermissionDialog: context.setShowPermissionDialog,
   };
 }
 

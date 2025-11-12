@@ -105,8 +105,8 @@ export default function WebViewScreen() {
         )}
 
         <StyledWebView
-          source={{ uri: url }}
-          userAgent={userAgent}
+        source={{ uri: url }}
+        userAgent={userAgent}
           onLoadStart={() => {
             if (!hasLoadedOnce) {
               setLoading(true);
@@ -119,13 +119,13 @@ export default function WebViewScreen() {
               setHasLoadedOnce(true);
             }
           }}
-          onError={() => {
-            setError(true);
-            setLoading(false);
-          }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-        />
+        onError={() => {
+          setError(true);
+          setLoading(false);
+        }}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+      />
       </WebViewWrapper>
     </Container>
   );

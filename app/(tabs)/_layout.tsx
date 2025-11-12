@@ -62,10 +62,9 @@ export default function TabLayout() {
           title: '더보기',
           tabBarIcon: ({ focused }) => (
             <MenuIcon
-              width={28}
-              height={28}
+              width={24}
+              height={24}
               color={focused ? Colors[colorScheme ?? 'light'].tint : Colors[colorScheme ?? 'light'].icon}
-              style={{ padding: 4 }}
             />
           ),
         }}

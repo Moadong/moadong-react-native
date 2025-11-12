@@ -5,8 +5,8 @@ import styled from 'styled-components/native';
 
 import { useRouter } from 'expo-router';
 
-import { MoaText } from '@/components/moa-text';
 import { CategoryType } from '@/components/icon';
+import { PermissionDialog } from '@/components/permission-dialog';
 import { Club } from '@/types/club.types';
 import {
   Banner,
@@ -51,6 +51,8 @@ export function HomeScreen() {
   const {
     isSubscribed,
     toggleSubscribe,
+    showPermissionDialog,
+    setShowPermissionDialog,
   } = useSubscribedClubs();
 
   /**
@@ -190,27 +192,25 @@ export function HomeScreen() {
         onSearchFocus={handleSearchFocus}
         onSearchSubmit={handleSearchSubmit}
       />
-      {activeTab === 'department' ? (
-        <ComingSoonContainer>
-          <ComingSoonTitle type="title3">아직 준비중이에요</ComingSoonTitle>
-          <ComingSoonDescription type="body2Regular">
-            과동아리 정보는 곧 만나보실 수 있어요.
-          </ComingSoonDescription>
-        </ComingSoonContainer>
-      ) : (
-        <ClubList
-          clubs={clubs}
-          loading={loading}
-          onRefresh={refetch}
-          onClubPress={handleClubPress}
-          isSubscribed={isSubscribed}
-          onSubscribeToggle={toggleSubscribe}
-          error={error}
-          style={{ flex: 1 }}
-          headerComponent={headerComponent}
-          listRef={listRef as RefObject<FlatList<Club>>}
-        />
-      )}
+      <ClubList
+        clubs={clubs}
+        loading={loading}
+        onRefresh={refetch}
+        onClubPress={handleClubPress}
+        isSubscribed={isSubscribed}
+        onSubscribeToggle={toggleSubscribe}
+        error={error}
+        style={{ flex: 1 }}
+        headerComponent={headerComponent}
+        listRef={listRef as RefObject<FlatList<Club>>}
+        isDepartmentTab={activeTab === 'department'}
+      />
+      
+      {/* 알림 권한 다이얼로그 */}
+      <PermissionDialog
+        visible={showPermissionDialog}
+        onClose={() => setShowPermissionDialog(false)}
+      />
     </Container>
   );
 }
@@ -233,25 +233,6 @@ const CategorySection = styled.View`
 
 const TabSection = styled.View`
   margin-bottom: 8px;
-`;
-
-const ComingSoonContainer = styled.View`
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  padding-horizontal: 24px;
-  padding-vertical: 40px;
-`;
-
-const ComingSoonTitle = styled(MoaText)`
-  color: #3A3A3A;
-  margin-bottom: 8px;
-`;
-
-const ComingSoonDescription = styled(MoaText)`
-  color: #818181;
-  text-align: center;
-  line-height: 20px;
 `;
 
 export default HomeScreen;
