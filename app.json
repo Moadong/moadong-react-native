@@ -14,6 +14,9 @@
       "bundleIdentifier": "com.moadong.moadong",
       "entitlements": {
         "aps-environment": "development"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -45,15 +48,17 @@
           "sounds": []
         }
       ],
-      ["expo-build-properties",
+      [
+        "expo-build-properties",
         {
-            "ios": {
-                "useFrameworks": "static",
-                "buildReactNativeFromSource": true
-            }
+          "ios": {
+            "useFrameworks": "static",
+            "buildReactNativeFromSource": true
+          }
         }
       ],
-      ["expo-splash-screen",
+      [
+        "expo-splash-screen",
         {
           "image": "./assets/images/icon.png",
           "imageWidth": 200,
@@ -68,6 +73,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e75c3373-9a0c-41ec-b232-c0d86142bf86"
+      }
     }
   }
 }
