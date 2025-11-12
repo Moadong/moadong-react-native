@@ -2,9 +2,9 @@
  * 구독 빈 상태 컴포넌트
  */
 
+import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import { MainColors } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -23,13 +23,17 @@ export function EmptyState() {
   return (
     <Container>
       <IconContainer>
-        <Ionicons name="heart-outline" size={80} color="#E0E0E0" />
+        <MoaImage
+          source={require('@/assets/icons/ic-subscribe-selected.png')}
+          style={{ width: 80, height: 80, opacity: 0.3 }}
+          contentFit="contain"
+        />
       </IconContainer>
 
       <Title type="title2">구독한 동아리가 없어요</Title>
       
       <Description type="body1Regular">
-        관심있는 동아리를 구독하고{'\n'}새로운 소식을 받아보세요
+        관심있는 동아리를 구독하고{'\n'}새로운 모집 및 활동 소식을 받아보세요
       </Description>
 
       <HomeButton onPress={handleGoHome} activeOpacity={0.8}>
