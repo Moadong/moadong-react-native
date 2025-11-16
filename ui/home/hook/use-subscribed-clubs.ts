@@ -11,11 +11,9 @@ import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 interface UseSubscribedClubsReturn {
   subscribedClubIds: string[];
   isSubscribed: (clubId: string) => boolean;
-  toggleSubscribe: (clubId: string) => Promise<void>;
+  toggleSubscribe: (clubId: string) => Promise<{ needsPermission: boolean }>;
   syncWithServer: () => Promise<void>;
   loading: boolean;
-  showPermissionDialog: boolean;
-  setShowPermissionDialog: (show: boolean) => void;
 }
 
 /**
@@ -46,8 +44,6 @@ export function useSubscribedClubs(): UseSubscribedClubsReturn {
     toggleSubscribe: context.toggleSubscribe,
     syncWithServer: context.syncWithServer,
     loading: context.loading,
-    showPermissionDialog: context.showPermissionDialog,
-    setShowPermissionDialog: context.setShowPermissionDialog,
   };
 }
 

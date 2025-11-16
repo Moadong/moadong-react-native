@@ -15,7 +15,8 @@ export default function ClubWebViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const [isLoading, setIsLoading] = useState(true);
-  const { isSubscribed, toggleSubscribe, showPermissionDialog, setShowPermissionDialog } = useSubscribedClubsContext();
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+  const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
 
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
@@ -53,9 +54,12 @@ export default function ClubWebViewScreen() {
     }
   };
 
-  const handleSubscribeToggle = () => {
+  const handleSubscribeToggle = async () => {
     if (id && typeof id === 'string') {
-      toggleSubscribe(id);
+      const result = await toggleSubscribe(id);
+      if (result.needsPermission) {
+        setShowPermissionDialog(true);
+      }
     }
   };
 

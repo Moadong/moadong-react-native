@@ -3,9 +3,10 @@
  */
 
 import { MoaText } from '@/components/moa-text';
+import { PermissionDialog } from '@/components/permission-dialog';
 import { Club } from '@/types/club.types';
 import { useRouter } from 'expo-router';
-import React, { RefObject, useCallback, useRef } from 'react';
+import React, { RefObject, useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
@@ -19,6 +20,7 @@ export function SubscribeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const listRef = useRef<FlatList<Club> | null>(null);
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
 
   // 구독 화면 데이터 및 로직
   const {
@@ -39,6 +41,16 @@ export function SubscribeScreen() {
     }
     router.push(`/club/${club.id}`);
   }, [router]);
+
+  /**
+   * 구독 토글 핸들러
+   */
+  const handleSubscribeToggle = useCallback(async (clubId: string) => {
+    const result = await toggleSubscribe(clubId);
+    if (result.needsPermission) {
+      setShowPermissionDialog(true);
+    }
+  }, [toggleSubscribe]);
 
   /**
    * 로딩 중 표시
@@ -103,8 +115,14 @@ export function SubscribeScreen() {
         onRefresh={refetch}
         onClubPress={handleClubPress}
         isSubscribed={isSubscribed}
-        onSubscribeToggle={toggleSubscribe}
+        onSubscribeToggle={handleSubscribeToggle}
         listRef={listRef as RefObject<FlatList<Club>>}
+      />
+      
+      {/* 알림 권한 다이얼로그 */}
+      <PermissionDialog
+        visible={showPermissionDialog}
+        onClose={() => setShowPermissionDialog(false)}
       />
     </Container>
   );

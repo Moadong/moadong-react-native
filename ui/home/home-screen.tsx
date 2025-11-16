@@ -29,6 +29,7 @@ export function HomeScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('central');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('전체');
   const [searchValue, setSearchValue] = useState('');
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const listRef = useRef<FlatList<Club> | null>(null);
   const router = useRouter();
   const hasScrolledOnFocus = useRef(false); // 검색 포커스 시 스크롤 애니메이션 실행 여부
@@ -51,8 +52,6 @@ export function HomeScreen() {
   const {
     isSubscribed,
     toggleSubscribe,
-    showPermissionDialog,
-    setShowPermissionDialog,
   } = useSubscribedClubs();
 
   /**
@@ -109,6 +108,16 @@ export function HomeScreen() {
 
     router.push(`/club/${club.id}`);
   }, [router]);
+
+  /**
+   * 구독 토글 핸들러
+   */
+  const handleSubscribeToggle = useCallback(async (clubId: string) => {
+    const result = await toggleSubscribe(clubId);
+    if (result.needsPermission) {
+      setShowPermissionDialog(true);
+    }
+  }, [toggleSubscribe]);
 
   const handleSearchFocus = useCallback(() => {
     // 최초 1회만 스크롤 애니메이션 실행
@@ -198,7 +207,7 @@ export function HomeScreen() {
         onRefresh={refetch}
         onClubPress={handleClubPress}
         isSubscribed={isSubscribed}
-        onSubscribeToggle={toggleSubscribe}
+        onSubscribeToggle={handleSubscribeToggle}
         error={error}
         style={{ flex: 1 }}
         headerComponent={headerComponent}

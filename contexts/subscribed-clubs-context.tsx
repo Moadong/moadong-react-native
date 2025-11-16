@@ -15,11 +15,9 @@ const SUBSCRIBED_CLUBS_KEY = '@subscribed_clubs';
 interface SubscribedClubsContextType {
   subscribedClubIds: string[];
   isSubscribed: (clubId: string) => boolean;
-  toggleSubscribe: (clubId: string) => Promise<void>;
+  toggleSubscribe: (clubId: string) => Promise<{ needsPermission: boolean }>;
   syncWithServer: () => Promise<void>;
   loading: boolean;
-  showPermissionDialog: boolean;
-  setShowPermissionDialog: (show: boolean) => void;
 }
 
 /**
@@ -40,7 +38,6 @@ interface SubscribedClubsProviderProps {
 export function SubscribedClubsProvider({ children }: SubscribedClubsProviderProps) {
   const [subscribedClubIds, setSubscribedClubIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
 
   /**
    * 로컬 스토리지에서 구독 목록 로드
@@ -105,7 +102,7 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
   /**
    * 구독 토글
    */
-  const toggleSubscribe = useCallback(async (clubId: string) => {
+  const toggleSubscribe = useCallback(async (clubId: string): Promise<{ needsPermission: boolean }> => {
     const isCurrentlySubscribed = subscribedClubIds.includes(clubId);
     
     // 구독 추가 시도인 경우에만 권한 체크
@@ -118,15 +115,13 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
         if (permission.canAskAgain) {
           const granted = await requestUserPermission();
           if (!granted) {
-            // 시스템 다이얼로그에서도 거부됨 - 커스텀 다이얼로그 표시
-            setShowPermissionDialog(true);
-            return;
+            // 시스템 다이얼로그에서도 거부됨 - 권한 필요 알림
+            return { needsPermission: true };
           }
           // 권한 허용됨 - 계속 진행
         } else {
-          // 3. 다시 물어볼 수 없는 경우 (이미 거부됨) - 커스텀 다이얼로그 표시
-          setShowPermissionDialog(true);
-          return;
+          // 3. 다시 물어볼 수 없는 경우 (이미 거부됨) - 권한 필요 알림
+          return { needsPermission: true };
         }
       }
     }
@@ -146,7 +141,7 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
       const fcmToken = await getFcmToken();
       if (!fcmToken) {
         console.warn('⚠️ FCM 토큰이 없어 동기화를 건너뜁니다.');
-        return;
+        return { needsPermission: false };
       }
 
       await api.put('/api/fcm/subscribe', {
@@ -158,6 +153,8 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
     } catch (error) {
       console.error('❌ 구독 변경 동기화 실패:', error);
     }
+    
+    return { needsPermission: false };
   }, [subscribedClubIds, saveSubscribedClubs]);
 
   /**
@@ -173,8 +170,6 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
     toggleSubscribe,
     syncWithServer,
     loading,
-    showPermissionDialog,
-    setShowPermissionDialog,
   };
 
   return (
