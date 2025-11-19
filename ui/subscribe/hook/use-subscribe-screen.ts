@@ -13,10 +13,10 @@ import { useCallback, useMemo } from 'react';
 interface UseSubscribeScreenReturn {
   subscribedClubs: Club[];
   loading: boolean;
-  error: Error | null;
+  error: string | null;
   refetch: () => void;
   isSubscribed: (clubId: string) => boolean;
-  toggleSubscribe: (clubId: string) => Promise<void>;
+  toggleSubscribe: (clubId: string) => Promise<{ needsPermission: boolean }>;
 }
 
 /**
