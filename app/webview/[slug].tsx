@@ -29,7 +29,7 @@ const pageConfig: Record<
   },
   'privacy-policy': {
     title: '개인정보 처리방침',
-    url: 'https://honorable-cough-8f9.notion.site/2a8aad23209680e7892ffd94b52c2a29?source=copy_link',
+    url: 'https://honorable-cough-8f9.notion.site/232aad23209680f2a2cadb146eff81cd',
   },
 };
 
