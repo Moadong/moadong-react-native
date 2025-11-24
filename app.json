@@ -9,11 +9,14 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.moadong.moadong",
       "entitlements": {
         "aps-environment": "development"
+      },
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "동아리 지원 시 입력한 이름과 전화번호를 동아리 관리자에게 전달하는 용도로만 사용됩니다."
       }
     },
     "android": {
@@ -65,7 +68,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-tracking-transparency"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -2,8 +2,10 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { getTrackingPermissionsAsync, requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { useCallback, useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { CustomSplashScreen } from '@/components/custom-splash-screen';
@@ -32,6 +34,8 @@ export default function RootLayout() {
         console.log('📱 앱 초기화 시작...');
         // 여기에 앱 초기화 로직을 추가할 수 있습니다
         // 예: 폰트 로드, 데이터 프리페치 등
+
+        await requestTrackingPermissionOnLaunch();
         
         // 최소 로딩 시간 보장 (너무 빨리 사라지지 않도록)
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -91,4 +95,19 @@ export default function RootLayout() {
       </SubscribedClubsProvider>
     </SafeAreaProvider>
   );
+}
+
+async function requestTrackingPermissionOnLaunch() {
+  if (Platform.OS !== 'ios') {
+    return;
+  }
+
+  try {
+    const { status } = await getTrackingPermissionsAsync();
+    if (status === 'undetermined') {
+      await requestTrackingPermissionsAsync();
+    }
+  } catch (error) {
+    console.warn('⚠️ ATT 권한 요청 실패:', error);
+  }
 }
