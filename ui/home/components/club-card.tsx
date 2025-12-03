@@ -30,7 +30,7 @@ const getStatusColor = (status: string) => {
     case 'OPEN':
       return '#3DBBFF';
     case 'ALWAYS':
-      return '#3DBBFF';
+      return '#49D5AD';
     case 'CLOSED':
       return '#C5C5C5';
     default:
@@ -177,8 +177,8 @@ const StyledTouchableOpacity = styled(TouchableOpacity)`
   border-radius: 10px;
   margin-horizontal: 16px;
   margin-vertical: 6px;
-  padding-horizontal: 12px;
-  padding-vertical: 12px;
+  padding-horizontal: 16px;
+  padding-vertical: 16px;
   shadow-color: #000;
   shadow-offset: 0px 0px;
   shadow-opacity: 0.1;
