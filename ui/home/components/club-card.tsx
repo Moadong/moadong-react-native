@@ -2,12 +2,13 @@
  * 동아리 카드 컴포넌트
  */
 
+import MoadongGrayIcon from '@/assets/icons/ic-moadong-gray.svg';
 import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import { Column, Row } from '@/components/ui';
 import { Club } from '@/types/club.types';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import styled from 'styled-components/native';
 
 /**
@@ -92,11 +93,17 @@ export function ClubCard({ club, onPress, isSubscribed = false, onSubscribeToggl
       <Row gap={16} align="flex-start">
         {/* 동아리 이미지 */}
         <ImageContainer>
-          <MoaImage 
-            source={club.logo ? { uri: club.logo } : require('@/assets/images/icon.png')}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
-          />
+          {club.logo ? (
+            <MoaImage 
+              source={{ uri: club.logo }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+              <MoadongGrayIcon width={50} height={50} />
+            </View>
+          )}
         </ImageContainer>
 
         {/* 동아리 정보 Column */}

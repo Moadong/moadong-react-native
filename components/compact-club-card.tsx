@@ -3,6 +3,7 @@
  * 메인 화면에서 사용할 컴팩트한 카드
  */
 
+import MoadongGrayIcon from '@/assets/icons/ic-moadong-gray.svg';
 import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
@@ -44,11 +45,17 @@ export function CompactClubCard({ club, onPress, style }: CompactClubCardProps) 
     >
       {/* 동아리 이미지 */}
       <View style={styles.imageContainer}>
-        <MoaImage 
-          source={club.logo ? { uri: club.logo } : require('@/assets/images/icon.png')}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        {club.logo ? (
+          <MoaImage 
+            source={{ uri: club.logo }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={[styles.image, { justifyContent: 'center', alignItems: 'center' }]}>
+            <MoadongGrayIcon width={60} height={60} />
+          </View>
+        )}
       </View>
 
       {/* 동아리 정보 */}

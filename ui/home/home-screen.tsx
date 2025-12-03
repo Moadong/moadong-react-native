@@ -152,6 +152,9 @@ export function HomeScreen() {
     }
 
     const keyword = text.trim();
+    // 검색 제출 시 카테고리를 전체로 변경
+    setSelectedCategory('전체');
+    
     // 검색 제출 시에는 항상 스크롤 (검색 결과를 보기 위해)
     try {
       listRef.current?.scrollToIndex({ index: 0, animated: true });
@@ -160,11 +163,11 @@ export function HomeScreen() {
     }
     
     fetchClubs({
-      category: selectedCategory === '전체' ? undefined : selectedCategory,
+      category: undefined, // 검색 시에는 카테고리 필터 없이 전체 검색
       type: activeTab,
       keyword: keyword ? keyword : undefined,
     });
-  }, [fetchClubs, selectedCategory, activeTab]);
+  }, [fetchClubs, activeTab]);
 
   const headerComponent = (
     <HeaderContainer>
