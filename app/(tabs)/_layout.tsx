@@ -4,11 +4,21 @@ import { Image } from 'react-native';
 
 import MenuIcon from '@/assets/icons/ic-menu.svg';
 import { HapticTab } from '@/components/haptic-tab';
+import { USER_EVENT } from '@/constants/eventname';
 import { Colors } from '@/constants/theme';
+import { useMixpanelTrack } from '@/hooks';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const trackEvent = useMixpanelTrack();
+
+  const handleTabPress = (tabName: string) => {
+    trackEvent(USER_EVENT.BOTTOM_TAB_CLICKED, {
+      tab: tabName,
+      url: `app://moadong/(tabs)/${tabName}`,
+    });
+  };
 
   return (
     <Tabs
@@ -38,6 +48,9 @@ export default function TabLayout() {
             />
           ),
         }}
+        listeners={{
+          tabPress: () => handleTabPress('home'),
+        }}
       />
       <Tabs.Screen
         name="explore"
@@ -55,6 +68,9 @@ export default function TabLayout() {
             />
           ),
         }}
+        listeners={{
+          tabPress: () => handleTabPress('explore'),
+        }}
       />
       <Tabs.Screen
         name="more"
@@ -67,6 +83,9 @@ export default function TabLayout() {
               color={focused ? Colors[colorScheme ?? 'light'].tint : Colors[colorScheme ?? 'light'].icon}
             />
           ),
+        }}
+        listeners={{
+          tabPress: () => handleTabPress('more'),
         }}
       />
     </Tabs>
