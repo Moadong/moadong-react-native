@@ -52,7 +52,10 @@ export function SubscribeScreen() {
       url: 'app://moadong/(tabs)/subscribe',
     });
     
-    router.push(`/club/${club.id}`);
+    router.push({
+      pathname: '/club/[id]',
+      params: { id: club.id, name: club.name }
+    });
   }, [router, trackEvent]);
 
   /**

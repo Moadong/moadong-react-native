@@ -103,7 +103,10 @@ export function HomeScreen() {
       url: 'app://moadong/(tabs)',
     });
 
-    router.push(`/club/${club.id}`);
+    router.push({
+      pathname: '/club/[id]',
+      params: { id: club.id, name: club.name }
+    });
   }, [router, trackEvent]);
 
   /**
