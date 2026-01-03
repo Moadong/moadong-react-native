@@ -49,7 +49,7 @@ export function SubscribeScreen() {
       clubName: club.name,
       category: club.category,
       from: 'subscribe',
-      url: 'app://moadong/(tabs)/explore',
+      url: 'app://moadong/(tabs)/subscribe',
     });
     
     router.push(`/club/${club.id}`);
@@ -65,7 +65,7 @@ export function SubscribeScreen() {
       clubName: club.name,
       subscribed: !wasSubscribed,
       from: 'subscribe',
-      url: 'app://moadong/(tabs)/explore',
+      url: 'app://moadong/(tabs)/subscribe',
     });
     
     const result = await toggleSubscribe(club.id);
