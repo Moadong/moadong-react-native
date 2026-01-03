@@ -3,8 +3,10 @@
  */
 
 import { MoaText } from '@/components/moa-text';
+import { USER_EVENT } from '@/constants/eventname';
 import { Colors } from '@/constants/theme';
-import React from 'react';
+import { useMixpanelTrack } from '@/hooks';
+import React, { useEffect } from 'react';
 import { Linking, Modal, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 
@@ -17,7 +19,30 @@ interface PermissionDialogProps {
  * 알림 권한 설정 안내 다이얼로그
  */
 export function PermissionDialog({ visible, onClose }: PermissionDialogProps) {
+  const trackEvent = useMixpanelTrack();
+
+  useEffect(() => {
+    if (visible) {
+      trackEvent(USER_EVENT.PERMISSION_DIALOG_SHOWN, {
+        type: 'notification',
+        url: 'app://moadong',
+      });
+    }
+  }, [visible, trackEvent]);
+
+  const handleClose = () => {
+    trackEvent(USER_EVENT.PERMISSION_DIALOG_CLOSED, {
+      action: 'cancel',
+      url: 'app://moadong',
+    });
+    onClose();
+  };
+
   const handleOpenSettings = () => {
+    trackEvent(USER_EVENT.PERMISSION_DIALOG_CONFIRMED, {
+      action: 'open_settings',
+      url: 'app://moadong',
+    });
     onClose();
     Linking.openSettings();
   };
@@ -27,7 +52,7 @@ export function PermissionDialog({ visible, onClose }: PermissionDialogProps) {
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <Overlay>
         <DialogContainer>
@@ -39,7 +64,7 @@ export function PermissionDialog({ visible, onClose }: PermissionDialogProps) {
           </DialogContent>
           
           <ButtonRow>
-            <CancelButton onPress={onClose} activeOpacity={0.7}>
+            <CancelButton onPress={handleClose} activeOpacity={0.7}>
               <CancelButtonText type="body1Medium">닫기</CancelButtonText>
             </CancelButton>
             
