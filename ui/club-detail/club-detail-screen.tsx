@@ -16,7 +16,7 @@ import styled from 'styled-components/native';
 
 export default function ClubWebViewScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, name } = useLocalSearchParams<{ id?: string; name?: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
@@ -60,6 +60,7 @@ export default function ClubWebViewScreen() {
   const handleBack = () => {
     trackEvent(USER_EVENT.BACK_BUTTON_CLICKED, {
       from: 'club_detail',
+      clubName: name,
       url: 'app://moadong/club',
     });
     
@@ -75,6 +76,7 @@ export default function ClubWebViewScreen() {
       const wasSubscribed = isSubscribed(id);
       
       trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
+        clubName: name,
         subscribed: !wasSubscribed,
         from: 'club_detail',
         url: 'app://moadong/club',
