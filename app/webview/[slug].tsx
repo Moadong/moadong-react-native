@@ -4,6 +4,7 @@
  */
 
 import { MoaText } from '@/components/moa-text';
+import { useMixpanelContext } from '@/contexts';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -39,11 +40,22 @@ export default function WebViewScreen() {
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState(false);
+  const { sessionId } = useMixpanelContext();
 
   const config = pageConfig[slug || ''];
-  const url = config
+  
+  const baseUrl = config
     ? config.url ?? (config.path ? `${webviewUrl}${config.path}` : '')
     : '';
+  
+  // session_id를 URL에 추가
+  const url = useMemo(() => {
+    if (!baseUrl) return '';
+    if (!sessionId) return baseUrl;
+    
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    return `${baseUrl}${separator}session_id=${encodeURIComponent(sessionId)}`;
+  }, [baseUrl, sessionId]);
 
   // UserAgent 생성
   const userAgent = useMemo(() => {
