@@ -19,7 +19,7 @@ interface ClubListProps {
   onRefresh?: () => void;
   onClubPress?: (club: Club) => void;
   isSubscribed?: (clubId: string) => boolean;
-  onSubscribeToggle?: (clubId: string) => void;
+  onSubscribeToggle?: (club: Club) => void;
   error?: string | null;
   style?: any;
   headerComponent?: ReactElement | null;
@@ -107,7 +107,7 @@ export function ClubList({
       club={item} 
       onPress={onClubPress}
       isSubscribed={isSubscribed?.(item.id)}
-      onSubscribeToggle={onSubscribeToggle}
+      onSubscribeToggle={() => onSubscribeToggle?.(item)}
     />
   );
 
