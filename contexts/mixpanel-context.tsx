@@ -7,10 +7,7 @@ interface MixpanelContextType {
   isLoading: boolean;
 }
 
-const MixpanelContext = createContext<MixpanelContextType>({
-  sessionId: '',
-  isLoading: true,
-});
+const MixpanelContext = createContext<MixpanelContextType | undefined>(undefined);
 
 export const useMixpanelContext = () => {
   const context = useContext(MixpanelContext);
