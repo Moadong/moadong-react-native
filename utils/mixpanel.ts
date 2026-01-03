@@ -3,6 +3,7 @@ import { Mixpanel } from 'mixpanel-react-native';
 
 let mixpanelInstance: Mixpanel | null = null;
 let isInitialized = false;
+let initializationPromise: Promise<void> | null = null;
 
 export const getMixpanel = async (): Promise<Mixpanel | null> => {
   if (mixpanelInstance && isInitialized) {
@@ -20,15 +21,26 @@ export const getMixpanel = async (): Promise<Mixpanel | null> => {
     mixpanelInstance = new Mixpanel(mixpanelToken, false);
   }
 
-  if (!isInitialized) {
-    try {
-      await mixpanelInstance.init();
-      isInitialized = true;
-    } catch (error) {
-      console.error('[Mixpanel] 초기화 실패:', error);
-      return null;
-    }
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      try {
+        if (mixpanelInstance) {
+          await mixpanelInstance.init();
+          isInitialized = true;
+        }
+      } catch (error) {
+        console.error('[Mixpanel] 초기화 실패:', error);
+        // 실패 시 재시도를 위해 초기화 상태 초기화
+        initializationPromise = null;
+        throw error;
+      }
+    })();
   }
 
-  return mixpanelInstance;
+  try {
+    await initializationPromise;
+    return mixpanelInstance;
+  } catch {
+    return null;
+  }
 };
