@@ -1,5 +1,4 @@
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -14,18 +13,12 @@ import { CustomSplashScreen } from '@/components/custom-splash-screen';
 import { MixpanelProvider } from '@/contexts/mixpanel-context';
 import { SubscribedClubsProvider } from '@/contexts/subscribed-clubs-context';
 import { useFcm } from '@/hooks/use-fcm';
-import { Mixpanel } from 'mixpanel-react-native';
 
 // 네이티브 스플래시 화면을 자동으로 숨기지 않도록 설정
 // 이것은 앱이 로드되자마자 실행되어야 합니다
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* 이미 숨겨진 경우 에러 무시 */
 });
-
-// Mixpanel 인스턴스 생성
-const trackAutomaticEvents = false;
-const mixpanelToken = Constants.expoConfig?.extra?.MIXPANEL_TOKEN || '';
-const mixpanel = new Mixpanel(mixpanelToken, trackAutomaticEvents);
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -41,9 +34,6 @@ export default function RootLayout() {
     async function prepare() {
       try {
         console.log('📱 앱 초기화 시작...');
-        
-        await mixpanel.init();
-        console.log('✅ Mixpanel 초기화 완료');
         
         // 여기에 앱 초기화 로직을 추가할 수 있습니다
         // 예: 폰트 로드, 데이터 프리페치 등
