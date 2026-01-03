@@ -24,7 +24,6 @@ interface ClubListProps {
   style?: any;
   headerComponent?: ReactElement | null;
   listRef?: RefObject<FlatList<Club>>;
-  isDepartmentTab?: boolean;
 }
 
 /**
@@ -53,20 +52,11 @@ export function ClubList({
   style,
   headerComponent,
   listRef,
-  isDepartmentTab = false,
 }: ClubListProps) {
   /**
    * 빈 목록 렌더링
    */
   const renderEmptyComponent = () => {
-    if (isDepartmentTab) {
-      return (
-        <EmptyContainer>
-          <EmptyText>아직 준비중이에요</EmptyText>
-        </EmptyContainer>
-      );
-    }
-
     return (
       <EmptyContainer>
         <EmptyText>
