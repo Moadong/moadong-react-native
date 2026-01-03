@@ -16,7 +16,7 @@ import {
   ClubList,
   MainHeader,
   Tab,
-  TabType,
+  TabType
 } from '@/ui/home/components';
 import { useClubs, useSubscribedClubs } from '@/ui/home/hook';
 
@@ -57,27 +57,11 @@ export function HomeScreen() {
   } = useSubscribedClubs();
 
   /**
-   * 탭 변경 핸들러
+   * 탭 변경 핸들러 (UI만 표시, 기능 없음)
    */
-  const handleTabChange = useCallback((tab: TabType) => {
-    trackEvent(USER_EVENT.TAB_CHANGED, { 
-      tab,
-      url: 'app://moadong/(tabs)',
-    });
-    
-    setActiveTab(tab);
-    if (tab === 'department') {
-      clearClubs();
-      return;
-    }
-
-    const keyword = searchValue.trim();
-    fetchClubs({
-      category: selectedCategory === '전체' ? undefined : selectedCategory,
-      type: tab,
-      keyword: keyword ? keyword : undefined,
-    });
-  }, [selectedCategory, fetchClubs, searchValue, clearClubs, trackEvent]);
+  const handleTabChange = useCallback(() => {
+    // 탭은 UI로만 표시, 실제 동작 없음
+  }, []);
 
   /**
    * 카테고리 변경 핸들러
@@ -90,17 +74,12 @@ export function HomeScreen() {
     
     setSelectedCategory(category);
     setSearchValue('');
-    if (activeTab === 'department') {
-      clearClubs();
-      return;
-    }
-
     fetchClubs({
       category: category === '전체' ? undefined : category,
       type: activeTab,
-      keyword: undefined, // 키워드 초기화
+      keyword: undefined,
     });
-  }, [activeTab, fetchClubs, clearClubs]);
+  }, [activeTab, fetchClubs, trackEvent]);
 
   /**
    * 검색 핸들러
@@ -146,7 +125,6 @@ export function HomeScreen() {
   }, [toggleSubscribe, isSubscribed, trackEvent]);
 
   const handleSearchFocus = useCallback(() => {
-    // 최초 1회만 스크롤 애니메이션 실행
     if (!hasScrolledOnFocus.current) {
       try {
         listRef.current?.scrollToIndex({ index: 0, animated: true });
@@ -154,10 +132,6 @@ export function HomeScreen() {
         listRef.current?.scrollToOffset({ offset: 0, animated: true });
       }
       hasScrolledOnFocus.current = true;
-    }
-    
-    if (activeTab === 'department') {
-      return;
     }
 
     const keyword = searchValue.trim();
@@ -173,10 +147,6 @@ export function HomeScreen() {
   }, []);
 
   const handleSearchSubmit = useCallback((text: string) => {
-    if (activeTab === 'department') {
-      return;
-    }
-
     const keyword = text.trim();
     
     if (keyword) {
@@ -187,10 +157,8 @@ export function HomeScreen() {
       });
     }
     
-    // 검색 제출 시 카테고리를 전체로 변경
     setSelectedCategory('전체');
     
-    // 검색 제출 시에는 항상 스크롤 (검색 결과를 보기 위해)
     try {
       listRef.current?.scrollToIndex({ index: 0, animated: true });
     } catch (error) {
@@ -198,7 +166,7 @@ export function HomeScreen() {
     }
     
     fetchClubs({
-      category: undefined, // 검색 시에는 카테고리 필터 없이 전체 검색
+      category: undefined,
       type: activeTab,
       keyword: keyword ? keyword : undefined,
     });
@@ -220,12 +188,10 @@ export function HomeScreen() {
       </CategorySection>
 
       {/* 탭 섹션 */}
-      <TabSection>
         <Tab
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
-      </TabSection>
     </HeaderContainer>
   );
 
@@ -250,7 +216,6 @@ export function HomeScreen() {
         style={{ flex: 1 }}
         headerComponent={headerComponent}
         listRef={listRef as RefObject<FlatList<Club>>}
-        isDepartmentTab={activeTab === 'department'}
       />
       
       {/* 알림 권한 다이얼로그 */}
@@ -262,7 +227,6 @@ export function HomeScreen() {
   );
 }
 
-// Styled Components
 const Container = styled(View)`
   flex: 1;
   background-color: #fff;
@@ -275,11 +239,7 @@ const BannerSection = styled.View`
 `;
 
 const CategorySection = styled.View`
-  margin-bottom: 8px;
-`;
-
-const TabSection = styled.View`
-  margin-bottom: 8px;
+  margin-bottom: 20px;
 `;
 
 export default HomeScreen;
