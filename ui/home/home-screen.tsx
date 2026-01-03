@@ -7,6 +7,8 @@ import { useRouter } from 'expo-router';
 
 import { CategoryType } from '@/components/icon';
 import { PermissionDialog } from '@/components/permission-dialog';
+import { PAGE_VIEW_EVENT, USER_EVENT } from '@/constants/eventname';
+import { useMixpanelTrack, useTrackScreenView } from '@/hooks';
 import { Club } from '@/types/club.types';
 import {
   Banner,
@@ -18,9 +20,6 @@ import {
 } from '@/ui/home/components';
 import { useClubs, useSubscribedClubs } from '@/ui/home/hook';
 
-/**
- * 홈 화면 컴포넌트
- */
 export function HomeScreen() {
   // SafeArea insets
   const insets = useSafeAreaInsets();
@@ -34,7 +33,10 @@ export function HomeScreen() {
   const router = useRouter();
   const hasScrolledOnFocus = useRef(false); // 검색 포커스 시 스크롤 애니메이션 실행 여부
 
-  // 동아리 데이터 훅
+  useTrackScreenView(PAGE_VIEW_EVENT.MAIN_PAGE);
+  const trackEvent = useMixpanelTrack();
+
+  // 동아리 데이터 훅 
   const {
     clubs,
     loading,
@@ -58,6 +60,11 @@ export function HomeScreen() {
    * 탭 변경 핸들러
    */
   const handleTabChange = useCallback((tab: TabType) => {
+    trackEvent(USER_EVENT.TAB_CHANGED, { 
+      tab,
+      url: 'app://moadong/(tabs)',
+    });
+    
     setActiveTab(tab);
     if (tab === 'department') {
       clearClubs();
@@ -70,19 +77,24 @@ export function HomeScreen() {
       type: tab,
       keyword: keyword ? keyword : undefined,
     });
-  }, [selectedCategory, fetchClubs, searchValue, clearClubs]);
+  }, [selectedCategory, fetchClubs, searchValue, clearClubs, trackEvent]);
 
   /**
    * 카테고리 변경 핸들러
    */
   const handleCategoryChange = useCallback((category: CategoryType) => {
+    trackEvent(USER_EVENT.CATEGORY_BUTTON_CLICKED, { 
+      category,
+      url: 'app://moadong/(tabs)',
+    });
+    
     setSelectedCategory(category);
-    // 카테고리 변경 시 검색 키워드 초기화
     setSearchValue('');
     if (activeTab === 'department') {
       clearClubs();
       return;
     }
+
     fetchClubs({
       category: category === '전체' ? undefined : category,
       type: activeTab,
@@ -106,18 +118,32 @@ export function HomeScreen() {
       return;
     }
 
+    trackEvent(USER_EVENT.CLUB_CARD_CLICKED, {
+      clubName: club.name,
+      category: club.category,
+      url: 'app://moadong/(tabs)',
+    });
+
     router.push(`/club/${club.id}`);
-  }, [router]);
+  }, [router, trackEvent]);
 
   /**
    * 구독 토글 핸들러
    */
-  const handleSubscribeToggle = useCallback(async (clubId: string) => {
-    const result = await toggleSubscribe(clubId);
+  const handleSubscribeToggle = useCallback(async (club: Club) => {
+    const wasSubscribed = isSubscribed(club.id);
+    const result = await toggleSubscribe(club.id);
+    
+    trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
+      clubName: club.name,
+      subscribed: !wasSubscribed,
+      url: 'app://moadong/(tabs)',
+    });
+    
     if (result.needsPermission) {
       setShowPermissionDialog(true);
     }
-  }, [toggleSubscribe]);
+  }, [toggleSubscribe, isSubscribed, trackEvent]);
 
   const handleSearchFocus = useCallback(() => {
     // 최초 1회만 스크롤 애니메이션 실행
@@ -152,6 +178,15 @@ export function HomeScreen() {
     }
 
     const keyword = text.trim();
+    
+    if (keyword) {
+      trackEvent(USER_EVENT.SEARCH_BOX_CLICKED, {
+        keyword,
+        tab: activeTab,
+        url: 'app://moadong/(tabs)',
+      });
+    }
+    
     // 검색 제출 시 카테고리를 전체로 변경
     setSelectedCategory('전체');
     
@@ -167,7 +202,7 @@ export function HomeScreen() {
       type: activeTab,
       keyword: keyword ? keyword : undefined,
     });
-  }, [fetchClubs, activeTab]);
+  }, [fetchClubs, activeTab, trackEvent]);
 
   const headerComponent = (
     <HeaderContainer>
