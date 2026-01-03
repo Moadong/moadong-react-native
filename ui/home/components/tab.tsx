@@ -5,13 +5,12 @@
 import { MoaText } from '@/components/moa-text';
 import { Colors } from '@/constants/theme';
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
 
 /**
  * 탭 타입
  */
-export type TabType = 'central' | 'department';
+export type TabType = 'central';
 
 /**
  * 탭 Props
@@ -36,49 +35,31 @@ interface TabProps {
 export function Tab({ activeTab, onTabChange, style }: TabProps) {
   return (
     <Container style={style}>
-      <TabTouchable
-        isActive={activeTab === 'central'}
-        onPress={() => onTabChange('central')}
-        activeOpacity={0.7}
-      >
+      <TabContainer>
         <TabText isActive={activeTab === 'central'}>
-          중앙동아리
+          부경대학교 중앙동아리
         </TabText>
-      </TabTouchable>
-
-      <TabTouchable
-        isActive={activeTab === 'department'}
-        onPress={() => onTabChange('department')}
-        activeOpacity={0.7}
-      >
-        <TabText isActive={activeTab === 'department'}>
-          과동아리
-        </TabText>
-      </TabTouchable>
+      </TabContainer>
     </Container>
   );
 }
 
-// Styled Components
 const Container = styled.View`
-  flex-direction: row;
   background-color: ${Colors.light.background};
   padding-horizontal: 16px;
-  padding-vertical: 8px;
-  border-bottom-width: 1px;
-  border-bottom-color: #F0F0F0;
+  padding-vertical: 12px;
 `;
 
-const TabTouchable = styled(TouchableOpacity)<{ isActive: boolean }>`
-  flex: 1;
-  padding-vertical: 8px;
-  align-items: center;
-  border-bottom-width: 2px;
-  border-bottom-color: ${(props: { isActive: boolean }) => props.isActive ? Colors.light.tint : 'transparent'};
+const TabContainer = styled.View`
+  align-self: flex-start;
 `;
 
 const TabText = styled(MoaText)<{ isActive: boolean }>`
-  color: ${(props: { isActive: boolean }) => props.isActive ? Colors.light.tint : Colors.light.icon};
+  color: #787878;
   font-size: 14px;
+  font-weight: 700;
+  padding-bottom: 1px;
+  border-bottom-width: 1px;
+  border-bottom-color: #787878;
 `;
 
