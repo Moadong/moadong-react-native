@@ -22,7 +22,7 @@ export function EmptyState() {
   const handleGoHome = () => {
     trackEvent(USER_EVENT.GO_HOME_BUTTON_CLICKED, {
       from: 'subscribe_empty',
-      url: 'app://moadong/(tabs)/explore',
+      url: 'app://moadong/(tabs)/home',
     });
     
     router.push('/(tabs)');
