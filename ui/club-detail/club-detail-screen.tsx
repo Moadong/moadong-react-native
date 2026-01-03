@@ -1,6 +1,7 @@
 import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import { PermissionDialog } from '@/components/permission-dialog';
+import { useMixpanelContext } from '@/contexts';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
@@ -17,6 +18,7 @@ export default function ClubWebViewScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
+  const { sessionId } = useMixpanelContext();
 
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
@@ -25,8 +27,14 @@ export default function ClubWebViewScreen() {
       return `${webviewUrl}/club`;
     }
 
-    return `${webviewUrl}/club/${id}`;
-  }, [id, webviewUrl]);
+    const cleanUrl = webviewUrl?.replace(/\/$/, '') || '';
+    const baseUrl = `${cleanUrl}/club/${id}`;
+    
+    if (sessionId) {
+      return `${baseUrl}?session_id=${encodeURIComponent(sessionId)}`;
+    }
+    return baseUrl;
+  }, [id, webviewUrl, sessionId]);
 
   const subscribed = useMemo(() => {
     return id ? isSubscribed(id) : false;
