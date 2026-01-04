@@ -1,4 +1,3 @@
-import Constants from 'expo-constants';
 import { Mixpanel } from 'mixpanel-react-native';
 
 let mixpanelInstance: Mixpanel | null = null;
@@ -10,7 +9,7 @@ export const getMixpanel = async (): Promise<Mixpanel | null> => {
     return mixpanelInstance;
   }
 
-  const mixpanelToken = Constants.expoConfig?.extra?.MIXPANEL_TOKEN || '';
+  const mixpanelToken = process.env.EXPO_PUBLIC_MIXPANEL_TOKEN || '';
   
   if (!mixpanelToken) {
     console.warn('[Mixpanel] Token이 설정되지 않았습니다.');
