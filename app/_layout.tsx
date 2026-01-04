@@ -4,11 +4,13 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { getTrackingPermissionsAsync, requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 import { useCallback, useEffect, useState } from 'react';
-import 'react-native-reanimated';
 import { Platform } from 'react-native';
+import 'react-native-get-random-values';
+import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { CustomSplashScreen } from '@/components/custom-splash-screen';
+import { MixpanelProvider } from '@/contexts/mixpanel-context';
 import { SubscribedClubsProvider } from '@/contexts/subscribed-clubs-context';
 import { useFcm } from '@/hooks/use-fcm';
 
@@ -32,6 +34,7 @@ export default function RootLayout() {
     async function prepare() {
       try {
         console.log('📱 앱 초기화 시작...');
+        
         // 여기에 앱 초기화 로직을 추가할 수 있습니다
         // 예: 폰트 로드, 데이터 프리페치 등
 
@@ -74,25 +77,27 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <SubscribedClubsProvider>
-        <ThemeProvider value={DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="club/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="webview/[slug]" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-          </Stack>
-          <StatusBar style="dark" />
-          
-          {/* 커스텀 스플래시 스크린 */}
-          {showSplash && (
-            <CustomSplashScreen 
-              isReady={appIsReady} 
-              onFinish={onFinishSplash}
-            />
-          )}
-        </ThemeProvider>
-      </SubscribedClubsProvider>
+      <MixpanelProvider>
+        <SubscribedClubsProvider>
+          <ThemeProvider value={DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="club/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="webview/[slug]" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+            </Stack>
+            <StatusBar style="dark" />
+            
+            {/* 커스텀 스플래시 스크린 */}
+            {showSplash && (
+              <CustomSplashScreen 
+                isReady={appIsReady} 
+                onFinish={onFinishSplash}
+              />
+            )}
+          </ThemeProvider>
+        </SubscribedClubsProvider>
+      </MixpanelProvider>
     </SafeAreaProvider>
   );
 }

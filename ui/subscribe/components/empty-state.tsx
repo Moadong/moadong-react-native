@@ -4,7 +4,9 @@
 
 import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
+import { USER_EVENT } from '@/constants/eventname';
 import { MainColors } from '@/constants/theme';
+import { useMixpanelTrack } from '@/hooks';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -15,8 +17,14 @@ import styled from 'styled-components/native';
  */
 export function EmptyState() {
   const router = useRouter();
+  const trackEvent = useMixpanelTrack();
 
   const handleGoHome = () => {
+    trackEvent(USER_EVENT.GO_HOME_BUTTON_CLICKED, {
+      from: 'subscribe_empty',
+      url: 'app://moadong/(tabs)/home',
+    });
+    
     router.push('/(tabs)');
   };
 

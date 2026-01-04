@@ -1,5 +1,7 @@
 import MoadongIcon from '@/assets/icons/ic-moadong.svg';
 import { MoaText } from '@/components/moa-text';
+import { PAGE_VIEW_EVENT, USER_EVENT } from '@/constants/eventname';
+import { useMixpanelTrack, useTrackScreenView } from '@/hooks';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
@@ -39,14 +41,23 @@ const menuItems: MenuItem[] = [
 export default function MoreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const trackEvent = useMixpanelTrack();
+  
+  useTrackScreenView(PAGE_VIEW_EVENT.MORE_PAGE);
+  
   const appVersion =
     Constants.expoConfig?.version ??
     Constants.nativeAppVersion ??
     Constants.manifest?.version ??
     '알 수 없음';
 
-  const handleMenuPress = (route: string) => {
-    router.push(route as any);
+  const handleMenuPress = (item: MenuItem) => {
+    trackEvent(USER_EVENT.MORE_MENU_CLICKED, {
+      menu: item.title,
+      url: `app://moadong${item.route}`,
+    });
+    
+    router.push(item.route as any);
   };
 
   return (
@@ -59,7 +70,7 @@ export default function MoreScreen() {
         {menuItems.map((item) => (
           <MenuItem
             key={item.id}
-            onPress={() => handleMenuPress(item.route)}
+            onPress={() => handleMenuPress(item)}
             activeOpacity={0.7}
           >
             <MenuItemContent>

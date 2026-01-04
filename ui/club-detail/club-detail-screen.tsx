@@ -1,7 +1,10 @@
 import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import { PermissionDialog } from '@/components/permission-dialog';
+import { USER_EVENT } from '@/constants/eventname';
+import { useMixpanelContext } from '@/contexts';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
+import { useMixpanelTrack } from '@/hooks';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -13,10 +16,12 @@ import styled from 'styled-components/native';
 
 export default function ClubWebViewScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, name } = useLocalSearchParams<{ id?: string; name?: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
+  const { sessionId } = useMixpanelContext();
+  const trackEvent = useMixpanelTrack();
 
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
@@ -25,8 +30,14 @@ export default function ClubWebViewScreen() {
       return `${webviewUrl}/club`;
     }
 
-    return `${webviewUrl}/club/${id}`;
-  }, [id, webviewUrl]);
+    const cleanUrl = webviewUrl?.replace(/\/$/, '') || '';
+    const baseUrl = `${cleanUrl}/club/${id}`;
+    
+    if (sessionId) {
+      return `${baseUrl}?session_id=${encodeURIComponent(sessionId)}`;
+    }
+    return baseUrl;
+  }, [id, webviewUrl, sessionId]);
 
   const subscribed = useMemo(() => {
     return id ? isSubscribed(id) : false;
@@ -47,6 +58,12 @@ export default function ClubWebViewScreen() {
   };
 
   const handleBack = () => {
+    trackEvent(USER_EVENT.BACK_BUTTON_CLICKED, {
+      from: 'club_detail',
+      clubName: name,
+      url: 'app://moadong/club',
+    });
+    
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -56,6 +73,15 @@ export default function ClubWebViewScreen() {
 
   const handleSubscribeToggle = async () => {
     if (id && typeof id === 'string') {
+      const wasSubscribed = isSubscribed(id);
+      
+      trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
+        clubName: name,
+        subscribed: !wasSubscribed,
+        from: 'club_detail',
+        url: 'app://moadong/club',
+      });
+      
       const result = await toggleSubscribe(id);
       if (result.needsPermission) {
         setShowPermissionDialog(true);

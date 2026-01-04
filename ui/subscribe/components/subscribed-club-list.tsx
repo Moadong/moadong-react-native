@@ -17,7 +17,7 @@ interface SubscribedClubListProps {
   onRefresh: () => void;
   onClubPress: (club: Club) => void;
   isSubscribed: (clubId: string) => boolean;
-  onSubscribeToggle: (clubId: string) => Promise<void>;
+  onSubscribeToggle: (club: Club) => Promise<void>;
   listRef?: RefObject<FlatList<Club>>;
 }
 
@@ -38,7 +38,7 @@ export function SubscribedClubList({
       club={item}
       onPress={onClubPress}
       isSubscribed={isSubscribed(item.id)}
-      onSubscribeToggle={onSubscribeToggle}
+      onSubscribeToggle={() => onSubscribeToggle(item)}
     />
   );
 

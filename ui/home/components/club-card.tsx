@@ -18,7 +18,7 @@ interface ClubCardProps {
   club: Club;
   onPress?: (club: Club) => void;
   isSubscribed?: boolean;
-  onSubscribeToggle?: (clubId: string) => void;
+  onSubscribeToggle?: (club: Club) => void;
   style?: any;
 }
 
@@ -80,7 +80,7 @@ export function ClubCard({ club, onPress, isSubscribed = false, onSubscribeToggl
 
   const handleSubscribePress = (e: any) => {
     e.stopPropagation();
-    onSubscribeToggle?.(club.id);
+    onSubscribeToggle?.(club);
   };
 
   return (

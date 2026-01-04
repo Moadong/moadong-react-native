@@ -143,7 +143,7 @@ const IconContainer = styled.View<{ backgroundColor: string }>`
 const LabelText = styled(MoaText)<{ selected: boolean; category: CategoryType }>`
   text-align: center;
   color: ${(props: { selected: boolean; category: CategoryType }) => 
-    props.selected ? categoryColorMap[props.category].main : undefined};
+    props.selected ? categoryColorMap[props.category].main : '#787878'};
 `;
 
 const GridContainer = styled.View`

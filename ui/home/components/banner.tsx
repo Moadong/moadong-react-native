@@ -1,5 +1,7 @@
 import { MoaImage } from '@/components/moa-image';
+import { USER_EVENT } from '@/constants/eventname';
 import { BorderRadius, Spacing } from '@/constants/theme';
+import { useMixpanelTrack } from '@/hooks';
 import { BannerProps, HomeBannerItem } from '@/ui/home/model/banner';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -16,19 +18,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_WIDTH = SCREEN_WIDTH;
 const BANNER_HEIGHT = BANNER_WIDTH * 0.5;
 
-/**
- * 배너 컴포넌트
- * 
- * @example
- * ```tsx
- * const banners = [
- *   { id: '1', image: 'banner-1', onPress: () => console.log('Banner 1') },
- *   { id: '2', image: 'banner-2', onPress: () => console.log('Banner 2') },
- * ];
- * 
- * <Banner items={banners} autoPlay={true} />
- * ```
- */
 export function Banner({ 
   items = [
     { id: '1', image: require('@/assets/images/banner-1.png') },
@@ -38,6 +27,7 @@ export function Banner({
   autoPlayInterval = 3000,
   showIndicator = true,
 }: BannerProps) {
+  const trackEvent = useMixpanelTrack();
   const hasMultipleItems = items.length > 1;
   const extendedItems = useMemo<HomeBannerItem[]>(() => {
     if (!hasMultipleItems) {
@@ -167,6 +157,11 @@ export function Banner({
 
   const handlePress = (item: HomeBannerItem) => {
     clearAutoPlay();
+    
+    trackEvent(USER_EVENT.BANNER_CLICKED, {
+      bannerId: item.id,
+    });
+    
     item.onPress?.();
     startAutoPlay();
   };
