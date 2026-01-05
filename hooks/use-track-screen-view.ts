@@ -1,3 +1,4 @@
+import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { getMixpanel } from '@/utils/mixpanel';
 import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
@@ -7,6 +8,7 @@ export const useTrackScreenView = (
   properties?: Record<string, any>,
   skip: boolean = false,
 ) => {
+  const { isLoading } = useMixpanelContext();
   const isTracked = useRef(false);
   const startTime = useRef(Date.now());
   const propertiesRef = useRef(properties);
@@ -17,7 +19,7 @@ export const useTrackScreenView = (
   }, [properties]);
 
   useEffect(() => {
-    if (skip) return;
+    if (skip || isLoading) return;
 
     isTracked.current = false;
     startTime.current = Date.now();
@@ -66,5 +68,5 @@ export const useTrackScreenView = (
       trackScreenDuration();
       subscription.remove();
     };
-  }, [screenName, skip]);
+  }, [screenName, skip, isLoading]);
 };
