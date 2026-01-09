@@ -1,4 +1,5 @@
 import { getMixpanel } from '@/utils/mixpanel';
+import { MPSessionReplay, MPSessionReplayConfig } from '@mixpanel/react-native-session-replay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -68,7 +69,18 @@ export const MixpanelProvider: React.FC<MixpanelProviderProps> = ({ children }) 
         const mixpanel = await getMixpanel();
         if (mixpanel) {
           await mixpanel.identify(id);
-          console.log('[MixpanelProvider] Mixpanel identified with session_id:', id);
+          
+          // 세션 리플레이 초기화
+          const mixpanelToken = process.env.EXPO_PUBLIC_MIXPANEL_TOKEN || '';
+          if (mixpanelToken) {
+            const sessionReplayConfig = new MPSessionReplayConfig({
+              recordingSessionsPercent: 100, // 100% 샘플링 (필요시 조정)
+              wifiOnly: false, // WiFi가 아닌 환경에서도 녹화
+              autoStartRecording: true, // 자동으로 녹화 시작
+            });
+            
+            await MPSessionReplay.initialize(mixpanelToken, id, sessionReplayConfig);
+          }
         }
       } catch (error) {
         console.error('[MixpanelProvider] 초기화 실패:', error);
