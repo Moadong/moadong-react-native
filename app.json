@@ -2,7 +2,7 @@
   "expo": {
     "name": "모아동",
     "slug": "moadong-app",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "moadongapp",
@@ -20,7 +20,7 @@
       }
     },
     "android": {
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -67,7 +67,8 @@
           "backgroundColor": "#FF4500"
         }
       ],
-      "expo-tracking-transparency"
+      "expo-tracking-transparency",
+      "./plugins/withFcmNotificationColorFix"
     ],
     "experiments": {
       "typedRoutes": true,
