@@ -1,11 +1,18 @@
+import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { getMixpanel } from '@/utils/mixpanel';
 import Constants from 'expo-constants';
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
 
 export const useMixpanelTrack = () => {
+  const { isLoading } = useMixpanelContext();
+
   const trackEvent = useCallback(
     async (eventName: string, properties: Record<string, any> = {}) => {
+      if (isLoading) {
+        return;
+      }
+
       const mixpanel = await getMixpanel();
       if (!mixpanel) return;
 
@@ -19,7 +26,7 @@ export const useMixpanelTrack = () => {
         platform: Platform.OS,
       });
     },
-    [],
+    [isLoading],
   );
 
   return trackEvent;
