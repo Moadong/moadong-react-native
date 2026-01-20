@@ -4,6 +4,30 @@
 
 import { ApiErrorResponse } from '@/types/club.types';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import Constants from 'expo-constants';
+
+const APP_VERSION_HEADER_KEY = 'APP_VERSION';
+
+function getLoggableHeaders(headers: any): Record<string, any> | undefined {
+  if (!headers) return undefined;
+  if (typeof headers.toJSON === 'function') return headers.toJSON();
+  if (typeof headers.entries === 'function') return Object.fromEntries(headers.entries());
+  if (typeof headers === 'object') return { ...headers };
+  return undefined;
+}
+
+function getAppVersion(): string | undefined {
+  // Expo 환경에서 app.json의 expo.version (예: "1.0.4")
+  // 일부 환경에서는 expoConfig가 없을 수 있어 manifest도 함께 폴백합니다.
+  const version =
+    Constants.expoConfig?.version ??
+    // @ts-expect-error - expo-constants의 런타임에는 manifest가 존재할 수 있음
+    Constants.manifest?.version ??
+    // @ts-expect-error - 구버전/환경별 필드 폴백
+    Constants.manifest2?.version;
+
+  return typeof version === 'string' && version.trim() ? version.trim() : undefined;
+}
 
 const baseUrl = process.env.EXPO_PUBLIC_BASE_URL;
 if (!baseUrl) {
@@ -35,6 +59,18 @@ const apiClient: AxiosInstance = axios.create({
  */
 apiClient.interceptors.request.use(
   (config) => {
+    // 앱 버전 헤더 추가 (서버에서 클라이언트 버전 추적/디버깅 용도)
+    const appVersion = getAppVersion();
+    if (appVersion) {
+      const headers: any = config.headers ?? {};
+      if (typeof headers.set === 'function') {
+        headers.set(APP_VERSION_HEADER_KEY, appVersion);
+      } else if (!headers[APP_VERSION_HEADER_KEY]) {
+        headers[APP_VERSION_HEADER_KEY] = appVersion;
+      }
+      config.headers = headers;
+    }
+
     // TODO: 인증 토큰이 있다면 추가
     // const token = AsyncStorage.getItem('token');
     // if (token) {
@@ -42,9 +78,12 @@ apiClient.interceptors.request.use(
     // }
 
     if (__DEV__) {
+      const headers = getLoggableHeaders(config.headers);
       console.log('🚀 API Request:', {
         method: config.method?.toUpperCase(),
         url: config.url,
+        headers,
+        appVersion: headers?.[APP_VERSION_HEADER_KEY],
         params: config.params,
         data: config.data,
       });
