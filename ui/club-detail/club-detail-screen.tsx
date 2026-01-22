@@ -1,18 +1,23 @@
-import { MoaImage } from '@/components/moa-image';
-import { MoaText } from '@/components/moa-text';
-import { PermissionDialog } from '@/components/permission-dialog';
-import { USER_EVENT } from '@/constants/eventname';
-import { useMixpanelContext } from '@/contexts';
-import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
-import { useMixpanelTrack } from '@/hooks';
-import { Ionicons } from '@expo/vector-icons';
-import Constants from 'expo-constants';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
-import styled from 'styled-components/native';
+import { MoaImage } from "@/components/moa-image";
+import { MoaText } from "@/components/moa-text";
+import { PermissionDialog } from "@/components/permission-dialog";
+import { USER_EVENT } from "@/constants/eventname";
+import { useMixpanelContext } from "@/contexts";
+import { useSubscribedClubsContext } from "@/contexts/subscribed-clubs-context";
+import { useMixpanelTrack } from "@/hooks";
+import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Platform,
+  Share,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { WebView, WebViewMessageEvent } from "react-native-webview";
+import styled from "styled-components/native";
 
 export default function ClubWebViewScreen() {
   const router = useRouter();
@@ -26,13 +31,13 @@ export default function ClubWebViewScreen() {
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
   const uri = useMemo(() => {
-    if (!id || typeof id !== 'string') {
+    if (!id || typeof id !== "string") {
       return `${webviewUrl}/club`;
     }
 
-    const cleanUrl = webviewUrl?.replace(/\/$/, '') || '';
+    const cleanUrl = webviewUrl?.replace(/\/$/, "") || "";
     const baseUrl = `${cleanUrl}/club/${id}`;
-    
+
     if (sessionId) {
       return `${baseUrl}?session_id=${encodeURIComponent(sessionId)}`;
     }
@@ -45,8 +50,8 @@ export default function ClubWebViewScreen() {
 
   // UserAgent 생성
   const userAgent = useMemo(() => {
-    const appVersion = Constants.expoConfig?.version || '1.0.0';
-    const platform = Platform.OS === 'ios' ? 'iOS' : 'Android';
+    const appVersion = Constants.expoConfig?.version || "1.0.0";
+    const platform = Platform.OS === "ios" ? "iOS" : "Android";
     return `MoadongApp/${appVersion} (${platform})`;
   }, []);
 
@@ -59,29 +64,29 @@ export default function ClubWebViewScreen() {
 
   const handleBack = () => {
     trackEvent(USER_EVENT.BACK_BUTTON_CLICKED, {
-      from: 'club_detail',
+      from: "club_detail",
       clubName: name,
-      url: 'app://moadong/club',
+      url: "app://moadong/club",
     });
-    
+
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.push('/(tabs)');
+      router.push("/(tabs)");
     }
   };
 
   const handleSubscribeToggle = async () => {
-    if (id && typeof id === 'string') {
+    if (id && typeof id === "string") {
       const wasSubscribed = isSubscribed(id);
-      
+
       trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
         clubName: name,
         subscribed: !wasSubscribed,
-        from: 'club_detail',
-        url: 'app://moadong/club',
+        from: "club_detail",
+        url: "app://moadong/club",
       });
-      
+
       const result = await toggleSubscribe(id);
       if (result.needsPermission) {
         setShowPermissionDialog(true);
@@ -89,8 +94,24 @@ export default function ClubWebViewScreen() {
     }
   };
 
+  const handleMessage = async (event: WebViewMessageEvent) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === "SHARE") {
+        const { title, text, url } = data.payload;
+        await Share.share({
+          title,
+          message: text,
+          url,
+        });
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  };
+
   return (
-    <Container edges={['top', 'bottom']}>
+    <Container edges={["top", "bottom"]}>
       <Header>
         <BackButton onPress={handleBack} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={24} color="#111111" />
@@ -100,8 +121,8 @@ export default function ClubWebViewScreen() {
           <MoaImage
             source={
               subscribed
-                ? require('@/assets/icons/ic-subscribe-selected.png')
-                : require('@/assets/icons/ic-subscribe-unselected.png')
+                ? require("@/assets/icons/ic-subscribe-selected.png")
+                : require("@/assets/icons/ic-subscribe-unselected.png")
             }
             style={{ width: 24, height: 24 }}
             contentFit="contain"
@@ -112,9 +133,10 @@ export default function ClubWebViewScreen() {
       <WebViewContainer>
         <WebView
           source={{ uri }}
-          style={{ flex: 1, backgroundColor: '#fff' }}
+          style={{ flex: 1, backgroundColor: "#fff" }}
           userAgent={userAgent}
           onLoadEnd={handleLoadEnd}
+          onMessage={handleMessage}
           startInLoadingState={false}
           scalesPageToFit={true}
           showsHorizontalScrollIndicator={false}
@@ -127,7 +149,7 @@ export default function ClubWebViewScreen() {
           </LoadingContainer>
         )}
       </WebViewContainer>
-      
+
       {/* 알림 권한 다이얼로그 */}
       <PermissionDialog
         visible={showPermissionDialog}
@@ -150,7 +172,7 @@ const Header = styled.View`
   padding-horizontal: 16px;
   padding-vertical: 12px;
   border-bottom-width: 1px;
-  border-bottom-color: #F0F0F0;
+  border-bottom-color: #f0f0f0;
   background-color: #fff;
 `;
 
