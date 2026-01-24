@@ -175,7 +175,7 @@ export function ClubCard({ club, onPress, isSubscribed = false, onSubscribeToggl
 const StyledTouchableOpacity = styled(TouchableOpacity)`
   background-color: #FFFFFF;
   border-radius: 10px;
-  margin-horizontal: 16px;
+  margin-horizontal: 20px;
   margin-vertical: 6px;
   padding-horizontal: 16px;
   padding-vertical: 16px;

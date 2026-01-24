@@ -85,7 +85,7 @@ export function MainHeader({
 const Container = styled.View`
   flex-direction: row;
   align-items: center;
-  padding-horizontal: 16px;
+  padding-horizontal: 20px;
   padding-vertical: 8px;
   background-color: ${Colors.light.background};
   border-bottom-width: 1px;
