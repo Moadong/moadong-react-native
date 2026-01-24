@@ -1,13 +1,13 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Image } from 'react-native';
-
-import MenuIcon from '@/assets/icons/ic-menu.svg';
-import { HapticTab } from '@/components/haptic-tab';
-import { USER_EVENT } from '@/constants/eventname';
-import { Colors } from '@/constants/theme';
-import { useMixpanelTrack } from '@/hooks';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import MenuIcon from "@/assets/icons/ic-menu.svg";
+import HomeIcon from "@/assets/icons/ic_home.svg";
+import { HapticTab } from "@/components/haptic-tab";
+import { USER_EVENT } from "@/constants/eventname";
+import { Colors } from "@/constants/theme";
+import { useMixpanelTrack } from "@/hooks";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Tabs } from "expo-router";
+import React from "react";
+import { Image } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -23,45 +23,75 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarInactiveTintColor: Colors[colorScheme ?? "light"].icon,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#F0F0F0',
+          backgroundColor: "#FFFFFF",
+          borderTopColor: "#F0F0F0",
+          height: 70,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
-      }}>
+        tabBarLabelStyle: {
+          marginTop: 4,
+          fontSize: 10,
+          fontWeight: "500",
+        },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="more"
         options={{
-          title: '홈',
+          title: "메뉴",
           tabBarIcon: ({ focused }) => (
-            <Image
-              source={
+            <MenuIcon
+              width={28}
+              height={28}
+              color={
                 focused
-                  ? require('@/assets/icons/ic-home-selected.png')
-                  : require('@/assets/icons/ic-home-unselected.png')
+                  ? Colors[colorScheme ?? "light"].tint
+                  : Colors[colorScheme ?? "light"].icon
               }
-              style={{ width: 28, height: 28 }}
-              resizeMode="contain"
             />
           ),
         }}
         listeners={{
-          tabPress: () => handleTabPress('home'),
+          tabPress: () => handleTabPress("more"),
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "홈",
+          tabBarIcon: ({ focused }) => (
+            <HomeIcon
+              width={28}
+              height={28}
+              color={
+                focused
+                  ? Colors[colorScheme ?? "light"].tint
+                  : Colors[colorScheme ?? "light"].icon
+              }
+            />
+          ),
+        }}
+        listeners={{
+          tabPress: () => handleTabPress("home"),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: '구독',
+          title: "알림",
           tabBarIcon: ({ focused }) => (
             <Image
               source={
                 focused
-                  ? require('@/assets/icons/ic-subscribe-selected.png')
-                  : require('@/assets/icons/ic-subscribe-unselected.png')
+                  ? require("@/assets/icons/ic-subscribe-selected.png")
+                  : require("@/assets/icons/ic-subscribe-unselected.png")
               }
               style={{ width: 28, height: 28 }}
               resizeMode="contain"
@@ -69,23 +99,7 @@ export default function TabLayout() {
           ),
         }}
         listeners={{
-          tabPress: () => handleTabPress('explore'),
-        }}
-      />
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: '더보기',
-          tabBarIcon: ({ focused }) => (
-            <MenuIcon
-              width={24}
-              height={24}
-              color={focused ? Colors[colorScheme ?? 'light'].tint : Colors[colorScheme ?? 'light'].icon}
-            />
-          ),
-        }}
-        listeners={{
-          tabPress: () => handleTabPress('more'),
+          tabPress: () => handleTabPress("explore"),
         }}
       />
     </Tabs>
