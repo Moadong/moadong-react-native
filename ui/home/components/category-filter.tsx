@@ -37,7 +37,7 @@ export function CategoryFilter({
     : ['학술', '봉사', '운동', '종교', '취미교양', '공연'];
 
   return (
-    <Row justify="space-between" style={{ paddingHorizontal: 16 }}>
+    <Row justify="space-between" style={{ paddingHorizontal: 20 }}>
       {categories.map((category) => (
         <CategoryFilterItem
           key={category}
