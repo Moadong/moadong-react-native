@@ -132,8 +132,8 @@ const ItemPressable = styled(Pressable)`
 `;
 
 const IconContainer = styled.View<{ backgroundColor: string }>`
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   justify-content: center;
   align-items: center;
