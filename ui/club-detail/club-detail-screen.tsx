@@ -165,6 +165,8 @@ export default function ClubWebViewScreen() {
           scalesPageToFit={true}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
+          bounces={false}
+          overScrollMode="never"
         />
         {isLoading && (
           <LoadingContainer pointerEvents="none">
