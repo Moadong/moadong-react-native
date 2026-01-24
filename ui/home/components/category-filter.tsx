@@ -141,6 +141,8 @@ const IconContainer = styled.View<{ backgroundColor: string }>`
 `;
 
 const LabelText = styled(MoaText)<{ selected: boolean; category: CategoryType }>`
+  font-size: 12px;
+  font-weight: 400;
   text-align: center;
   color: ${(props: { selected: boolean; category: CategoryType }) => 
     props.selected ? categoryColorMap[props.category].main : '#787878'};
