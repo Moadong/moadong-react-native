@@ -149,7 +149,7 @@ const LabelText = styled(MoaText)<{ selected: boolean; category: CategoryType }>
 const GridContainer = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
-  padding: 16px;
+  padding: 20px;
 `;
 
 const GridItemPressable = styled(Pressable)<{ width: string }>`
