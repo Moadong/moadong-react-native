@@ -176,7 +176,7 @@ const StyledTouchableOpacity = styled(TouchableOpacity)`
   background-color: #FFFFFF;
   border-radius: 10px;
   margin-horizontal: 20px;
-  margin-vertical: 6px;
+  margin-vertical: 3px;
   padding-horizontal: 16px;
   padding-vertical: 16px;
   shadow-color: #000;
