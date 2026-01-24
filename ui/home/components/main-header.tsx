@@ -61,7 +61,7 @@ export function MainHeader({
         <SearchInput
           ref={inputRef}
           placeholder="어떤 동아리를 찾으세요?"
-          placeholderTextColor={Colors.light.icon}
+          placeholderTextColor={"rgba(0, 0, 0, 0.31)"}
           value={searchValue}
           onChangeText={onSearchChange}
           onFocus={onSearchFocus}
@@ -71,11 +71,7 @@ export function MainHeader({
           autoCorrect={false}
           autoCapitalize="none"
         />
-        <SearchIcon
-          width={20}
-          height={20}
-          color={Colors.light.icon}
-        />
+        <SearchIcon width={20} height={20} color={"rgba(75, 75, 75, 0.8)"} />
       </SearchTouchable>
     </Container>
   );
