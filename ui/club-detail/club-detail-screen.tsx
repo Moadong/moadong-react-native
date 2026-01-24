@@ -4,10 +4,11 @@ import { PermissionDialog } from '@/components/permission-dialog';
 import { USER_EVENT } from '@/constants/eventname';
 import { useMixpanelContext } from '@/contexts';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
-import { useMixpanelTrack } from '@/hooks';
+import { useMixpanelTrack, useWebViewMessageHandler } from '@/hooks';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +19,7 @@ export default function ClubWebViewScreen() {
   const router = useRouter();
   const { id, name } = useLocalSearchParams<{ id?: string; name?: string }>();
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
   const { sessionId } = useMixpanelContext();
@@ -57,6 +59,11 @@ export default function ClubWebViewScreen() {
     }, 200);
   };
 
+  const handleError = () => {
+    setHasError(true);
+    setIsLoading(false);
+  };
+
   const handleBack = () => {
     trackEvent(USER_EVENT.BACK_BUTTON_CLICKED, {
       from: 'club_detail',
@@ -89,25 +96,62 @@ export default function ClubWebViewScreen() {
     }
   };
 
+  // WebView 메시지 핸들러
+  const { handleMessage } = useWebViewMessageHandler({
+    onNavigateBack: handleBack,
+    onSubscribe: async (targetId, clubName) => {
+      trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
+        clubName: clubName || name,
+        subscribed: true,
+        from: 'club_detail',
+        url: 'app://moadong/club',
+      });
+
+      // 이미 구독 중이면 무시
+      if (isSubscribed(targetId)) return;
+      
+      const result = await toggleSubscribe(targetId);
+      if (result.needsPermission) {
+        setShowPermissionDialog(true);
+      }
+    },
+    onUnsubscribe: async (targetId) => {
+      // 구독 중이 아니면 무시
+      if (!isSubscribed(targetId)) return;
+      
+      trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
+        clubName: name,
+        subscribed: false,
+        from: 'club_detail',
+        url: 'app://moadong/club',
+      });
+      
+      await toggleSubscribe(targetId);
+    },
+  });
+
   return (
-    <Container edges={['top', 'bottom']}>
-      <Header>
-        <BackButton onPress={handleBack} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={24} color="#111111" />
-        </BackButton>
-        <HeaderTitle type="title2">동아리 상세</HeaderTitle>
-        <SubscribeButton onPress={handleSubscribeToggle} activeOpacity={0.6}>
-          <MoaImage
-            source={
-              subscribed
-                ? require('@/assets/icons/ic-subscribe-selected.png')
-                : require('@/assets/icons/ic-subscribe-unselected.png')
-            }
-            style={{ width: 24, height: 24 }}
-            contentFit="contain"
-          />
-        </SubscribeButton>
-      </Header>
+    <Container edges={['bottom']}>
+      <StatusBar translucent style="dark" />
+      {hasError && (
+        <Header>
+          <BackButton onPress={handleBack} activeOpacity={0.7}>
+            <Ionicons name="arrow-back" size={24} color="#111111" />
+          </BackButton>
+          <HeaderTitle type="title2">동아리 상세</HeaderTitle>
+          <SubscribeButton onPress={handleSubscribeToggle} activeOpacity={0.6}>
+            <MoaImage
+              source={
+                subscribed
+                  ? require('@/assets/icons/ic-subscribe-selected.png')
+                  : require('@/assets/icons/ic-subscribe-unselected.png')
+              }
+              style={{ width: 24, height: 24 }}
+              contentFit="contain"
+            />
+          </SubscribeButton>
+        </Header>
+      )}
 
       <WebViewContainer>
         <WebView
@@ -115,6 +159,8 @@ export default function ClubWebViewScreen() {
           style={{ flex: 1, backgroundColor: '#fff' }}
           userAgent={userAgent}
           onLoadEnd={handleLoadEnd}
+          onError={handleError}
+          onMessage={handleMessage}
           startInLoadingState={false}
           scalesPageToFit={true}
           showsHorizontalScrollIndicator={false}
