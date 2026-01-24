@@ -35,11 +35,17 @@ export default function ClubWebViewScreen() {
     const cleanUrl = webviewUrl?.replace(/\/$/, '') || '';
     const baseUrl = `${cleanUrl}/club/${id}`;
     
+    const params = new URLSearchParams();
     if (sessionId) {
-      return `${baseUrl}?session_id=${encodeURIComponent(sessionId)}`;
+      params.append('session_id', sessionId);
     }
-    return baseUrl;
-  }, [id, webviewUrl, sessionId]);
+    if (id && isSubscribed(id)) {
+      params.append('is_subscribed', 'true');
+    }
+
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  }, [id, webviewUrl, sessionId, isSubscribed]);
 
   const subscribed = useMemo(() => {
     return id ? isSubscribed(id) : false;
@@ -167,6 +173,7 @@ export default function ClubWebViewScreen() {
           showsVerticalScrollIndicator={false}
           bounces={false}
           overScrollMode="never"
+
         />
         {isLoading && (
           <LoadingContainer pointerEvents="none">
