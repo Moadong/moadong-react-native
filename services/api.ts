@@ -4,6 +4,7 @@
 
 import { ApiErrorResponse } from '@/types/club.types';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 
 const APP_VERSION_HEADER_KEY = 'APP_VERSION';
@@ -17,14 +18,9 @@ function getLoggableHeaders(headers: any): Record<string, any> | undefined {
 }
 
 function getAppVersion(): string | undefined {
-  // Expo 환경에서 app.json의 expo.version (예: "1.0.4")
-  // 일부 환경에서는 expoConfig가 없을 수 있어 manifest도 함께 폴백합니다.
   const version =
-    Constants.expoConfig?.version ??
-    // @ts-expect-error - expo-constants의 런타임에는 manifest가 존재할 수 있음
-    Constants.manifest?.version ??
-    // @ts-expect-error - 구버전/환경별 필드 폴백
-    Constants.manifest2?.version;
+    Application.nativeApplicationVersion ??
+    Constants.nativeAppVersion 
 
   return typeof version === 'string' && version.trim() ? version.trim() : undefined;
 }
