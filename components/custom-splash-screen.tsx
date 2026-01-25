@@ -22,9 +22,10 @@ import { MoaText } from './moa-text';
 interface CustomSplashScreenProps {
   onFinish: () => void;
   isReady: boolean;
+  blockFinish?: boolean;
 }
 
-export function CustomSplashScreen({ onFinish, isReady }: CustomSplashScreenProps) {
+export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: CustomSplashScreenProps) {
   // 애니메이션 값들
   const logoScale = useSharedValue(0.3);
   const logoOpacity = useSharedValue(0);
@@ -32,7 +33,7 @@ export function CustomSplashScreen({ onFinish, isReady }: CustomSplashScreenProp
   const textTranslateY = useSharedValue(20);
   const fadeOutOpacity = useSharedValue(1);
 
-  const startAnimation = useCallback(() => {
+  const startAnimation = useCallback((shouldBlockFinish: boolean) => {
     console.log('🎬 커스텀 스플래시 애니메이션 시작');
     
     // 1. 로고 페이드인 + 스케일 애니메이션
@@ -65,31 +66,34 @@ export function CustomSplashScreen({ onFinish, isReady }: CustomSplashScreenProp
     );
 
     // 3. 전체 페이드아웃 (2.2초 후 시작, 총 2.5초)
-    fadeOutOpacity.value = withDelay(
-      2200, // 2.2초 동안 애니메이션 표시
-      withTiming(
-        0,
-        {
-          duration: 300,
-          easing: Easing.in(Easing.ease),
-        },
-        (finished) => {
-          if (finished) {
-            // 애니메이션 완료 후 콜백 실행
-            console.log('✅ 커스텀 스플래시 애니메이션 완료');
-            runOnJS(onFinish)();
+    // 강제 업데이트 등으로 앱 진입을 막아야 하는 경우에는 페이드아웃/종료 콜백을 실행하지 않음
+    if (!shouldBlockFinish) {
+      fadeOutOpacity.value = withDelay(
+        2200, // 2.2초 동안 애니메이션 표시
+        withTiming(
+          0,
+          {
+            duration: 300,
+            easing: Easing.in(Easing.ease),
+          },
+          (finished) => {
+            if (finished) {
+              // 애니메이션 완료 후 콜백 실행
+              console.log('✅ 커스텀 스플래시 애니메이션 완료');
+              runOnJS(onFinish)();
+            }
           }
-        }
-      )
-    );
+        )
+      );
+    }
   }, [logoOpacity, logoScale, textOpacity, textTranslateY, fadeOutOpacity, onFinish]);
 
   useEffect(() => {
-    console.log('🎨 커스텀 스플래시 스크린 마운트됨, isReady:', isReady);
+    console.log('🎨 커스텀 스플래시 스크린 마운트됨, isReady:', isReady, ', blockFinish:', blockFinish);
     if (isReady) {
-      startAnimation();
+      startAnimation(blockFinish);
     }
-  }, [isReady, startAnimation]);
+  }, [isReady, blockFinish, startAnimation]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,

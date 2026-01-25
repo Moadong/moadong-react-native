@@ -10,9 +10,11 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { CustomSplashScreen } from '@/components/custom-splash-screen';
+import { ForceUpdateDialog } from '@/components/force-update-dialog';
 import { MixpanelProvider } from '@/contexts/mixpanel-context';
 import { SubscribedClubsProvider } from '@/contexts/subscribed-clubs-context';
 import { useFcm } from '@/hooks/use-fcm';
+import { checkForceUpdateRequired } from '@/services/force-update.service';
 
 // 네이티브 스플래시 화면을 자동으로 숨기지 않도록 설정
 // 이것은 앱이 로드되자마자 실행되어야 합니다
@@ -27,8 +29,11 @@ export const unstable_settings = {
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [forceUpdateRequired, setForceUpdateRequired] = useState(false);
+  const [forceUpdateChecked, setForceUpdateChecked] = useState(false);
   
-  useFcm();
+  // 강제 업데이트가 필요한 경우(또는 체크 전)에는 FCM 권한 프롬프트가 뜨지 않도록 비활성화
+  useFcm(forceUpdateChecked && !forceUpdateRequired);
 
   useEffect(() => {
     async function prepare() {
@@ -38,7 +43,15 @@ export default function RootLayout() {
         // 여기에 앱 초기화 로직을 추가할 수 있습니다
         // 예: 폰트 로드, 데이터 프리페치 등
 
-        await requestTrackingPermissionOnLaunch();
+        // 1) 강제 업데이트 체크 (Remote Config)
+        const required = await checkForceUpdateRequired();
+        setForceUpdateRequired(required);
+        setForceUpdateChecked(true);
+
+        // 2) 강제 업데이트가 아닐 때만 ATT 요청
+        if (!required) {
+          await requestTrackingPermissionOnLaunch();
+        }
         
         // 최소 로딩 시간 보장 (너무 빨리 사라지지 않도록)
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -70,8 +83,12 @@ export default function RootLayout() {
   const onFinishSplash = useCallback(() => {
     // 커스텀 스플래시 애니메이션이 완료되면
     console.log('🎭 커스텀 스플래시 종료, 메인 화면으로 전환');
+    if (forceUpdateRequired) {
+      console.log('⛔️ 강제 업데이트 필요: 스플래시 유지');
+      return;
+    }
     setShowSplash(false);
-  }, []);
+  }, [forceUpdateRequired]);
 
   console.log('🔄 RootLayout 렌더링, showSplash:', showSplash, ', appIsReady:', appIsReady);
 
@@ -88,11 +105,15 @@ export default function RootLayout() {
             </Stack>
             <StatusBar style="dark" />
             
+            {/* 강제 업데이트 다이얼로그 (닫기 불가) */}
+            <ForceUpdateDialog visible={forceUpdateRequired} />
+
             {/* 커스텀 스플래시 스크린 */}
             {showSplash && (
               <CustomSplashScreen 
                 isReady={appIsReady} 
                 onFinish={onFinishSplash}
+                blockFinish={forceUpdateRequired}
               />
             )}
           </ThemeProvider>

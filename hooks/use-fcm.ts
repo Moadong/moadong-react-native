@@ -6,8 +6,11 @@ import { initializeFcm, registerBackgroundMessageHandler, setupForegroundMessage
 /**
  * 앱 시작 시 FCM 초기화를 1회 실행하는 커스텀 훅
  */
-export const useFcm = () => {
+export const useFcm = (enabled: boolean = true) => {
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
       return;
     }
@@ -47,5 +50,5 @@ export const useFcm = () => {
         messageUnsubscribe();
       }
     };
-  }, []);
+  }, [enabled]);
 };
