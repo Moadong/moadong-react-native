@@ -10,11 +10,7 @@ import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  TouchableOpacity
-} from "react-native";
+import { ActivityIndicator, Platform, Share, TouchableOpacity } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import styled from "styled-components/native";
@@ -39,13 +35,13 @@ export default function ClubWebViewScreen() {
 
     const cleanUrl = webviewUrl?.replace(/\/$/, "") || "";
     const baseUrl = `${cleanUrl}/club/${id}`;
-
+    
     const params = new URLSearchParams();
     if (sessionId) {
-      params.append("session_id", sessionId);
+      params.append('session_id', sessionId);
     }
     if (id && isSubscribed(id)) {
-      params.append("is_subscribed", "true");
+      params.append('is_subscribed', 'true');
     }
 
     const queryString = params.toString();
@@ -114,13 +110,13 @@ export default function ClubWebViewScreen() {
       trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
         clubName: clubName || name,
         subscribed: true,
-        from: "club_detail",
-        url: "app://moadong/club",
+        from: 'club_detail',
+        url: 'app://moadong/club',
       });
 
       // 이미 구독 중이면 무시
       if (isSubscribed(targetId)) return;
-
+      
       const result = await toggleSubscribe(targetId);
       if (result.needsPermission) {
         setShowPermissionDialog(true);
@@ -129,15 +125,22 @@ export default function ClubWebViewScreen() {
     onUnsubscribe: async (targetId: string) => {
       // 구독 중이 아니면 무시
       if (!isSubscribed(targetId)) return;
-
+      
       trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
         clubName: name,
         subscribed: false,
-        from: "club_detail",
-        url: "app://moadong/club",
+        from: 'club_detail',
+        url: 'app://moadong/club',
       });
-
+      
       await toggleSubscribe(targetId);
+    },
+    onShare: async ({ title, text, url }: { title: string; text: string; url: string }) => {
+      await Share.share({
+        title,
+        message: text,
+        url,
+      });
     },
   });
   
@@ -150,7 +153,7 @@ export default function ClubWebViewScreen() {
   `;
 
   return (
-    <Container edges={["bottom"]}>
+    <Container edges={['bottom']}>
       <StatusBar translucent style="dark" />
       {hasError && (
         <Header>
@@ -162,8 +165,8 @@ export default function ClubWebViewScreen() {
             <MoaImage
               source={
                 subscribed
-                  ? require("@/assets/icons/ic-subscribe-selected.png")
-                  : require("@/assets/icons/ic-subscribe-unselected.png")
+                  ? require('@/assets/icons/ic-subscribe-selected.png')
+                  : require('@/assets/icons/ic-subscribe-unselected.png')
               }
               style={{ width: 24, height: 24 }}
               contentFit="contain"
@@ -189,6 +192,7 @@ export default function ClubWebViewScreen() {
           showsVerticalScrollIndicator={false}
           bounces={false}
           overScrollMode="never"
+
         />
         {isLoading && (
           <LoadingContainer pointerEvents="none">
