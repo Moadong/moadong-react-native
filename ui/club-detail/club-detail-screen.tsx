@@ -28,11 +28,11 @@ export default function ClubWebViewScreen() {
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
   const uri = useMemo(() => {
-    if (!id || typeof id !== 'string') {
+    if (!id || typeof id !== "string") {
       return `${webviewUrl}/club`;
     }
 
-    const cleanUrl = webviewUrl?.replace(/\/$/, '') || '';
+    const cleanUrl = webviewUrl?.replace(/\/$/, "") || "";
     const baseUrl = `${cleanUrl}/club/${id}`;
     
     const params = new URLSearchParams();
@@ -53,8 +53,8 @@ export default function ClubWebViewScreen() {
 
   // UserAgent 생성
   const userAgent = useMemo(() => {
-    const appVersion = Constants.expoConfig?.version || '1.0.0';
-    const platform = Platform.OS === 'ios' ? 'iOS' : 'Android';
+    const appVersion = Constants.expoConfig?.version || "1.0.0";
+    const platform = Platform.OS === "ios" ? "iOS" : "Android";
     return `MoadongApp/${appVersion} (${platform})`;
   }, []);
 
@@ -72,29 +72,29 @@ export default function ClubWebViewScreen() {
 
   const handleBack = () => {
     trackEvent(USER_EVENT.BACK_BUTTON_CLICKED, {
-      from: 'club_detail',
+      from: "club_detail",
       clubName: name,
-      url: 'app://moadong/club',
+      url: "app://moadong/club",
     });
-    
+
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.push('/(tabs)');
+      router.push("/(tabs)");
     }
   };
 
   const handleSubscribeToggle = async () => {
-    if (id && typeof id === 'string') {
+    if (id && typeof id === "string") {
       const wasSubscribed = isSubscribed(id);
-      
+
       trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
         clubName: name,
         subscribed: !wasSubscribed,
-        from: 'club_detail',
-        url: 'app://moadong/club',
+        from: "club_detail",
+        url: "app://moadong/club",
       });
-      
+
       const result = await toggleSubscribe(id);
       if (result.needsPermission) {
         setShowPermissionDialog(true);
@@ -169,7 +169,7 @@ export default function ClubWebViewScreen() {
       <WebViewContainer>
         <WebView
           source={{ uri }}
-          style={{ flex: 1, backgroundColor: '#fff' }}
+          style={{ flex: 1, backgroundColor: "#fff" }}
           userAgent={userAgent}
           onLoadEnd={handleLoadEnd}
           onError={handleError}
@@ -189,7 +189,7 @@ export default function ClubWebViewScreen() {
           </LoadingContainer>
         )}
       </WebViewContainer>
-      
+
       {/* 알림 권한 다이얼로그 */}
       <PermissionDialog
         visible={showPermissionDialog}
@@ -212,7 +212,7 @@ const Header = styled.View`
   padding-horizontal: 16px;
   padding-vertical: 12px;
   border-bottom-width: 1px;
-  border-bottom-color: #F0F0F0;
+  border-bottom-color: #f0f0f0;
   background-color: #fff;
 `;
 

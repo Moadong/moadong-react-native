@@ -37,7 +37,7 @@ export function CategoryFilter({
     : ['학술', '봉사', '운동', '종교', '취미교양', '공연'];
 
   return (
-    <Row justify="space-between" style={{ paddingHorizontal: 16 }}>
+    <Row justify="space-between" style={{ paddingHorizontal: 20 }}>
       {categories.map((category) => (
         <CategoryFilterItem
           key={category}
@@ -132,8 +132,8 @@ const ItemPressable = styled(Pressable)`
 `;
 
 const IconContainer = styled.View<{ backgroundColor: string }>`
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   justify-content: center;
   align-items: center;
@@ -141,6 +141,8 @@ const IconContainer = styled.View<{ backgroundColor: string }>`
 `;
 
 const LabelText = styled(MoaText)<{ selected: boolean; category: CategoryType }>`
+  font-size: 12px;
+  font-weight: 400;
   text-align: center;
   color: ${(props: { selected: boolean; category: CategoryType }) => 
     props.selected ? categoryColorMap[props.category].main : '#787878'};
@@ -149,7 +151,7 @@ const LabelText = styled(MoaText)<{ selected: boolean; category: CategoryType }>
 const GridContainer = styled.View`
   flex-direction: row;
   flex-wrap: wrap;
-  padding: 16px;
+  padding: 20px;
 `;
 
 const GridItemPressable = styled(Pressable)<{ width: string }>`

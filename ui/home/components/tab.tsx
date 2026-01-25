@@ -46,7 +46,7 @@ export function Tab({ activeTab, onTabChange, style }: TabProps) {
 
 const Container = styled.View`
   background-color: ${Colors.light.background};
-  padding-horizontal: 16px;
+  padding-horizontal: 20px;
   padding-vertical: 12px;
 `;
 
