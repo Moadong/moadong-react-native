@@ -15,7 +15,7 @@ import {
   Platform,
   TouchableOpacity
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import styled from "styled-components/native";
 
@@ -28,6 +28,7 @@ export default function ClubWebViewScreen() {
   const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
   const { sessionId } = useMixpanelContext();
   const trackEvent = useMixpanelTrack();
+  const insets = useSafeAreaInsets();
 
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
@@ -139,6 +140,14 @@ export default function ClubWebViewScreen() {
       await toggleSubscribe(targetId);
     },
   });
+  
+  const injectJS = `
+    (function() {
+      document.documentElement.style.setProperty('--rn-safe-top', '${insets.top}px');
+      document.documentElement.style.setProperty('--rn-safe-bottom', '${insets.bottom}px');
+    })();
+    true;
+  `;
 
   return (
     <Container edges={["bottom"]}>
@@ -171,6 +180,9 @@ export default function ClubWebViewScreen() {
           onLoadEnd={handleLoadEnd}
           onError={handleError}
           onMessage={handleMessage}
+          injectedJavaScript={injectJS}
+          contentInsetAdjustmentBehavior="never"
+          automaticallyAdjustContentInsets={false}
           startInLoadingState={false}
           scalesPageToFit={true}
           showsHorizontalScrollIndicator={false}
