@@ -8,6 +8,8 @@ interface UseWebViewMessageHandlerOptions {
   onSubscribe?: (clubId: string, clubName?: string) => Promise<void> | void;
   // 알림 구독 해제 요청 시 호출
   onUnsubscribe?: (clubId: string) => Promise<void> | void;
+  // 공유하기 요청 시 호출
+  onShare?: (payload: { title: string; text: string; url: string }) => Promise<void> | void;
 }
 
 // WebView 메시지를 처리하는 Hook
@@ -15,6 +17,7 @@ export const useWebViewMessageHandler = ({
   onNavigateBack,
   onSubscribe,
   onUnsubscribe,
+  onShare,
 }: UseWebViewMessageHandlerOptions) => {
   const handleMessage = useCallback((event: WebViewMessageEvent) => {
     try {
@@ -37,13 +40,18 @@ export const useWebViewMessageHandler = ({
             onUnsubscribe?.(message.payload.clubId);
           }
           break;
+        case WebViewMessageTypes.SHARE:
+          if (message.payload) {
+            onShare?.(message.payload);
+          }
+          break;
         default:
           console.warn('[WebViewHandler] 알 수 없는 메시지 타입:', message);
       }
     } catch (error) {
       console.error('[WebViewHandler] 메시지 파싱 오류:', error);
     }
-  }, [onNavigateBack, onSubscribe, onUnsubscribe]);
+  }, [onNavigateBack, onSubscribe, onUnsubscribe, onShare]);
 
   return { handleMessage };
 };

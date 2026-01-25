@@ -10,7 +10,7 @@ import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Platform, Share, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import styled from 'styled-components/native';
@@ -105,7 +105,7 @@ export default function ClubWebViewScreen() {
   // WebView 메시지 핸들러
   const { handleMessage } = useWebViewMessageHandler({
     onNavigateBack: handleBack,
-    onSubscribe: async (targetId, clubName) => {
+    onSubscribe: async (targetId: string, clubName?: string) => {
       trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
         clubName: clubName || name,
         subscribed: true,
@@ -121,7 +121,7 @@ export default function ClubWebViewScreen() {
         setShowPermissionDialog(true);
       }
     },
-    onUnsubscribe: async (targetId) => {
+    onUnsubscribe: async (targetId: string) => {
       // 구독 중이 아니면 무시
       if (!isSubscribed(targetId)) return;
       
@@ -133,6 +133,13 @@ export default function ClubWebViewScreen() {
       });
       
       await toggleSubscribe(targetId);
+    },
+    onShare: async ({ title, text, url }: { title: string; text: string; url: string }) => {
+      await Share.share({
+        title,
+        message: text,
+        url,
+      });
     },
   });
 
