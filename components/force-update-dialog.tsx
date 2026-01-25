@@ -3,7 +3,7 @@
  * - Remote Config `require_force_update`가 true일 때 스플래시 단계에서 앱 진입을 차단
  */
 import React from 'react';
-import { Linking, Modal, Platform, TouchableOpacity } from 'react-native';
+import { Alert, Linking, Modal, Platform, TouchableOpacity } from 'react-native';
 import styledNative from 'styled-components/native';
 
 import { Colors } from '@/constants/theme';
@@ -23,28 +23,50 @@ const ANDROID_MARKET_URL = `market://details?id=${ANDROID_PACKAGE}`;
 const ANDROID_HTTPS_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
 
 async function openUrlWithFallback(primaryUrl: string, fallbackUrl: string) {
-  const canOpenPrimary = await Linking.canOpenURL(primaryUrl);
-  if (canOpenPrimary) {
-    await Linking.openURL(primaryUrl);
-    return;
+  try {
+    const canOpenPrimary = await Linking.canOpenURL(primaryUrl);
+    if (canOpenPrimary) {
+      await Linking.openURL(primaryUrl);
+      return true;
+    }
+
+    const canOpenFallback = await Linking.canOpenURL(fallbackUrl);
+    if (canOpenFallback) {
+      await Linking.openURL(fallbackUrl);
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.warn('❌ URL 열기 실패:', { primaryUrl, fallbackUrl, error });
+    return false;
   }
-  await Linking.openURL(fallbackUrl);
 }
 
 export function ForceUpdateDialog({ visible }: ForceUpdateDialogProps) {
   const handleUpdate = async () => {
-    try {
-      if (Platform.OS === 'ios') {
-        await openUrlWithFallback(IOS_ITMS_URL, IOS_HTTPS_URL);
-        return;
-      }
-      if (Platform.OS === 'android') {
-        await openUrlWithFallback(ANDROID_MARKET_URL, ANDROID_HTTPS_URL);
-        return;
-      }
-      await Linking.openURL(IOS_HTTPS_URL);
-    } catch (error) {
-      console.warn('❌ 스토어 이동 실패:', error);
+    const platform = Platform.OS;
+
+    const primaryUrl =
+      platform === 'android'
+        ? ANDROID_MARKET_URL
+        : platform === 'ios'
+          ? IOS_ITMS_URL
+          : IOS_HTTPS_URL;
+
+    const fallbackUrl =
+      platform === 'android'
+        ? ANDROID_HTTPS_URL
+        : IOS_HTTPS_URL;
+
+    const opened = await openUrlWithFallback(primaryUrl, fallbackUrl);
+    if (!opened) {
+      Alert.alert(
+        '스토어로 이동할 수 없어요',
+        `아래 링크로 업데이트 페이지에 접속해 주세요.\n\n${fallbackUrl}`,
+        [{ text: '확인' }],
+        { cancelable: false }
+      );
     }
   };
 
