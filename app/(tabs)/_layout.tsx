@@ -8,10 +8,14 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Image } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const trackEvent = useMixpanelTrack();
+  const insets = useSafeAreaInsets();
+  const TAB_BAR_BASE_HEIGHT = 56;
+  const TAB_BAR_BASE_PADDING_VERTICAL = 6;
 
   const handleTabPress = (tabName: string) => {
     trackEvent(USER_EVENT.BOTTOM_TAB_CLICKED, {
@@ -31,9 +35,10 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           borderTopColor: "#F0F0F0",
-          height: 70,
-          paddingBottom: 8,
-          paddingTop: 8,
+          // 시스템 네비게이션 바 영역(특히 Android) SafeArea 반영
+          height: TAB_BAR_BASE_HEIGHT + insets.bottom,
+          paddingBottom: TAB_BAR_BASE_PADDING_VERTICAL + insets.bottom,
+          paddingTop: TAB_BAR_BASE_PADDING_VERTICAL,
         },
         tabBarLabelStyle: {
           marginTop: 4,
@@ -42,26 +47,6 @@ export default function TabLayout() {
         },
       }}
     >
-      <Tabs.Screen
-        name="more"
-        options={{
-          title: "메뉴",
-          tabBarIcon: ({ focused }) => (
-            <MenuIcon
-              width={28}
-              height={28}
-              color={
-                focused
-                  ? Colors[colorScheme ?? "light"].tint
-                  : Colors[colorScheme ?? "light"].icon
-              }
-            />
-          ),
-        }}
-        listeners={{
-          tabPress: () => handleTabPress("more"),
-        }}
-      />
       <Tabs.Screen
         name="index"
         options={{
@@ -85,7 +70,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: "알림",
+          title: "구독",
           tabBarIcon: ({ focused }) => (
             <Image
               source={
@@ -100,6 +85,26 @@ export default function TabLayout() {
         }}
         listeners={{
           tabPress: () => handleTabPress("explore"),
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          title: "메뉴",
+          tabBarIcon: ({ focused }) => (
+            <MenuIcon
+              width={28}
+              height={28}
+              color={
+                focused
+                  ? Colors[colorScheme ?? "light"].tint
+                  : Colors[colorScheme ?? "light"].icon
+              }
+            />
+          ),
+        }}
+        listeners={{
+          tabPress: () => handleTabPress("more"),
         }}
       />
     </Tabs>
