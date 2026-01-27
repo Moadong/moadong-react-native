@@ -29,12 +29,12 @@ export default function ClubWebViewScreen() {
 
   const uri = useMemo(() => {
     if (!id || typeof id !== "string") {
-      return `${webviewUrl}/club`;
+      return `${webviewUrl}/webview/club`;
     }
 
     const cleanUrl = webviewUrl?.replace(/\/$/, "") || "";
-    const baseUrl = `${cleanUrl}/club/${id}`;
-    
+    const baseUrl = `${cleanUrl}/webview/club/${id}`;
+
     const params = new URLSearchParams();
     if (sessionId) {
       params.append('session_id', sessionId);
