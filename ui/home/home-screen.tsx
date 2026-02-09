@@ -194,6 +194,7 @@ export function HomeScreen() {
         <Tab
           activeTab={activeTab}
           onTabChange={handleTabChange}
+          totalCount={clubs.length}
         />
     </HeaderContainer>
   );

@@ -9,7 +9,7 @@ import { useMixpanelTrack, useTrackScreenView } from '@/hooks';
 import { Club } from '@/types/club.types';
 import { useRouter } from 'expo-router';
 import React, { RefObject, useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, View } from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from 'styled-components/native';
 import { EmptyState, SubscribedClubList } from './components';
@@ -103,10 +103,10 @@ export function SubscribeScreen() {
           <HeaderTitle type="title1">구독</HeaderTitle>
         </Header>
         <ErrorContainer>
-          <ErrorText type="body1Regular">
-            동아리 정보를 불러오는데 실패했습니다.{'\n'}
-            다시 시도해주세요.
-          </ErrorText>
+          <ErrorTitle>구독한 동아리 목록을 불러오지 못했어요.</ErrorTitle>
+          <RetryButton onPress={refetch} activeOpacity={0.8}>
+            <RetryButtonText>재시도</RetryButtonText>
+          </RetryButton>
         </ErrorContainer>
       </Container>
     );
@@ -180,13 +180,26 @@ const ErrorContainer = styled.View`
   flex: 1;
   justify-content: center;
   align-items: center;
-  padding: 40px;
+  padding: 24px;
 `;
 
-const ErrorText = styled(MoaText)`
-  color: #989898;
+const ErrorTitle = styled(MoaText)`
+  color: #3A3A3A;
   text-align: center;
-  line-height: 24px;
+  margin-bottom: 16px;
+  font-size: 18px;
+`;
+
+const RetryButton = styled(TouchableOpacity)`
+  background-color: #FF5414;
+  padding-horizontal: 28px;
+  padding-vertical: 14px;
+  border-radius: 8px;
+`;
+
+const RetryButtonText = styled(MoaText)`
+  color: #fff;
+  font-size: 16px;
 `;
 
 export default SubscribeScreen;

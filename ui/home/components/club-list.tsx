@@ -54,38 +54,26 @@ export function ClubList({
   listRef,
 }: ClubListProps) {
   /**
-   * 빈 목록 렌더링
+   * 빈 목록/에러 상태 렌더링
    */
   const renderEmptyComponent = () => {
+    if (error && clubs.length === 0) {
+      return (
+        <ErrorContainer>
+          <ErrorTitle>앗, 동아리를 불러오지 못했어요</ErrorTitle>
+          <RetryButton onPress={onRefresh}>
+            <RetryButtonText>재시도</RetryButtonText>
+          </RetryButton>
+        </ErrorContainer>
+      );
+    }
+
     return (
       <EmptyContainer>
         <EmptyText>
           {loading ? '동아리를 불러오는 중...' : '동아리 검색 결과가 없습니다.'}
         </EmptyText>
       </EmptyContainer>
-    );
-  };
-
-  /**
-   * 에러 상태 렌더링
-   */
-  const renderErrorComponent = () => {
-    if (!error) return null;
-    
-    return (
-      <ErrorContainer>
-        <ErrorTitle>
-          동아리 목록을 불러오지 못했어요
-        </ErrorTitle>
-        <ErrorMessage>
-          새로고침 해주세요
-        </ErrorMessage>
-        <RetryButton onPress={onRefresh}>
-          <RetryButtonText>
-            새로고침
-          </RetryButtonText>
-        </RetryButton>
-      </ErrorContainer>
     );
   };
 
@@ -126,7 +114,6 @@ export function ClubList({
         contentContainerStyle={{ paddingVertical: 0}}
       />
 
-      {error && renderErrorComponent()}
     </Container>
   );
 }
@@ -160,37 +147,27 @@ const EmptyDescription = styled(MoaText)`
 `;
 
 const ErrorContainer = styled.View`
-  background-color: #FFEBEE;
-  padding: 24px;
-  margin: 16px;
-  border-radius: 12px;
+  flex: 1;
   align-items: center;
-  border-left-width: 4px;
-  border-left-color: #F44336;
+  justify-content: center;
+  padding: 24px;
 `;
 
 const ErrorTitle = styled(MoaText)`
-  color: #D32F2F;
-  text-align: center;
-  margin-bottom: 8px;
-  font-weight: 600;
-`;
-
-const ErrorMessage = styled(MoaText)`
-  color: #D32F2F;
+  color: #3A3A3A;
   text-align: center;
   margin-bottom: 16px;
-  opacity: 0.8;
+  font-size: 18px;
 `;
 
 const RetryButton = styled(TouchableOpacity)`
-  background-color: #F44336;
-  padding-horizontal: 24px;
-  padding-vertical: 12px;
+  background-color: #FF5414;
+  padding-horizontal: 28px;
+  padding-vertical: 14px;
   border-radius: 8px;
 `;
 
 const RetryButtonText = styled(MoaText)`
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
 `;

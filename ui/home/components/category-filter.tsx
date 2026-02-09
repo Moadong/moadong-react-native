@@ -33,8 +33,8 @@ export function CategoryFilter({
   showAllCategory = true,
 }: CategoryFilterProps) {
   const categories: CategoryType[] = showAllCategory
-    ? ['전체', '학술', '봉사', '운동', '종교', '취미교양', '공연']
-    : ['학술', '봉사', '운동', '종교', '취미교양', '공연'];
+    ? ['전체', '봉사', '종교', '취미교양', '학술', '운동', '공연']
+    : ['봉사', '종교', '취미교양', '학술', '운동', '공연'];
 
   return (
     <Row justify="space-between" style={{ paddingHorizontal: 20 }}>
@@ -92,7 +92,7 @@ export function CategoryGrid({
   onSelect,
   columns = 4,
 }: CategoryFilterProps & { columns?: number }) {
-  const categories: CategoryType[] = ['전체', '학술', '봉사', '운동', '종교', '취미교양', '공연'];
+  const categories: CategoryType[] = ['전체', '봉사', '종교', '취미교양', '학술', '운동', '공연'];
 
   return (
     <GridContainer>

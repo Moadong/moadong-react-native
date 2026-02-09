@@ -18,6 +18,7 @@ export type TabType = 'central';
 interface TabProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
+  totalCount: number;
   style?: any;
 }
 
@@ -32,14 +33,17 @@ interface TabProps {
  * />
  * ```
  */
-export function Tab({ activeTab, onTabChange, style }: TabProps) {
+export function Tab({ activeTab, onTabChange, totalCount, style }: TabProps) {
   return (
     <Container style={style}>
-      <TabContainer>
-        <TabText isActive={activeTab === 'central'}>
-          부경대학교 중앙동아리
-        </TabText>
-      </TabContainer>
+      <Row>
+        <TabContainer>
+          <TabText isActive={activeTab === 'central'}>
+            부경대학교 중앙동아리
+          </TabText>
+        </TabContainer>
+        <CountText>전체 {totalCount}개의 동아리</CountText>
+      </Row>
     </Container>
   );
 }
@@ -50,16 +54,28 @@ const Container = styled.View`
   padding-vertical: 12px;
 `;
 
+const Row = styled.View`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
 const TabContainer = styled.View`
   align-self: flex-start;
 `;
 
 const TabText = styled(MoaText)<{ isActive: boolean }>`
   color: #787878;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   padding-bottom: 1px;
   border-bottom-width: 1px;
   border-bottom-color: #787878;
+`;
+
+const CountText = styled(MoaText)`
+  color: #9A9A9A;
+  font-size: 13px;
+  font-weight: 700;
 `;
 
