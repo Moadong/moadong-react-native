@@ -36,17 +36,26 @@ const pageConfig: Record<
 
 export default function WebViewScreen() {
   const router = useRouter();
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { slug, path, url: urlParam, title } = useLocalSearchParams<{
+    slug?: string;
+    path?: string;
+    url?: string;
+    title?: string;
+  }>();
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState(false);
   const { sessionId } = useMixpanelContext();
 
   const config = pageConfig[slug || ''];
-  
-  const baseUrl = config
-    ? config.url ?? (config.path ? `${webviewUrl}${config.path}` : '')
-    : '';
+
+  const baseUrl = urlParam
+    ? String(urlParam)
+    : path
+      ? `${webviewUrl}${String(path).startsWith('/') ? '' : '/'}${String(path)}`
+      : config
+        ? config.url ?? (config.path ? `${webviewUrl}${config.path}` : '')
+        : '';
   
   // session_id를 URL에 추가
   const url = useMemo(() => {
@@ -72,7 +81,7 @@ export default function WebViewScreen() {
     }
   };
 
-  if (!config) {
+  if (!config && !path && !urlParam) {
     return (
       <Container edges={['top', 'bottom']}>
         <Header>
@@ -95,7 +104,7 @@ export default function WebViewScreen() {
         <BackButton onPress={handleBack} activeOpacity={0.7}>
           <Ionicons name="arrow-back" size={24} color="#111111" />
         </BackButton> 
-        <HeaderTitle type="title2">{config.title}</HeaderTitle>
+        <HeaderTitle type="title2">{title ?? config?.title ?? '웹페이지'}</HeaderTitle>
         <PlaceholderView />
       </Header>
 
