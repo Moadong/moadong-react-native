@@ -100,6 +100,7 @@ export default function RootLayout() {
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="club/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="clubDetail/[id]" options={{ headerShown: false }} />
               <Stack.Screen name="webview/[slug]" options={{ headerShown: false }} />
               <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
             </Stack>
