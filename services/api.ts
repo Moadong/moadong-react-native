@@ -6,6 +6,7 @@ import { ApiErrorResponse } from '@/types/club.types';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
+import { getStoredAccessToken } from './auth-token-storage';
 
 const APP_VERSION_HEADER_KEY = 'APP_VERSION';
 
@@ -54,7 +55,7 @@ const apiClient: AxiosInstance = axios.create({
  * - 요청 로깅 (개발 환경)
  */
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // 앱 버전 헤더 추가 (서버에서 클라이언트 버전 추적/디버깅 용도)
     const appVersion = getAppVersion();
     if (appVersion) {
@@ -67,11 +68,16 @@ apiClient.interceptors.request.use(
       config.headers = headers;
     }
 
-    // TODO: 인증 토큰이 있다면 추가
-    // const token = AsyncStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const accessToken = await getStoredAccessToken();
+    if (accessToken) {
+      const headers: any = config.headers ?? {};
+      if (typeof headers.set === 'function') {
+        headers.set('Authorization', `Bearer ${accessToken}`);
+      } else {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+      config.headers = headers;
+    }
 
     if (__DEV__) {
       const headers = getLoggableHeaders(config.headers);

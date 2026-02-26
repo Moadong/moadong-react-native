@@ -4,10 +4,11 @@
 
 import { api } from '@/services/api';
 import { checkNotificationPermission, getFcmToken, requestUserPermission } from '@/services/fcm.service';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  loadSubscribedClubIdsFromStorage,
+  saveSubscribedClubIdsToStorage,
+} from '@/services/subscription.service';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-
-const SUBSCRIBED_CLUBS_KEY = '@subscribed_clubs';
 
 /**
  * 구독 Context 타입
@@ -30,12 +31,13 @@ const SubscribedClubsContext = createContext<SubscribedClubsContextType | undefi
  */
 interface SubscribedClubsProviderProps {
   children: React.ReactNode;
+  refreshKey?: number;
 }
 
 /**
  * 구독 동아리 전역 상태 Provider
  */
-export function SubscribedClubsProvider({ children }: SubscribedClubsProviderProps) {
+export function SubscribedClubsProvider({ children, refreshKey = 0 }: SubscribedClubsProviderProps) {
   const [subscribedClubIds, setSubscribedClubIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -44,12 +46,9 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
    */
   const loadSubscribedClubs = useCallback(async () => {
     try {
-      const stored = await AsyncStorage.getItem(SUBSCRIBED_CLUBS_KEY);
-      if (stored) {
-        const clubIds = JSON.parse(stored) as string[];
-        setSubscribedClubIds(clubIds);
-        console.log('✅ 구독 목록 로드:', clubIds.length, '개');
-      }
+      const clubIds = await loadSubscribedClubIdsFromStorage();
+      setSubscribedClubIds(clubIds);
+      console.log('✅ 구독 목록 로드:', clubIds.length, '개');
     } catch (error) {
       console.error('❌ 구독 목록 로드 실패:', error);
     }
@@ -60,7 +59,7 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
    */
   const saveSubscribedClubs = useCallback(async (clubIds: string[]) => {
     try {
-      await AsyncStorage.setItem(SUBSCRIBED_CLUBS_KEY, JSON.stringify(clubIds));
+      await saveSubscribedClubIdsToStorage(clubIds);
       console.log('✅ 구독 목록 저장:', clubIds.length, '개');
     } catch (error) {
       console.error('❌ 구독 목록 저장 실패:', error);
@@ -162,7 +161,7 @@ export function SubscribedClubsProvider({ children }: SubscribedClubsProviderPro
    */
   useEffect(() => {
     loadSubscribedClubs();
-  }, [loadSubscribedClubs]);
+  }, [loadSubscribedClubs, refreshKey]);
 
   const value: SubscribedClubsContextType = {
     subscribedClubIds,

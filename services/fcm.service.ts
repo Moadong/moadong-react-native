@@ -5,7 +5,6 @@
  * - 토큰 갱신 / 메시지 리스너 관리
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApps, initializeApp } from '@react-native-firebase/app';
 import {
   AuthorizationStatus,
@@ -37,8 +36,6 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
-
-const FCM_TOKEN_KEY = '@fcm_token';
 
 let firebaseAppPromise: Promise<FirebaseApp> | null = null;
 let messagingModule: FirebaseMessagingTypes.Module | null = null;
@@ -157,31 +154,6 @@ export const requestUserPermission = async (): Promise<boolean> => {
 };
 
 /**
- * 로컬 저장소에서 FCM 토큰 가져오기
- */
-const getStoredFcmToken = async (): Promise<string | null> => {
-  try {
-    const storedToken = await AsyncStorage.getItem(FCM_TOKEN_KEY);
-    return storedToken;
-  } catch (error) {
-    console.error('❌ 저장된 FCM 토큰 로드 실패:', error);
-    return null;
-  }
-};
-
-/**
- * 로컬 저장소에 FCM 토큰 저장
- */
-const storeFcmToken = async (token: string): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
-    console.log('✅ FCM 토큰 저장 완료');
-  } catch (error) {
-    console.error('❌ FCM 토큰 저장 실패:', error);
-  }
-};
-
-/**
  * APNS 토큰 조회 (iOS 전용)
  */
 export const getApnsToken = async (): Promise<string | null> => {
@@ -209,19 +181,15 @@ export const getApnsToken = async (): Promise<string | null> => {
 };
 
 /**
- * FCM 토큰 발급 및 캐싱
+ * FCM 토큰 발급 및 메모리 캐싱(앱 실행 중)
  */
 export const getFcmToken = async (): Promise<string | null> => {
   try {
-    // 1. 로컬 저장소에서 먼저 확인
-    const storedToken = await getStoredFcmToken();
-    if (storedToken) {
-      console.log('✅ 저장된 FCM 토큰 사용:', storedToken.substring(0, 20) + '...');
-      currentToken = storedToken;
-      return storedToken;
+    // 로컬 저장 없이 런타임 메모리에서만 캐싱
+    if (currentToken) {
+      return currentToken;
     }
 
-    // 2. 저장된 토큰이 없으면 새로 발급
     console.log('📱 새 FCM 토큰 발급 중...');
     const messaging = await ensureMessagingModule();
     await messaging.registerDeviceForRemoteMessages();
@@ -232,8 +200,6 @@ export const getFcmToken = async (): Promise<string | null> => {
       return null;
     }
 
-    // 3. 새 토큰 저장
-    await storeFcmToken(token);
     currentToken = token;
     console.log('✅ 새 FCM 토큰 발급 완료');
     return token;
@@ -264,7 +230,9 @@ export const sendFcmTokenToServer = async (token: string): Promise<boolean> => {
 /**
  * FCM 초기화 (최초 1회 실행)
  */
-export const initializeFcm = async (): Promise<(() => void) | undefined> => {
+export const initializeFcm = async (options?: { strict?: boolean }): Promise<(() => void) | undefined> => {
+  const strict = options?.strict ?? false;
+
   if (initializationPromise) {
     return initializationPromise;
   }
@@ -272,6 +240,9 @@ export const initializeFcm = async (): Promise<(() => void) | undefined> => {
   initializationPromise = (async () => {
     const hasPermission = await requestUserPermission();
     if (!hasPermission) {
+      if (strict) {
+        throw new Error('알림 권한이 거부되어 FCM 초기화를 완료할 수 없습니다.');
+      }
       return undefined;
     }
 
@@ -282,15 +253,20 @@ export const initializeFcm = async (): Promise<(() => void) | undefined> => {
 
     const initialToken = await getFcmToken();
     if (!initialToken) {
+      if (strict) {
+        throw new Error('FCM 토큰 발급 실패');
+      }
       return undefined;
     }
 
-    await sendFcmTokenToServer(initialToken);
+    const synced = await sendFcmTokenToServer(initialToken);
+    if (!synced && strict) {
+      throw new Error('FCM 토큰 서버 전송 실패');
+    }
 
     const messaging = await ensureMessagingModule();
     const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
       currentToken = newToken;
-      await storeFcmToken(newToken); // 새 토큰 저장
       await sendFcmTokenToServer(newToken);
       
       // 토큰 갱신 시에도 APNS 토큰 조회 (iOS만)

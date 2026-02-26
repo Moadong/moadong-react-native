@@ -43,3 +43,22 @@ export const getMixpanel = async (): Promise<Mixpanel | null> => {
     return null;
   }
 };
+
+export const identifyMixpanel = async (distinctId: string): Promise<boolean> => {
+  if (!distinctId) {
+    return false;
+  }
+
+  const mixpanel = await getMixpanel();
+  if (!mixpanel) {
+    return false;
+  }
+
+  try {
+    await mixpanel.identify(distinctId);
+    return true;
+  } catch (error) {
+    console.error('[Mixpanel] identify 실패:', error);
+    return false;
+  }
+};

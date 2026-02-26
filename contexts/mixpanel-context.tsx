@@ -1,4 +1,5 @@
-import { getMixpanel } from '@/utils/mixpanel';
+import { getJwtSubject, getStoredAccessToken } from '@/services/auth-token-storage';
+import { identifyMixpanel } from '@/utils/mixpanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -55,6 +56,18 @@ const getOrCreateSessionId = async (): Promise<string> => {
   }
 };
 
+async function getMixpanelDistinctId(sessionId: string): Promise<string> {
+  const accessToken = await getStoredAccessToken();
+  if (accessToken) {
+    const subject = getJwtSubject(accessToken);
+    if (subject) {
+      return `user:${subject}`;
+    }
+  }
+
+  return sessionId;
+}
+
 export const MixpanelProvider: React.FC<MixpanelProviderProps> = ({ children }) => {
   const [sessionId, setSessionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -64,11 +77,11 @@ export const MixpanelProvider: React.FC<MixpanelProviderProps> = ({ children }) 
       try {
         const id = await getOrCreateSessionId();
         setSessionId(id);
-        
-        const mixpanel = await getMixpanel();
-        if (mixpanel) {
-          await mixpanel.identify(id);
-          console.log('[MixpanelProvider] Mixpanel identified with session_id:', id);
+
+        const distinctId = await getMixpanelDistinctId(id);
+        const identified = await identifyMixpanel(distinctId);
+        if (identified) {
+          console.log('[MixpanelProvider] Mixpanel identified with:', distinctId);
         }
       } catch (error) {
         console.error('[MixpanelProvider] 초기화 실패:', error);

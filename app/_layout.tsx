@@ -9,11 +9,13 @@ import 'react-native-get-random-values';
 import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { BootstrapErrorDialog } from '@/components/bootstrap-error-dialog';
 import { CustomSplashScreen } from '@/components/custom-splash-screen';
 import { ForceUpdateDialog } from '@/components/force-update-dialog';
 import { MixpanelProvider } from '@/contexts/mixpanel-context';
 import { SubscribedClubsProvider } from '@/contexts/subscribed-clubs-context';
 import { useFcm } from '@/hooks/use-fcm';
+import { runAppBootstrap } from '@/services/app-bootstrap.service';
 import { checkForceUpdateRequired } from '@/services/force-update.service';
 
 // 네이티브 스플래시 화면을 자동으로 숨기지 않도록 설정
@@ -26,38 +28,63 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+type BootstrapStatus = 'idle' | 'running' | 'success' | 'failed';
+
 export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [forceUpdateRequired, setForceUpdateRequired] = useState(false);
   const [forceUpdateChecked, setForceUpdateChecked] = useState(false);
-  
-  // 강제 업데이트가 필요한 경우(또는 체크 전)에는 FCM 권한 프롬프트가 뜨지 않도록 비활성화
-  useFcm(forceUpdateChecked && !forceUpdateRequired);
+  const [bootstrapStatus, setBootstrapStatus] = useState<BootstrapStatus>('idle');
+  const [bootstrapErrorMessage, setBootstrapErrorMessage] = useState<string | undefined>(undefined);
+  const [subscribedClubsRefreshKey, setSubscribedClubsRefreshKey] = useState(0);
+
+  const bootstrapSucceeded = bootstrapStatus === 'success';
+  const shouldBlockSplash = forceUpdateRequired || !bootstrapSucceeded;
+
+  // 강제 업데이트가 필요한 경우(또는 체크 전)에는 FCM 권한 프롬프트/핸들러 설정이 뜨지 않도록 비활성화
+  useFcm(forceUpdateChecked && !forceUpdateRequired && bootstrapSucceeded);
+
+  const runBootstrapSequence = useCallback(async () => {
+    setBootstrapStatus('running');
+    setBootstrapErrorMessage(undefined);
+
+    const { subscribedClubCount } = await runAppBootstrap();
+    setSubscribedClubsRefreshKey((prev) => prev + 1);
+    setBootstrapStatus('success');
+    console.log('✅ 부트스트랩 완료 - 구독 동아리 수:', subscribedClubCount);
+  }, []);
 
   useEffect(() => {
     async function prepare() {
       try {
         console.log('📱 앱 초기화 시작...');
-        
-        // 여기에 앱 초기화 로직을 추가할 수 있습니다
-        // 예: 폰트 로드, 데이터 프리페치 등
 
         // 1) 강제 업데이트 체크 (Remote Config)
         const required = await checkForceUpdateRequired();
         setForceUpdateRequired(required);
         setForceUpdateChecked(true);
 
-        // 2) 강제 업데이트가 아닐 때만 ATT 요청
-        if (!required) {
-          await requestTrackingPermissionOnLaunch();
+        if (required) {
+          console.log('⛔️ 강제 업데이트 필요: 부트스트랩 중단');
+          return;
         }
-        
+
+        // 2) 강제 업데이트가 아닐 때만 ATT 요청
+        await requestTrackingPermissionOnLaunch();
+
+        // 3) Access Token -> FCM -> 구독 목록 -> Mixpanel 순서 부트스트랩
+        await runBootstrapSequence();
+
         // 최소 로딩 시간 보장 (너무 빨리 사라지지 않도록)
         await new Promise(resolve => setTimeout(resolve, 500));
         console.log('✅ 앱 초기화 완료');
       } catch (e) {
         console.warn('❌ 앱 초기화 중 오류:', e);
+        setBootstrapStatus('failed');
+        setBootstrapErrorMessage(
+          e instanceof Error ? e.message : '초기화 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'
+        );
       } finally {
         // 앱 준비 완료
         setAppIsReady(true);
@@ -65,7 +92,7 @@ export default function RootLayout() {
     }
 
     prepare();
-  }, []);
+  }, [runBootstrapSequence]);
 
   // 앱이 준비되면 네이티브 스플래시를 숨기고 커스텀 스플래시 시작
   useEffect(() => {
@@ -83,19 +110,40 @@ export default function RootLayout() {
   const onFinishSplash = useCallback(() => {
     // 커스텀 스플래시 애니메이션이 완료되면
     console.log('🎭 커스텀 스플래시 종료, 메인 화면으로 전환');
-    if (forceUpdateRequired) {
-      console.log('⛔️ 강제 업데이트 필요: 스플래시 유지');
+    if (shouldBlockSplash) {
+      console.log('⛔️ 스플래시 유지:', { forceUpdateRequired, bootstrapStatus });
       return;
     }
     setShowSplash(false);
-  }, [forceUpdateRequired]);
+  }, [forceUpdateRequired, bootstrapStatus, shouldBlockSplash]);
 
-  console.log('🔄 RootLayout 렌더링, showSplash:', showSplash, ', appIsReady:', appIsReady);
+  const handleRetryBootstrap = useCallback(async () => {
+    if (bootstrapStatus === 'running') {
+      return;
+    }
+
+    try {
+      await runBootstrapSequence();
+    } catch (error) {
+      console.warn('❌ 부트스트랩 재시도 실패:', error);
+      setBootstrapStatus('failed');
+      setBootstrapErrorMessage(
+        error instanceof Error ? error.message : '재시도에 실패했어요. 네트워크를 확인하고 다시 시도해 주세요.'
+      );
+    }
+  }, [bootstrapStatus, runBootstrapSequence]);
+
+  console.log('🔄 RootLayout 렌더링', {
+    showSplash,
+    appIsReady,
+    bootstrapStatus,
+    forceUpdateRequired,
+  });
 
   return (
     <SafeAreaProvider>
       <MixpanelProvider>
-        <SubscribedClubsProvider>
+        <SubscribedClubsProvider refreshKey={subscribedClubsRefreshKey}>
           <ThemeProvider value={DefaultTheme}>
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -109,12 +157,20 @@ export default function RootLayout() {
             {/* 강제 업데이트 다이얼로그 (닫기 불가) */}
             <ForceUpdateDialog visible={forceUpdateRequired} />
 
+            {/* 부트스트랩 오류 다이얼로그 (재시도 가능) */}
+            <BootstrapErrorDialog
+              visible={showSplash && appIsReady && !forceUpdateRequired && bootstrapStatus === 'failed'}
+              message={bootstrapErrorMessage}
+              isRetrying={bootstrapStatus === 'running'}
+              onRetry={handleRetryBootstrap}
+            />
+
             {/* 커스텀 스플래시 스크린 */}
             {showSplash && (
               <CustomSplashScreen 
                 isReady={appIsReady} 
                 onFinish={onFinishSplash}
-                blockFinish={forceUpdateRequired}
+                blockFinish={shouldBlockSplash}
               />
             )}
           </ThemeProvider>
