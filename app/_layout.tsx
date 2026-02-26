@@ -82,9 +82,7 @@ export default function RootLayout() {
       } catch (e) {
         console.warn('❌ 앱 초기화 중 오류:', e);
         setBootstrapStatus('failed');
-        setBootstrapErrorMessage(
-          e instanceof Error ? e.message : '초기화 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'
-        );
+        setBootstrapErrorMessage(getUserFriendlyBootstrapMessage(e));
       } finally {
         // 앱 준비 완료
         setAppIsReady(true);
@@ -127,9 +125,7 @@ export default function RootLayout() {
     } catch (error) {
       console.warn('❌ 부트스트랩 재시도 실패:', error);
       setBootstrapStatus('failed');
-      setBootstrapErrorMessage(
-        error instanceof Error ? error.message : '재시도에 실패했어요. 네트워크를 확인하고 다시 시도해 주세요.'
-      );
+      setBootstrapErrorMessage(getUserFriendlyBootstrapMessage(error));
     }
   }, [bootstrapStatus, runBootstrapSequence]);
 
@@ -195,4 +191,22 @@ async function requestTrackingPermissionOnLaunch() {
   } catch (error) {
     console.warn('⚠️ ATT 권한 요청 실패:', error);
   }
+}
+
+function getUserFriendlyBootstrapMessage(error: unknown): string {
+  const rawMessage = error instanceof Error ? error.message.toLowerCase() : '';
+
+  if (rawMessage.includes('권한') || rawMessage.includes('permission')) {
+    return '알림 권한이 꺼져 있어요. 권한을 허용한 뒤 다시 시도해 주세요.';
+  }
+
+  if (
+    rawMessage.includes('network') ||
+    rawMessage.includes('timeout') ||
+    rawMessage.includes('네트워크')
+  ) {
+    return '인터넷 연결이 불안정해요. 연결 상태를 확인한 뒤 다시 시도해 주세요.';
+  }
+
+  return '일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
 }

@@ -23,16 +23,16 @@ export function BootstrapErrorDialog({
       <Overlay>
         <DialogContainer>
           <DialogContent>
-            <Title type="title3">초기화에 실패했어요</Title>
+            <Title type="title3">잠시 문제가 생겼어요</Title>
             <Message type="body1Regular">
-              {message || '네트워크 상태를 확인한 뒤 다시 시도해 주세요.'}
+              {message || '일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'}
             </Message>
           </DialogContent>
 
           <ButtonRow>
             <RetryButton onPress={onRetry} activeOpacity={0.8} disabled={isRetrying}>
               <RetryButtonText type="body1Medium">
-                {isRetrying ? '재시도 중...' : '재시도'}
+                {isRetrying ? '다시 시도 중...' : '다시 시도'}
               </RetryButtonText>
             </RetryButton>
           </ButtonRow>
