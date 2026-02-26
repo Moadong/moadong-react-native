@@ -1,4 +1,4 @@
-import { api } from './api';
+import { publicApi } from './api';
 import { getOrCreateAuthSubject, getStoredAccessToken, saveAccessToken } from './auth-token-storage';
 
 type IssueAccessTokenResponse =
@@ -49,7 +49,7 @@ export async function issueAccessToken(): Promise<string> {
     iat: Math.floor(Date.now() / 1000),
   };
 
-  const response = await api.post<IssueAccessTokenResponse>('/auth/student', payload);
+  const response = await publicApi.post<IssueAccessTokenResponse>('/auth/student', payload);
   const token = extractAccessToken(response);
 
   if (!token) {

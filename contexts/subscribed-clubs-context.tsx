@@ -2,7 +2,7 @@
  * 구독 동아리 전역 상태 관리 Context
  */
 
-import { api } from '@/services/api';
+import { authApi } from '@/services/api';
 import { checkNotificationPermission, getFcmToken, requestUserPermission } from '@/services/fcm.service';
 import {
   loadSubscribedClubIdsFromStorage,
@@ -78,7 +78,7 @@ export function SubscribedClubsProvider({ children, refreshKey = 0 }: Subscribed
         return;
       }
 
-      await api.put('/api/v2/fcm/subscribe', {
+      await authApi.put('/api/v2/fcm/subscribe', {
         fcmToken,
         clubIds: subscribedClubIds,
       });
@@ -143,7 +143,7 @@ export function SubscribedClubsProvider({ children, refreshKey = 0 }: Subscribed
         return { needsPermission: false };
       }
 
-      await api.put('/api/v2/fcm/subscribe', {
+      await authApi.put('/api/v2/fcm/subscribe', {
         fcmToken,
         clubIds: newClubIds,
       });

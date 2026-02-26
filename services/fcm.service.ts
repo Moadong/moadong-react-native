@@ -21,7 +21,7 @@ import * as Notifications from 'expo-notifications';
 import { PermissionsAndroid, Platform } from 'react-native';
 
 import { firebaseConfig } from '@/constants/firebase-config';
-import { api } from './api';
+import { authApi } from './api';
 
 // Firebase App 타입
 type FirebaseApp = any;
@@ -218,7 +218,7 @@ export const sendFcmTokenToServer = async (token: string): Promise<boolean> => {
   }
 
   try {
-    await api.put('/api/student/fcm-token', { fcmToken: token });
+    await authApi.put('/api/student/fcm-token', { fcmToken: token });
     lastSyncedToken = token;
     return true;
   } catch (error) {

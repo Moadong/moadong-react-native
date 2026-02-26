@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { api } from './api';
+import { authApi } from './api';
 
 const SUBSCRIBED_CLUBS_KEY = '@subscribed_clubs';
 
@@ -71,7 +71,7 @@ export async function fetchSubscribedClubIdsByAccessToken(studentToken: string):
     throw new Error('studentToken이 없어 구독 목록을 조회할 수 없습니다.');
   }
 
-  const response = await api.get<SubscribedClubsResponse>('/api/student/subscriptions', {
+  const response = await authApi.get<SubscribedClubsResponse>('/api/student/subscriptions', {
     params: { studentToken },
   });
   return normalizeClubIds(response);

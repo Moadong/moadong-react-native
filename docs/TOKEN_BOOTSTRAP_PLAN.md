@@ -57,6 +57,21 @@ flowchart TD
   - JWT subject(`sub`, `userId`, `user_id`, `id`) 기반 identify 우선
   - 구현: `contexts/mixpanel-context.tsx`, `utils/mixpanel.ts`
 
+## API 클라이언트 분류 규칙
+
+- `services/api.ts`는 두 클라이언트를 제공합니다.
+  - `publicApi`: AccessToken 없이 호출해야 하는 요청
+  - `authApi`: AccessToken이 필요한 요청 (`Authorization: Bearer <accessToken>` 자동 주입)
+- 현재 분류
+  - `publicApi`
+    - `POST /auth/student` (AccessToken 발급)
+    - 공개 동아리 조회 API (`/api/club/*`)
+  - `authApi`
+    - `PUT /api/student/fcm-token`
+    - `GET /api/student/subscriptions`
+    - `PUT /api/v2/fcm/subscribe`
+- 신규 API 추가 시 반드시 `publicApi` 또는 `authApi`를 명시적으로 선택합니다.
+
 ## API 명세
 
 - Access Token 발급: `POST /auth/student`

@@ -3,7 +3,7 @@
  */
 
 import { ApiResponse, Club, ClubSearchData, ClubSearchParams, PageResponse } from '@/types/club.types';
-import { api } from './api';
+import { publicApi } from './api';
 
 /**
  * 동아리 서비스
@@ -42,7 +42,7 @@ export const clubService = {
       queryParams.keyword = keyword.trim();
     }
 
-    const response = await api.get<ApiResponse<ClubSearchData>>('/api/club/search/', {
+    const response = await publicApi.get<ApiResponse<ClubSearchData>>('/api/club/search/', {
       params: queryParams,
     });
 
@@ -71,7 +71,7 @@ export const clubService = {
    * ```
    */
   getClubById: async (id: number): Promise<Club> => {
-    const response = await api.get<ApiResponse<Club>>(`/api/club/${id}/`);
+    const response = await publicApi.get<ApiResponse<Club>>(`/api/club/${id}/`);
     return (response.data as any)?.data || {};
   },
 
@@ -84,7 +84,7 @@ export const clubService = {
    * ```
    */
   getPopularClubs: async (limit: number = 10): Promise<Club[]> => {
-    const response = await api.get<ApiResponse<Club[]>>('/api/club/popular/', {
+    const response = await publicApi.get<ApiResponse<Club[]>>('/api/club/popular/', {
       params: { size: limit },
     });
     return (response.data as any)?.data || [];
@@ -99,7 +99,7 @@ export const clubService = {
    * ```
    */
   getRecommendedClubs: async (): Promise<Club[]> => {
-    const response = await api.get<ApiResponse<Club[]>>('/api/club/recommended/');
+    const response = await publicApi.get<ApiResponse<Club[]>>('/api/club/recommended/');
     return (response.data as any)?.data || [];
   },
 };
