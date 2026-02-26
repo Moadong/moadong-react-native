@@ -1,9 +1,19 @@
 import { api } from './api';
-import { getStoredAccessToken, saveAccessToken } from './auth-token-storage';
+import { getOrCreateAuthSubject, getStoredAccessToken, saveAccessToken } from './auth-token-storage';
 
 type IssueAccessTokenResponse =
+  | {
+      statuscode?: string;
+      message?: string;
+      data?: { accessToken?: string };
+    }
   | { accessToken?: string; token?: string }
   | { data?: { accessToken?: string; token?: string } };
+
+type IssueAccessTokenPayload = {
+  sub: string;
+  iat: number;
+};
 
 function extractAccessToken(response: IssueAccessTokenResponse): string | null {
   if (!response || typeof response !== 'object') {
@@ -34,7 +44,12 @@ function extractAccessToken(response: IssueAccessTokenResponse): string | null {
 }
 
 export async function issueAccessToken(): Promise<string> {
-  const response = await api.post<IssueAccessTokenResponse>('/api/auth/access-token');
+  const payload: IssueAccessTokenPayload = {
+    sub: await getOrCreateAuthSubject(),
+    iat: Math.floor(Date.now() / 1000),
+  };
+
+  const response = await api.post<IssueAccessTokenResponse>('/auth/student', payload);
   const token = extractAccessToken(response);
 
   if (!token) {

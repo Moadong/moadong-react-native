@@ -1,6 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ACCESS_TOKEN_KEY = '@access_token';
+const AUTH_SUBJECT_KEY = '@auth_subject';
+
+function generateUuidV4(): string {
+  const template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+  return template.replace(/[xy]/g, (char) => {
+    const random = Math.floor(Math.random() * 16);
+    const value = char === 'x' ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+}
 
 export async function getStoredAccessToken(): Promise<string | null> {
   try {
@@ -13,6 +23,22 @@ export async function getStoredAccessToken(): Promise<string | null> {
 
 export async function saveAccessToken(token: string): Promise<void> {
   await AsyncStorage.setItem(ACCESS_TOKEN_KEY, token);
+}
+
+export async function getOrCreateAuthSubject(): Promise<string> {
+  try {
+    const stored = await AsyncStorage.getItem(AUTH_SUBJECT_KEY);
+    if (stored) {
+      return stored;
+    }
+
+    const subject = generateUuidV4();
+    await AsyncStorage.setItem(AUTH_SUBJECT_KEY, subject);
+    return subject;
+  } catch (error) {
+    console.warn('⚠️ auth subject 저장 실패, 임시 값 사용:', error);
+    return generateUuidV4();
+  }
 }
 
 export function getJwtSubject(accessToken: string): string | null {

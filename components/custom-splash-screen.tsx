@@ -5,7 +5,7 @@
 
 import MoadongIcon from '@/assets/icons/ic-moadong.svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
@@ -26,17 +26,29 @@ interface CustomSplashScreenProps {
 }
 
 export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: CustomSplashScreenProps) {
-  // 애니메이션 값들
   const logoScale = useSharedValue(0.3);
   const logoOpacity = useSharedValue(0);
   const textOpacity = useSharedValue(0);
   const textTranslateY = useSharedValue(20);
   const fadeOutOpacity = useSharedValue(1);
+  const hasAnimatedOnce = useRef(false);
+
+  const triggerFadeOut = useCallback((delayMs: number) => {
+    fadeOutOpacity.value = withDelay(
+      delayMs,
+      withTiming(
+        0,
+        { duration: 300, easing: Easing.in(Easing.ease) },
+        (finished) => {
+          if (finished) {
+            runOnJS(onFinish)();
+          }
+        }
+      )
+    );
+  }, [fadeOutOpacity, onFinish]);
 
   const startAnimation = useCallback((shouldBlockFinish: boolean) => {
-    console.log('🎬 커스텀 스플래시 애니메이션 시작');
-    
-    // 1. 로고 페이드인 + 스케일 애니메이션
     logoOpacity.value = withTiming(1, {
       duration: 500,
       easing: Easing.out(Easing.ease),
@@ -48,52 +60,31 @@ export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: C
       mass: 0.7,
     });
 
-    // 2. 텍스트 페이드인 + 슬라이드업 (로고 애니메이션 후)
     textOpacity.value = withDelay(
       300,
-      withTiming(1, {
-        duration: 400,
-        easing: Easing.out(Easing.ease),
-      })
+      withTiming(1, { duration: 400, easing: Easing.out(Easing.ease) })
     );
 
     textTranslateY.value = withDelay(
       300,
-      withTiming(0, {
-        duration: 400,
-        easing: Easing.out(Easing.ease),
-      })
+      withTiming(0, { duration: 400, easing: Easing.out(Easing.ease) })
     );
 
-    // 3. 전체 페이드아웃 (2.2초 후 시작, 총 2.5초)
-    // 강제 업데이트 등으로 앱 진입을 막아야 하는 경우에는 페이드아웃/종료 콜백을 실행하지 않음
     if (!shouldBlockFinish) {
-      fadeOutOpacity.value = withDelay(
-        2200, // 2.2초 동안 애니메이션 표시
-        withTiming(
-          0,
-          {
-            duration: 300,
-            easing: Easing.in(Easing.ease),
-          },
-          (finished) => {
-            if (finished) {
-              // 애니메이션 완료 후 콜백 실행
-              console.log('✅ 커스텀 스플래시 애니메이션 완료');
-              runOnJS(onFinish)();
-            }
-          }
-        )
-      );
+      triggerFadeOut(2200);
     }
-  }, [logoOpacity, logoScale, textOpacity, textTranslateY, fadeOutOpacity, onFinish]);
+  }, [logoOpacity, logoScale, textOpacity, textTranslateY, triggerFadeOut]);
 
   useEffect(() => {
-    console.log('🎨 커스텀 스플래시 스크린 마운트됨, isReady:', isReady, ', blockFinish:', blockFinish);
-    if (isReady) {
+    if (!isReady) return;
+
+    if (!hasAnimatedOnce.current) {
+      hasAnimatedOnce.current = true;
       startAnimation(blockFinish);
+    } else if (!blockFinish) {
+      triggerFadeOut(0);
     }
-  }, [isReady, blockFinish, startAnimation]);
+  }, [isReady, blockFinish, startAnimation, triggerFadeOut]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,

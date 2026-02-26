@@ -133,12 +133,14 @@ export default function RootLayout() {
     }
   }, [bootstrapStatus, runBootstrapSequence]);
 
-  console.log('🔄 RootLayout 렌더링', {
-    showSplash,
-    appIsReady,
-    bootstrapStatus,
-    forceUpdateRequired,
-  });
+  if (__DEV__) {
+    console.log('🔄 RootLayout 렌더링', {
+      showSplash,
+      appIsReady,
+      bootstrapStatus,
+      forceUpdateRequired,
+    });
+  }
 
   return (
     <SafeAreaProvider>

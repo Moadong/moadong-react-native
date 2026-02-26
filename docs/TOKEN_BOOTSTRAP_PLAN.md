@@ -57,16 +57,26 @@ flowchart TD
   - JWT subject(`sub`, `userId`, `user_id`, `id`) 기반 identify 우선
   - 구현: `contexts/mixpanel-context.tsx`, `utils/mixpanel.ts`
 
-## API 가정(명세 미확정)
+## API 명세
 
-- Access Token 발급: `POST /api/auth/access-token`
-  - 응답 후보: `{ accessToken }` 또는 `{ token }` 또는 `{ data: { accessToken|token } }`
-- 구독 목록 조회: `GET /api/fcm/subscribe` (Authorization 헤더 사용)
-  - 응답 후보: `string[]` 또는 `{ clubIds }` 또는 `{ subscribedClubIds }`
-- FCM 토큰 등록: `POST /api/fcm`
-  - 요청: `{ fcmToken }`
-
-명세가 확정되면 위 엔드포인트/스키마를 실제 계약으로 교체합니다.
+- Access Token 발급: `POST /auth/student`
+  - payload:
+    - `sub`: UUID 문자열 (클라이언트에서 생성/보관한 subject)
+    - `iat`: Unix timestamp(초)
+  - 성공 응답:
+    - `statuscode: "200"`
+    - `message: "ok"`
+    - `data.accessToken: "<JWT>"`
+- FCM TOKEN Rotation: `PUT /api/student/fcm-token` (Authorization 헤더 사용)
+  - 요청 body: `{ "fcmToken": "<fcmToken>" }`
+  - 성공 응답: `statuscode: "200"`, `message: "ok"`, `data: {...}`
+- 구독 목록 조회: `GET /api/student/subscriptions` (Authorization 헤더 사용)
+  - 필수 query: `studentToken` (FCM 토큰)
+  - 성공 응답: `data.clubIds: string[]`
+  - 실패 응답:
+    - `400`: `studentToken` 누락/형식 오류
+    - `401`: JWT 유효하지 않음
+    - `404`: `studentToken` 미존재
 
 ## 저장소 정책
 

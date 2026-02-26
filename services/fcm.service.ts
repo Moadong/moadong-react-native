@@ -218,7 +218,7 @@ export const sendFcmTokenToServer = async (token: string): Promise<boolean> => {
   }
 
   try {
-    await api.post('/api/fcm', { fcmToken: token });
+    await api.put('/api/student/fcm-token', { fcmToken: token });
     lastSyncedToken = token;
     return true;
   } catch (error) {
@@ -233,11 +233,11 @@ export const sendFcmTokenToServer = async (token: string): Promise<boolean> => {
 export const initializeFcm = async (options?: { strict?: boolean }): Promise<(() => void) | undefined> => {
   const strict = options?.strict ?? false;
 
-  if (initializationPromise) {
+  if (initializationPromise && !strict) {
     return initializationPromise;
   }
 
-  initializationPromise = (async () => {
+  const promise = (async () => {
     const hasPermission = await requestUserPermission();
     if (!hasPermission) {
       if (strict) {
@@ -246,7 +246,6 @@ export const initializeFcm = async (options?: { strict?: boolean }): Promise<(()
       return undefined;
     }
 
-    // iOS의 경우 APNS 토큰 조회 및 로그 출력
     if (Platform.OS === 'ios') {
       await getApnsToken();
     }
@@ -269,14 +268,26 @@ export const initializeFcm = async (options?: { strict?: boolean }): Promise<(()
       currentToken = newToken;
       await sendFcmTokenToServer(newToken);
       
-      // 토큰 갱신 시에도 APNS 토큰 조회 (iOS만)
       if (Platform.OS === 'ios') {
         await getApnsToken();
       }
     });
 
     return unsubscribe;
-  })().catch((error) => {
+  })();
+
+  if (strict) {
+    try {
+      const result = await promise;
+      initializationPromise = Promise.resolve(result);
+      return result;
+    } catch (error) {
+      initializationPromise = null;
+      throw error;
+    }
+  }
+
+  initializationPromise = promise.catch((error) => {
     initializationPromise = null;
     console.error('❌ FCM 초기화 실패:', error);
     return undefined;
