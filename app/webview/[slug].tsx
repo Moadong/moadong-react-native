@@ -28,9 +28,9 @@ const pageConfig: Record<
     title: '총 동아리 연합회',
     path: '/club-union',
   },
-  'festival-introduction': {
-    title: '동소한',
-    path: '/festival-introduction',
+  "festival-introduction": {
+    title: "동아리 소개 한마당",
+    path: "/festival-introduction",
   },
   'privacy-policy': {
     title: '개인정보 처리방침',
