@@ -28,6 +28,10 @@ const pageConfig: Record<
     title: '총 동아리 연합회',
     path: '/club-union',
   },
+  "festival-introduction": {
+    title: "동아리 소개 한마당",
+    path: "/festival-introduction",
+  },
   'privacy-policy': {
     title: '개인정보 처리방침',
     url: 'https://honorable-cough-8f9.notion.site/232aad23209680f2a2cadb146eff81cd',
@@ -221,4 +225,3 @@ const ErrorText = styled(MoaText)`
   text-align: center;
   line-height: 24px;
 `;
-
