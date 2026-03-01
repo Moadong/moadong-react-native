@@ -2,7 +2,7 @@
   "expo": {
     "name": "모아동",
     "slug": "moadong-app",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "moadongapp",
@@ -24,7 +24,7 @@
       "appleTeamId": "2QMK9GBWN6"
     },
     "android": {
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

@@ -243,11 +243,9 @@ export const initializeFcm = async (options?: { strict?: boolean; promptForPermi
       ? await requestUserPermission()
       : (await checkNotificationPermission()).granted;
 
-    if (!hasPermission) {
-      if (strict) {
-        throw new Error('알림 권한이 없어 FCM 초기화를 완료할 수 없습니다.');
-      }
-      return undefined;
+    // 권한이 없어도 FCM 토큰 발급/전송은 계속 시도한다.
+    if (!hasPermission && __DEV__) {
+      console.log('ℹ️ 알림 권한이 없어도 FCM 토큰 발급을 시도합니다.');
     }
 
     if (Platform.OS === 'ios') {
