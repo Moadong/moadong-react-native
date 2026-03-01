@@ -66,14 +66,8 @@ export async function saveSubscribedClubIdsToStorage(clubIds: string[]): Promise
   await AsyncStorage.setItem(SUBSCRIBED_CLUBS_KEY, JSON.stringify(clubIds));
 }
 
-export async function fetchSubscribedClubIdsByAccessToken(studentToken: string): Promise<string[]> {
-  if (!studentToken) {
-    throw new Error('studentToken이 없어 구독 목록을 조회할 수 없습니다.');
-  }
-
-  const response = await authApi.get<SubscribedClubsResponse>('/api/student/subscriptions', {
-    params: { studentToken },
-  });
+export async function fetchSubscribedClubIdsByAccessToken(): Promise<string[]> {
+  const response = await authApi.get<SubscribedClubsResponse>('/api/student/subscriptions');
   return normalizeClubIds(response);
 }
 

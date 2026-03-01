@@ -230,18 +230,22 @@ export const sendFcmTokenToServer = async (token: string): Promise<boolean> => {
 /**
  * FCM 초기화 (최초 1회 실행)
  */
-export const initializeFcm = async (options?: { strict?: boolean }): Promise<(() => void) | undefined> => {
+export const initializeFcm = async (options?: { strict?: boolean; promptForPermission?: boolean }): Promise<(() => void) | undefined> => {
   const strict = options?.strict ?? false;
+  const promptForPermission = options?.promptForPermission ?? false;
 
   if (initializationPromise && !strict) {
     return initializationPromise;
   }
 
   const promise = (async () => {
-    const hasPermission = await requestUserPermission();
+    const hasPermission = promptForPermission
+      ? await requestUserPermission()
+      : (await checkNotificationPermission()).granted;
+
     if (!hasPermission) {
       if (strict) {
-        throw new Error('알림 권한이 거부되어 FCM 초기화를 완료할 수 없습니다.');
+        throw new Error('알림 권한이 없어 FCM 초기화를 완료할 수 없습니다.');
       }
       return undefined;
     }
@@ -258,15 +262,9 @@ export const initializeFcm = async (options?: { strict?: boolean }): Promise<(()
       return undefined;
     }
 
-    const synced = await sendFcmTokenToServer(initialToken);
-    if (!synced && strict) {
-      throw new Error('FCM 토큰 서버 전송 실패');
-    }
-
     const messaging = await ensureMessagingModule();
     const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
       currentToken = newToken;
-      await sendFcmTokenToServer(newToken);
       
       if (Platform.OS === 'ios') {
         await getApnsToken();

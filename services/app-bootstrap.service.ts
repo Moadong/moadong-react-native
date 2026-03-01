@@ -1,20 +1,19 @@
 import { ensureAccessToken } from './auth-token.service';
 import { getJwtSubject } from './auth-token-storage';
-import { getFcmToken, initializeFcm } from './fcm.service';
+import { getFcmToken, initializeFcm, sendFcmTokenToServer } from './fcm.service';
 import { fetchSubscribedClubIdsByAccessToken, saveSubscribedClubIdsToStorage } from './subscription.service';
 import { identifyMixpanel } from '@/utils/mixpanel';
 
 export async function runAppBootstrap(): Promise<{ subscribedClubCount: number }> {
   const accessToken = await ensureAccessToken();
 
-  await initializeFcm({ strict: true });
-
-  const studentToken = await getFcmToken();
-  if (!studentToken) {
-    throw new Error('studentToken(FCM)이 없어 구독 목록을 조회할 수 없습니다.');
+  await initializeFcm({ strict: false, promptForPermission: false });
+  const fcmToken = await getFcmToken();
+  if (fcmToken) {
+    await sendFcmTokenToServer(fcmToken);
   }
 
-  const subscribedClubIds = await fetchSubscribedClubIdsByAccessToken(studentToken);
+  const subscribedClubIds = await fetchSubscribedClubIdsByAccessToken();
   await saveSubscribedClubIdsToStorage(subscribedClubIds);
 
   const subject = getJwtSubject(accessToken);

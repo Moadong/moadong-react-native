@@ -86,12 +86,9 @@ flowchart TD
   - 요청 body: `{ "fcmToken": "<fcmToken>" }`
   - 성공 응답: `statuscode: "200"`, `message: "ok"`, `data: {...}`
 - 구독 목록 조회: `GET /api/student/subscriptions` (Authorization 헤더 사용)
-  - 필수 query: `studentToken` (FCM 토큰)
   - 성공 응답: `data.clubIds: string[]`
   - 실패 응답:
-    - `400`: `studentToken` 누락/형식 오류
     - `401`: JWT 유효하지 않음
-    - `404`: `studentToken` 미존재
 
 ## 저장소 정책
 

@@ -6,7 +6,7 @@ import { ApiErrorResponse } from '@/types/club.types';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
-import { getStoredAccessToken } from './auth-token-storage';
+import { getOrCreateAuthSubject, getStoredAccessToken, saveAccessToken } from './auth-token-storage';
 
 const APP_VERSION_HEADER_KEY = 'APP_VERSION';
 
@@ -47,6 +47,45 @@ function createApiClient(): AxiosInstance {
     },
   });
 }
+
+type AccessTokenIssueResponse =
+  | {
+      statuscode?: string;
+      message?: string;
+      data?: { accessToken?: string };
+    }
+  | { accessToken?: string; token?: string }
+  | { data?: { accessToken?: string; token?: string } };
+
+function extractAccessToken(response: AccessTokenIssueResponse): string | null {
+  const payload = response as any;
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const directToken =
+    typeof payload.accessToken === 'string'
+      ? payload.accessToken
+      : typeof payload.token === 'string'
+        ? payload.token
+        : null;
+  if (directToken) {
+    return directToken;
+  }
+
+  if (payload.data && typeof payload.data === 'object') {
+    if (typeof payload.data.accessToken === 'string') {
+      return payload.data.accessToken;
+    }
+    if (typeof payload.data.token === 'string') {
+      return payload.data.token;
+    }
+  }
+
+  return null;
+}
+
+let refreshTokenPromise: Promise<string | null> | null = null;
 
 function attachInterceptors(client: AxiosInstance, options: { withAuth: boolean }) {
   client.interceptors.request.use(
@@ -111,10 +150,52 @@ function attachInterceptors(client: AxiosInstance, options: { withAuth: boolean 
 
       return response;
     },
-    (error: AxiosError<ApiErrorResponse>) => {
+    async (error: AxiosError<ApiErrorResponse>) => {
+      const status = error.response?.status;
+      const requestConfig = (error.config ?? {}) as AxiosRequestConfig & { _retry?: boolean };
+
+      if (options.withAuth && status === 401 && !requestConfig._retry) {
+        requestConfig._retry = true;
+
+        if (!refreshTokenPromise) {
+          refreshTokenPromise = (async () => {
+            try {
+              const sub = await getOrCreateAuthSubject();
+              const iat = Math.floor(Date.now() / 1000);
+              const response = await publicApiClient.post<AccessTokenIssueResponse>('/auth/student', { sub, iat });
+              const nextToken = extractAccessToken(response.data);
+              if (!nextToken) {
+                return null;
+              }
+              await saveAccessToken(nextToken);
+              return nextToken;
+            } catch (refreshError) {
+              if (__DEV__) {
+                console.warn('⚠️ AccessToken 재발급 실패:', refreshError);
+              }
+              return null;
+            } finally {
+              refreshTokenPromise = null;
+            }
+          })();
+        }
+
+        const refreshedToken = await refreshTokenPromise;
+        if (refreshedToken) {
+          const headers: any = requestConfig.headers ?? {};
+          if (typeof headers.set === 'function') {
+            headers.set('Authorization', `Bearer ${refreshedToken}`);
+          } else {
+            headers.Authorization = `Bearer ${refreshedToken}`;
+          }
+          requestConfig.headers = headers;
+          return client.request(requestConfig);
+        }
+      }
+
       if (__DEV__) {
         console.error('❌ API Error:', {
-          status: error.response?.status,
+          status,
           message: error.response?.data?.message || error.message,
           url: error.config?.url,
         });

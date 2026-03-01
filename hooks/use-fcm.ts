@@ -54,7 +54,7 @@ export const useFcm = (enabled: boolean = true) => {
     };
 
     // FCM 초기화
-    initializeFcm()
+    initializeFcm({ promptForPermission: false })
       .then((cleanup) => {
         tokenUnsubscribe = cleanup;
       })

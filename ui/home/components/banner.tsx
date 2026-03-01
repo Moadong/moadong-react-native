@@ -2,7 +2,7 @@ import { MoaImage } from "@/components/moa-image";
 import { USER_EVENT } from "@/constants/eventname";
 import { BorderRadius, Spacing } from "@/constants/theme";
 import { useMixpanelTrack } from "@/hooks";
-import { api } from "@/services/api";
+import { publicApi } from "@/services/api";
 import { BannerProps, HomeBannerItem } from "@/ui/home/model/banner";
 import { useRouter } from "expo-router";
 import {
@@ -97,6 +97,10 @@ function normalizeBannerItems(images: any[] | undefined): HomeBannerItem[] {
     .filter((item): item is HomeBannerItem => item !== null);
 }
 
+function getFallbackBannerSource(index: number) {
+  return DEFAULT_ITEMS[index % DEFAULT_ITEMS.length].image;
+}
+
 export function Banner({
   items: propsItems,
   autoPlay = true,
@@ -106,6 +110,8 @@ export function Banner({
   const trackEvent = useMixpanelTrack();
   const router = useRouter();
   const [apiItems, setApiItems] = useState<HomeBannerItem[] | null>(null);
+  const [isBannerLoading, setIsBannerLoading] = useState(!propsItems?.length);
+  const [failedBannerIds, setFailedBannerIds] = useState<Set<string>>(new Set());
   const items = propsItems ?? apiItems ?? DEFAULT_ITEMS;
   const hasMultipleItems = items.length > 1;
   const extendedItems = useMemo<HomeBannerItem[]>(() => {
@@ -128,6 +134,7 @@ export function Banner({
 
   useEffect(() => {
     if (propsItems?.length) {
+      setIsBannerLoading(false);
       return;
     }
 
@@ -135,21 +142,23 @@ export function Banner({
 
     const fetchBanners = async () => {
       try {
-        const response = await api.get<BannerResponse>("/api/banner", {
+        const response = await publicApi.get<BannerResponse>("/api/banner", {
           params: BANNER_REQUEST_PAYLOAD,
         });
         const nextItems = normalizeBannerItems(response?.data?.images);
 
-        if (!isMounted || nextItems.length === 0) {
+        if (!isMounted) {
           return;
         }
-        setApiItems(nextItems);
+        if (nextItems.length > 0) {
+          setApiItems(nextItems);
+        }
       } catch (error) {
         const status = (error as { status?: number })?.status;
 
         if (status === 405) {
           try {
-            const fallbackResponse = await api.post<BannerResponse>(
+            const fallbackResponse = await publicApi.post<BannerResponse>(
               "/api/banner",
               BANNER_REQUEST_PAYLOAD,
             );
@@ -157,10 +166,12 @@ export function Banner({
               fallbackResponse?.data?.images,
             );
 
-            if (!isMounted || fallbackItems.length === 0) {
+            if (!isMounted) {
               return;
             }
-            setApiItems(fallbackItems);
+            if (fallbackItems.length > 0) {
+              setApiItems(fallbackItems);
+            }
             return;
           } catch {
             // no-op: common warning below
@@ -172,6 +183,10 @@ export function Banner({
             "[Banner] 배너 API 로드 실패, 기본 배너를 사용합니다.",
             error,
           );
+        }
+      } finally {
+        if (isMounted) {
+          setIsBannerLoading(false);
         }
       }
     };
@@ -329,6 +344,14 @@ export function Banner({
     startAutoPlay();
   };
 
+  if (isBannerLoading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.bannerSkeleton} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.bannerContainer}>
@@ -357,16 +380,36 @@ export function Banner({
           onScrollBeginDrag={handleScrollBeginDrag}
           onScrollEndDrag={handleScrollEndDrag}
           onMomentumScrollEnd={handleMomentumScrollEnd}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => {
+            const normalizedIndex = hasMultipleItems
+              ? (index - 1 + items.length) % items.length
+              : index % Math.max(items.length, 1);
+
+            const hasImageError = failedBannerIds.has(item.id);
+            const source = hasImageError
+              ? getFallbackBannerSource(normalizedIndex)
+              : item.image;
+
+            return (
             <Pressable onPress={() => handlePress(item)} style={styles.banner}>
               <MoaImage
-                source={item.image}
+                source={source}
                 width={BANNER_WIDTH}
                 height={BANNER_HEIGHT}
                 contentFit="cover"
+                onError={() => {
+                  setFailedBannerIds((prev) => {
+                    if (prev.has(item.id)) {
+                      return prev;
+                    }
+                    const next = new Set(prev);
+                    next.add(item.id);
+                    return next;
+                  });
+                }}
               />
             </Pressable>
-          )}
+          )}}
         />
       </View>
     </View>
@@ -398,6 +441,12 @@ export function SimpleBanner({
 
 const styles = StyleSheet.create({
   container: {},
+  bannerSkeleton: {
+    width: BANNER_WIDTH,
+    height: BANNER_HEIGHT,
+    borderRadius: BorderRadius.md,
+    backgroundColor: "#EFEFEF",
+  },
   bannerContainer: {},
   list: {
     flexGrow: 0,
