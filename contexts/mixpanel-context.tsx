@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface MixpanelContextType {
-  sessionId: string; 
+  sessionId: string;
   isLoading: boolean;
 }
 
