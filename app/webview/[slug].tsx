@@ -5,11 +5,11 @@
 
 import { MoaText } from "@/components/moa-text";
 import { useMixpanelContext } from "@/contexts";
+import { appendSessionId, getWebViewUserAgent } from "@/utils/webview";
 import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator, Platform, TouchableOpacity } from "react-native";
+import { ActivityIndicator, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import styled from "styled-components/native";
@@ -71,21 +71,9 @@ export default function WebViewScreen() {
         ? (config.url ?? (config.path ? `${webviewUrl}${config.path}` : ""))
         : "";
 
-  // session_id를 URL에 추가
-  const url = useMemo(() => {
-    if (!baseUrl) return "";
-    if (!sessionId) return baseUrl;
+  const url = useMemo(() => appendSessionId(baseUrl, sessionId), [baseUrl, sessionId]);
 
-    const separator = baseUrl.includes("?") ? "&" : "?";
-    return `${baseUrl}${separator}session_id=${encodeURIComponent(sessionId)}`;
-  }, [baseUrl, sessionId]);
-
-  // UserAgent 생성
-  const userAgent = useMemo(() => {
-    const appVersion = Constants.expoConfig?.version || "1.0.0";
-    const platform = Platform.OS === "ios" ? "iOS" : "Android";
-    return `MoadongApp/${appVersion} (${platform})`;
-  }, []);
+  const userAgent = getWebViewUserAgent();
 
   const handleBack = () => {
     if (router.canGoBack()) {
