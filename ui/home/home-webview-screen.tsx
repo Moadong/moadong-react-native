@@ -1,18 +1,16 @@
 import { useMixpanelContext } from '@/contexts';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
-import Constants from 'expo-constants';
+import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import styled from 'styled-components/native';
 
 const BASE_URL = `${(process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://moadong.com').replace(/\/$/, '')}/webview/main`;
-const appVersion = Constants.expoConfig?.version || '1.0.0';
-const platform = Platform.OS === 'ios' ? 'iOS' : 'Android';
-const USER_AGENT = `MoadongApp/${appVersion} (${platform})`;
+const USER_AGENT = getWebViewUserAgent();
 
 interface HomeWebViewScreenProps {
   onError: () => void;
@@ -27,7 +25,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const { sessionId, isLoading: sessionLoading } = useMixpanelContext();
   const { subscribedClubIds, toggleSubscribe } = useSubscribedClubsContext();
 
-  const url = sessionLoading ? null : sessionId ? `${BASE_URL}?session_id=${encodeURIComponent(sessionId)}` : BASE_URL;
+  const url = sessionLoading ? null : appendSessionId(BASE_URL, sessionId);
 
   const sendMessage = useCallback((data: object) => {
     webViewRef.current?.injectJavaScript(
