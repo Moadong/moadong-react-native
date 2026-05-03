@@ -24,6 +24,7 @@
       "appleTeamId": "2QMK9GBWN6"
     },
     "android": {
+      "jsEngine": "hermes",
       "versionCode": 9,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

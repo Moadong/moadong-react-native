@@ -6,11 +6,11 @@ import { useMixpanelContext } from "@/contexts";
 import { useSubscribedClubsContext } from "@/contexts/subscribed-clubs-context";
 import { useMixpanelTrack, useWebViewMessageHandler } from "@/hooks";
 import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
+import { appendSessionId, getWebViewUserAgent } from "@/utils/webview";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Platform, Share, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Share, TouchableOpacity } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import styled from "styled-components/native";
@@ -36,28 +36,18 @@ export default function ClubWebViewScreen() {
     const cleanUrl = webviewUrl?.replace(/\/$/, "") || "";
     const baseUrl = `${cleanUrl}/webview/club/${id}`;
 
-    const params = new URLSearchParams();
-    if (sessionId) {
-      params.append('session_id', sessionId);
-    }
+    let url = appendSessionId(baseUrl, sessionId);
     if (id && isSubscribed(id)) {
-      params.append('is_subscribed', 'true');
+      url += `&is_subscribed=true`;
     }
-
-    const queryString = params.toString();
-    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+    return url;
   }, [id, webviewUrl, sessionId, isSubscribed]);
 
   const subscribed = useMemo(() => {
     return id ? isSubscribed(id) : false;
   }, [id, isSubscribed]);
 
-  // UserAgent 생성
-  const userAgent = useMemo(() => {
-    const appVersion = Constants.expoConfig?.version || "1.0.0";
-    const platform = Platform.OS === "ios" ? "iOS" : "Android";
-    return `MoadongApp/${appVersion} (${platform})`;
-  }, []);
+  const userAgent = getWebViewUserAgent();
 
   const handleLoadEnd = () => {
     // 약간의 지연을 두어 콘텐츠가 완전히 렌더링되도록 함
