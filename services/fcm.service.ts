@@ -263,10 +263,13 @@ export const initializeFcm = async (options?: { strict?: boolean; promptForPermi
     const messaging = await ensureMessagingModule();
     const unsubscribe = onTokenRefresh(messaging, async (newToken) => {
       currentToken = newToken;
-      
+
       if (Platform.OS === 'ios') {
         await getApnsToken();
       }
+
+      // 회전된 토큰을 서버에 즉시 재등록하지 않으면 이후 /fcm/subscribe가 404로 실패한다.
+      await sendFcmTokenToServer(newToken);
     });
 
     return unsubscribe;

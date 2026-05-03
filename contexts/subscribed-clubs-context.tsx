@@ -3,7 +3,12 @@
  */
 
 import { authApi } from '@/services/api';
-import { checkNotificationPermission, getFcmToken, requestUserPermission } from '@/services/fcm.service';
+import {
+  checkNotificationPermission,
+  getFcmToken,
+  requestUserPermission,
+  sendFcmTokenToServer,
+} from '@/services/fcm.service';
 import {
   loadSubscribedClubIdsFromStorage,
   saveSubscribedClubIdsToStorage,
@@ -78,6 +83,9 @@ export function SubscribedClubsProvider({ children, refreshKey = 0 }: Subscribed
         return;
       }
 
+      // subscribe 엔드포인트는 토큰이 사전 등록되어 있어야 함. 미등록 시 404를 막기 위한 가드.
+      await sendFcmTokenToServer(fcmToken);
+
       await authApi.put('/api/v2/fcm/subscribe', {
         fcmToken,
         clubIds: subscribedClubIds,
@@ -142,6 +150,9 @@ export function SubscribedClubsProvider({ children, refreshKey = 0 }: Subscribed
         console.warn('⚠️ FCM 토큰이 없어 동기화를 건너뜁니다.');
         return { needsPermission: false };
       }
+
+      // subscribe 엔드포인트는 토큰이 사전 등록되어 있어야 함. 미등록 시 404를 막기 위한 가드.
+      await sendFcmTokenToServer(fcmToken);
 
       await authApi.put('/api/v2/fcm/subscribe', {
         fcmToken,
