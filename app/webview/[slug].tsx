@@ -5,6 +5,7 @@
 
 import { MoaText } from "@/components/moa-text";
 import { useMixpanelContext } from "@/contexts";
+import { useWebViewMessageHandler } from "@/hooks";
 import { appendSessionId, getWebViewUserAgent } from "@/utils/webview";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -50,12 +51,15 @@ export default function WebViewScreen() {
     path,
     url: urlParam,
     title,
+    hideHeader,
   } = useLocalSearchParams<{
     slug?: string;
     path?: string;
     url?: string;
     title?: string;
+    hideHeader?: string;
   }>();
+  const shouldHideHeader = hideHeader === "true";
   const [loading, setLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [error, setError] = useState(false);
@@ -83,6 +87,10 @@ export default function WebViewScreen() {
     }
   };
 
+  const { handleMessage } = useWebViewMessageHandler({
+    onNavigateBack: handleBack,
+  });
+
   if (!config && !path && !urlParam) {
     return (
       <Container edges={["top", "bottom"]}>
@@ -102,15 +110,17 @@ export default function WebViewScreen() {
 
   return (
     <Container edges={["top", "bottom"]}>
-      <Header>
-        <BackButton onPress={handleBack} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={24} color="#111111" />
-        </BackButton>
-        <HeaderTitle type="title2">
-          {title ?? config?.title ?? "웹페이지"}
-        </HeaderTitle>
-        <PlaceholderView />
-      </Header>
+      {!shouldHideHeader && (
+        <Header>
+          <BackButton onPress={handleBack} activeOpacity={0.7}>
+            <Ionicons name="arrow-back" size={24} color="#111111" />
+          </BackButton>
+          <HeaderTitle type="title2">
+            {title ?? config?.title ?? "웹페이지"}
+          </HeaderTitle>
+          <PlaceholderView />
+        </Header>
+      )}
 
       {error && (
         <ErrorContainer>
@@ -132,6 +142,7 @@ export default function WebViewScreen() {
         <StyledWebView
           source={{ uri: url }}
           userAgent={userAgent}
+          onMessage={handleMessage}
           onLoadStart={() => {
             if (!hasLoadedOnce) {
               setLoading(true);
