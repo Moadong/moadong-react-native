@@ -313,8 +313,7 @@ const styles = StyleSheet.create({
 현재 프로젝트는 개발 단계이며, 배포 전 다음 사항을 고려해야 합니다:
 1. `app.json`에 앱 아이콘, 스플래시 스크린 커스터마이징
 2. 번들 식별자 및 패키지명 설정
-3. EAS Build 구성 (Expo Application Services)
-4. 앱 스토어 메타데이터 준비
+3. 앱 스토어 메타데이터 준비
 
 ## 참고 자료
 

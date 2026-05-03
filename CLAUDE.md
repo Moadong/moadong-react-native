@@ -21,12 +21,6 @@ npm run lint           # ESLint 실행 (expo lint)
 npx expo start --dev-client  # 개발 클라이언트 빌드로 시작
 ```
 
-EAS 빌드:
-```bash
-eas build --profile development --platform ios
-eas build --profile production --platform all
-```
-
 환경 변수: API 기본 URL은 `.env`에 `EXPO_PUBLIC_BASE_URL`로 설정합니다.
 
 ## 아키텍처
