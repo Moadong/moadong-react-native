@@ -78,7 +78,10 @@
         {
           "ios": {
             "useFrameworks": "static",
-            "buildReactNativeFromSource": true
+            "buildReactNativeFromSource": true,
+            "extraPods": [
+              { "name": "FirebaseAuth", "modular_headers": true }
+            ]
           }
         }
       ],
