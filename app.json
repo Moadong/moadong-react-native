@@ -2,7 +2,7 @@
   "expo": {
     "name": "모아동",
     "slug": "moadong-app",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "moadongapp",
@@ -25,7 +25,7 @@
     },
     "android": {
       "jsEngine": "hermes",
-      "versionCode": 9,
+      "versionCode": 10,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
