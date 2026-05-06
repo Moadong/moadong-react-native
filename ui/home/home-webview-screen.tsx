@@ -68,7 +68,8 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
           case 'NAVIGATE_WEBVIEW':
             if (payload.slug?.startsWith('club/')) {
-              const clubId = payload.slug.replace('club/', '');
+              const clubId = payload.slug.slice('club/'.length);
+              if (!clubId) break;
               router.push({ pathname: '/club/[id]', params: { id: clubId } });
             } else if (payload.slug?.startsWith('promotions/')) {
               router.push({ pathname: '/webview/[slug]', params: { slug: 'promotions', path: `/${payload.slug}`, hideHeader: 'true' } });
