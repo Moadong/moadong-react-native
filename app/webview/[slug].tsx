@@ -87,8 +87,18 @@ export default function WebViewScreen() {
     }
   };
 
+  const handleNavigateWebview = (slug: string) => {
+    if (slug.startsWith('club/')) {
+      const clubId = slug.replace('club/', '');
+      router.push({ pathname: '/club/[id]', params: { id: clubId } });
+    } else {
+      router.push({ pathname: '/webview/[slug]', params: { slug } });
+    }
+  };
+
   const { handleMessage } = useWebViewMessageHandler({
     onNavigateBack: handleBack,
+    onNavigateWebview: handleNavigateWebview,
   });
 
   if (!config && !path && !urlParam) {
