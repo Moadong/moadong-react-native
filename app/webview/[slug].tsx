@@ -34,6 +34,10 @@ const pageConfig: Record<
     title: "동아리 소개 한마당",
     path: "/festival-introduction",
   },
+  "festival-busking": {
+    title: "대동제 버스킹 시간표",
+    path: "/festival-busking",
+  },
   promotions: {
     title: "홍보",
     path: "/promotions",
