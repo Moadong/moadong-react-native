@@ -1,5 +1,6 @@
 import { WebViewMessage, WebViewMessageEvent, WebViewMessageTypes } from '@/types/webview-message.types';
 import { useCallback } from 'react';
+import { Linking } from 'react-native';
 
 interface UseWebViewMessageHandlerOptions {
   // 뒤로가기 요청 시 호출
@@ -45,6 +46,15 @@ export const useWebViewMessageHandler = ({
             onShare?.(message.payload);
           }
           break;
+        case WebViewMessageTypes.OPEN_EXTERNAL_URL: {
+          const { url } = message.payload;
+          if (url) {
+            Linking.openURL(url).catch(err =>
+              console.error('[WebViewHandler] URL 열기 실패:', err)
+            );
+          }
+          break;
+        }
         default:
           console.warn('[WebViewHandler] 알 수 없는 메시지 타입:', message);
       }
