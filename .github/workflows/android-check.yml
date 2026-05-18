@@ -1,0 +1,82 @@
+name: Android Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  android-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create public env file
+        run: |
+          {
+            echo "EXPO_PUBLIC_BASE_URL=${EXPO_PUBLIC_BASE_URL:-https://api.example.com}"
+            echo "EXPO_PUBLIC_WEBVIEW_URL=${EXPO_PUBLIC_WEBVIEW_URL:-https://www.example.com}"
+            echo "EXPO_PUBLIC_MIXPANEL_TOKEN=${EXPO_PUBLIC_MIXPANEL_TOKEN:-}"
+          } > .env
+        env:
+          EXPO_PUBLIC_BASE_URL: ${{ secrets.EXPO_PUBLIC_BASE_URL || vars.EXPO_PUBLIC_BASE_URL }}
+          EXPO_PUBLIC_WEBVIEW_URL: ${{ secrets.EXPO_PUBLIC_WEBVIEW_URL || vars.EXPO_PUBLIC_WEBVIEW_URL }}
+          EXPO_PUBLIC_MIXPANEL_TOKEN: ${{ secrets.EXPO_PUBLIC_MIXPANEL_TOKEN || vars.EXPO_PUBLIC_MIXPANEL_TOKEN }}
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Create placeholder google-services.json
+        run: |
+          cat > google-services.json <<'JSON'
+          {
+            "project_info": {
+              "project_number": "123456789012",
+              "project_id": "moadong-ci",
+              "storage_bucket": "moadong-ci.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:123456789012:android:0000000000000000000000",
+                  "android_client_info": {
+                    "package_name": "com.moadong.moadong"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "DUMMY_API_KEY"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          JSON
+
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android --clean
+        env:
+          CI: "1"
+
+      - name: Assemble debug
+        working-directory: android
+        run: ./gradlew :app:assembleDebug

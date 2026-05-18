@@ -1,0 +1,97 @@
+require "fileutils"
+
+default_platform(:android)
+
+def require_file!(path, label)
+  UI.user_error!("#{label} is missing: #{path}") unless path && File.exist?(path)
+end
+
+def require_env!(name)
+  value = ENV[name]
+  UI.user_error!("Missing required environment variable: #{name}") if value.to_s.empty?
+  value
+end
+
+def upsert_gradle_properties(path, values)
+  lines = File.exist?(path) ? File.readlines(path, chomp: true) : []
+  keys = values.keys
+  filtered_lines = lines.reject do |line|
+    key = line.split("=", 2).first
+    keys.include?(key)
+  end
+
+  File.write(path, (filtered_lines + values.map { |key, value| "#{key}=#{value}" }).join("\n") + "\n")
+end
+
+def build_android_release_aab
+  json_key = require_env!("SUPPLY_JSON_KEY")
+  keystore_name = ENV.fetch("MYAPP_UPLOAD_STORE_FILE", "moadong-upload.keystore")
+
+  require_file!(json_key, "Google Play service account JSON")
+  require_file!("google-services.json", "Android Firebase config")
+  require_file!(keystore_name, "Android upload keystore")
+
+  store_password = require_env!("MYAPP_UPLOAD_STORE_PASSWORD")
+  key_alias = require_env!("MYAPP_UPLOAD_KEY_ALIAS")
+  key_password = require_env!("MYAPP_UPLOAD_KEY_PASSWORD")
+
+  sh("CI=1 npx expo prebuild --platform android --clean")
+
+  android_app_keystore = File.join("android", "app", File.basename(keystore_name))
+  FileUtils.cp(keystore_name, android_app_keystore)
+
+  upsert_gradle_properties(
+    File.join("android", "gradle.properties"),
+    {
+      "MYAPP_UPLOAD_STORE_FILE" => File.basename(keystore_name),
+      "MYAPP_UPLOAD_STORE_PASSWORD" => store_password,
+      "MYAPP_UPLOAD_KEY_ALIAS" => key_alias,
+      "MYAPP_UPLOAD_KEY_PASSWORD" => key_password,
+    }
+  )
+
+  Dir.chdir("android") do
+    sh("./gradlew bundleRelease")
+  end
+
+  "android/app/build/outputs/bundle/release/app-release.aab"
+end
+
+platform :android do
+  desc "Build and upload the Android release AAB to Google Play internal testing"
+  lane :internal do
+    package_name = ENV.fetch("ANDROID_PACKAGE_NAME", "com.moadong.moadong")
+    json_key = require_env!("SUPPLY_JSON_KEY")
+    aab_path = build_android_release_aab
+
+    upload_to_play_store(
+      package_name: package_name,
+      json_key: json_key,
+      track: "internal",
+      aab: aab_path,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+
+  desc "Build and upload the Android release AAB as a draft production release"
+  lane :production_draft do
+    package_name = ENV.fetch("ANDROID_PACKAGE_NAME", "com.moadong.moadong")
+    json_key = require_env!("SUPPLY_JSON_KEY")
+    aab_path = build_android_release_aab
+
+    upload_to_play_store(
+      package_name: package_name,
+      json_key: json_key,
+      track: "production",
+      release_status: "draft",
+      aab: aab_path,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+end

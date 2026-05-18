@@ -95,7 +95,8 @@
         }
       ],
       "expo-tracking-transparency",
-      "./plugins/withFcmNotificationColorFix"
+      "./plugins/withFcmNotificationColorFix",
+      "./plugins/withAndroidReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": true,

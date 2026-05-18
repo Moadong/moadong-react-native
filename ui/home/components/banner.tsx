@@ -37,16 +37,11 @@ interface BannerResponse {
   };
 }
 
-const APP_STORE_LINK = process.env.EXPO_PUBLIC_APP_STORE_LINK;
 const CLUB_FESTIVAL_LINK = "CLUB_FESTIVAL";
 
 function resolveLinkTo(linkTo?: string | null): string | null {
   if (!linkTo) {
     return null;
-  }
-
-  if (linkTo === "APP_STORE_LINK") {
-    return APP_STORE_LINK ?? null;
   }
 
   return linkTo;

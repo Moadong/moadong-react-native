@@ -1,0 +1,89 @@
+name: Android Release
+
+on:
+  push:
+    branches:
+      - prod
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: Fastlane Android lane to run
+        required: true
+        type: choice
+        default: internal
+        options:
+          - internal
+          - production_draft
+
+jobs:
+  android-release:
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_PACKAGE_NAME: com.moadong.moadong
+      EXPO_PUBLIC_BASE_URL: ${{ secrets.EXPO_PUBLIC_BASE_URL || vars.EXPO_PUBLIC_BASE_URL }}
+      EXPO_PUBLIC_WEBVIEW_URL: ${{ secrets.EXPO_PUBLIC_WEBVIEW_URL || vars.EXPO_PUBLIC_WEBVIEW_URL }}
+      EXPO_PUBLIC_MIXPANEL_TOKEN: ${{ secrets.EXPO_PUBLIC_MIXPANEL_TOKEN || vars.EXPO_PUBLIC_MIXPANEL_TOKEN }}
+      SUPPLY_JSON_KEY: ${{ github.workspace }}/google-play-service-account.json
+      MYAPP_UPLOAD_STORE_FILE: ${{ secrets.MYAPP_UPLOAD_STORE_FILE || 'moadong-upload.keystore' }}
+      MYAPP_UPLOAD_STORE_PASSWORD: ${{ secrets.MYAPP_UPLOAD_STORE_PASSWORD }}
+      MYAPP_UPLOAD_KEY_ALIAS: ${{ secrets.MYAPP_UPLOAD_KEY_ALIAS }}
+      MYAPP_UPLOAD_KEY_PASSWORD: ${{ secrets.MYAPP_UPLOAD_KEY_PASSWORD }}
+      FASTLANE_ANDROID_LANE: ${{ github.event_name == 'push' && 'production_draft' || github.event.inputs.lane || 'internal' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Validate Android release secrets
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$MYAPP_UPLOAD_STORE_FILE"
+          test -n "$MYAPP_UPLOAD_STORE_PASSWORD"
+          test -n "$MYAPP_UPLOAD_KEY_ALIAS"
+          test -n "$MYAPP_UPLOAD_KEY_PASSWORD"
+          test -n "$GOOGLE_SERVICES_JSON_BASE64"
+          test -n "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+          test -n "$EXPO_PUBLIC_BASE_URL"
+          test -n "$EXPO_PUBLIC_WEBVIEW_URL"
+          test -n "$EXPO_PUBLIC_MIXPANEL_TOKEN"
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
+      - name: Create public env file
+        run: |
+          {
+            echo "EXPO_PUBLIC_BASE_URL=${EXPO_PUBLIC_BASE_URL}"
+            echo "EXPO_PUBLIC_WEBVIEW_URL=${EXPO_PUBLIC_WEBVIEW_URL}"
+            echo "EXPO_PUBLIC_MIXPANEL_TOKEN=${EXPO_PUBLIC_MIXPANEL_TOKEN}"
+          } > .env
+
+      - name: Restore Android secret files
+        run: |
+          printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > google-services.json
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$SUPPLY_JSON_KEY"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$MYAPP_UPLOAD_STORE_FILE"
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+
+      - name: Upload Android release
+        run: bundle exec fastlane android "$FASTLANE_ANDROID_LANE"

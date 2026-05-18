@@ -1,0 +1,2 @@
+json_key_file(ENV["SUPPLY_JSON_KEY"]) if ENV["SUPPLY_JSON_KEY"]
+package_name(ENV.fetch("ANDROID_PACKAGE_NAME", "com.moadong.moadong"))
