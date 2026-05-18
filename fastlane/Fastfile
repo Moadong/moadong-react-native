@@ -1,5 +1,6 @@
 require "fileutils"
 require "base64"
+require "json"
 
 default_platform(:android)
 
@@ -17,6 +18,13 @@ def require_file!(path, label)
   UI.user_error!("#{label} is missing: #{path}") unless path && File.exist?(path)
 end
 
+def require_json_file!(path, label)
+  require_file!(path, label)
+  JSON.parse(File.read(path))
+rescue JSON::ParserError => error
+  UI.user_error!("#{label} is not valid JSON: #{path} (#{error.message})")
+end
+
 def require_env!(name)
   value = ENV[name]
   UI.user_error!("Missing required environment variable: #{name}") if value.to_s.empty?
@@ -29,11 +37,13 @@ def restore_file_from_env(path, env_name, label, base64: false)
   value = ENV[env_name]
   return if value.to_s.empty?
 
-  content = base64 ? Base64.decode64(value) : value
+  content = base64 ? Base64.strict_decode64(value.delete(" \n\r\t")) : value
   UI.user_error!("#{label} from #{env_name} is empty") if content.empty?
 
   FileUtils.mkdir_p(File.dirname(path))
   File.binwrite(path, content)
+rescue ArgumentError => error
+  UI.user_error!("#{label} from #{env_name} is not valid base64: #{error.message}")
 end
 
 def upsert_gradle_properties(path, values)
@@ -54,10 +64,10 @@ def build_android_release_aab
   google_services_path = project_path("google-services.json")
 
   restore_file_from_env(google_services_path, "GOOGLE_SERVICES_JSON_BASE64", "Android Firebase config", base64: true)
-  restore_file_from_env(json_key, "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "Google Play service account JSON")
+  restore_file_from_env(json_key, "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "Google Play service account JSON", base64: true)
   restore_file_from_env(keystore_path, "ANDROID_KEYSTORE_BASE64", "Android upload keystore", base64: true)
 
-  require_file!(json_key, "Google Play service account JSON")
+  require_json_file!(json_key, "Google Play service account JSON")
   require_file!(google_services_path, "Android Firebase config")
   require_file!(keystore_path, "Android upload keystore")
 
@@ -93,7 +103,7 @@ platform :android do
   desc "Build and upload the Android release AAB to Google Play internal testing"
   lane :internal do
     package_name = ENV.fetch("ANDROID_PACKAGE_NAME", "com.moadong.moadong")
-    json_key = require_env!("SUPPLY_JSON_KEY")
+    json_key = expand_project_path(require_env!("SUPPLY_JSON_KEY"))
     aab_path = build_android_release_aab
 
     upload_to_play_store(
@@ -111,7 +121,7 @@ platform :android do
   desc "Build and upload the Android release AAB as a draft production release"
   lane :production_draft do
     package_name = ENV.fetch("ANDROID_PACKAGE_NAME", "com.moadong.moadong")
-    json_key = require_env!("SUPPLY_JSON_KEY")
+    json_key = expand_project_path(require_env!("SUPPLY_JSON_KEY"))
     aab_path = build_android_release_aab
 
     upload_to_play_store(

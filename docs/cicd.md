@@ -59,7 +59,7 @@ Android production draft release는 `prod` 브랜치에 merge될 때 자동으�
 1. `prod` 브랜치 push로 `.github/workflows/android-release.yml`이 실행된다.
 2. workflow가 `npm ci`로 의존성을 설치한다.
 3. GitHub Secrets 또는 Variables의 `EXPO_PUBLIC_*` 값을 사용해 `.env`를 생성한다.
-4. GitHub Secrets의 Firebase/Play/keystore 값을 임시 파일로 복원한다.
+4. GitHub Secrets의 Firebase/Play/keystore base64 값을 디코딩해 임시 파일로 복원한다.
 5. `bundle exec fastlane android production_draft`를 실행한다.
 6. fastlane lane이 `CI=1 npx expo prebuild --platform android --clean`를 실행한다.
 7. config plugin이 release signing config를 `android/app/build.gradle`에 반영한다.
@@ -78,7 +78,7 @@ Android production draft release는 `prod` 브랜치에 merge될 때 자동으�
 | `MYAPP_UPLOAD_KEY_ALIAS` | upload key alias |
 | `MYAPP_UPLOAD_KEY_PASSWORD` | upload key password |
 | `GOOGLE_SERVICES_JSON_BASE64` | Android Firebase 설정 JSON 전체 내용을 base64로 인코딩한 값 |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Google Play Android Publisher API service account JSON 전체 내용 |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Google Play Android Publisher API service account JSON 전체 내용을 base64로 인코딩한 값 |
 | `EXPO_PUBLIC_BASE_URL` | API 서버 base URL. Secrets 또는 Variables에 설정 가능 |
 | `EXPO_PUBLIC_WEBVIEW_URL` | WebView 화면에서 사용할 웹 base URL. Secrets 또는 Variables에 설정 가능 |
 | `EXPO_PUBLIC_MIXPANEL_TOKEN` | Mixpanel 프로젝트 토큰. Secrets 또는 Variables에 설정 가능 |

@@ -78,7 +78,7 @@ jobs:
       - name: Restore Android secret files
         run: |
           printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > google-services.json
-          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$SUPPLY_JSON_KEY"
+          printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" | base64 --decode > "$SUPPLY_JSON_KEY"
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$MYAPP_UPLOAD_STORE_FILE"
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
