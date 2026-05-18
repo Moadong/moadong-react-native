@@ -59,3 +59,9 @@ fi
 
 cd ios
 pod install --deployment
+
+PODS_RELEASE_XCCONFIG="Pods/Target Support Files/Pods-app/Pods-app.release.xcconfig"
+if [ ! -f "$PODS_RELEASE_XCCONFIG" ]; then
+  echo "Missing $PODS_RELEASE_XCCONFIG after pod install. Xcode archive cannot continue without CocoaPods base configuration." >&2
+  exit 1
+fi

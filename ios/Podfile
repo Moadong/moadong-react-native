@@ -12,6 +12,33 @@ def ccache_enabled?(podfile_properties)
   podfile_properties['apple.ccacheEnabled'] == 'true'
 end
 
+RNFB_SCRIPT_PHASES = [
+  '[CP-User] [RNFB] Core Configuration',
+  '[CP-User] [RNFB] Crashlytics Configuration',
+].freeze
+
+def configure_rnfb_script_phases(installer)
+  installer.aggregate_targets.each do |aggregate_target|
+    project = aggregate_target.user_project
+    next unless project
+
+    updated = false
+
+    project.targets.each do |target|
+      next unless target.respond_to?(:shell_script_build_phases)
+
+      target.shell_script_build_phases.each do |phase|
+        next unless RNFB_SCRIPT_PHASES.include?(phase.name)
+
+        phase.always_out_of_date = '1'
+        updated = true
+      end
+    end
+
+    project.save if updated
+  end
+end
+
 ENV['RCT_NEW_ARCH_ENABLED'] ||= '0' if podfile_properties['newArchEnabled'] == 'false'
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] ||= podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
 ENV['RCT_USE_RN_DEP'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true' && podfile_properties['newArchEnabled'] != 'false'
@@ -60,4 +87,8 @@ target 'app' do
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
   end
+end
+
+post_integrate do |installer|
+  configure_rnfb_script_phases(installer)
 end
