@@ -39,9 +39,9 @@ yarn-error.*
 app-example
 
 # generated native folders
-/ios
 /android
 
 /.env
 google-services.json
 GoogleService-Info.plist
+ios/**/GoogleService-Info.plist

@@ -1,0 +1,10 @@
+{
+  "expo.jsEngine": "hermes",
+  "EX_DEV_CLIENT_NETWORK_INSPECTOR": "true",
+  "newArchEnabled": "true",
+  "ios.useFrameworks": "static",
+  "ios.forceStaticLinking": "[]",
+  "apple.extraPods": "[{\"name\":\"FirebaseAuth\",\"modular_headers\":true}]",
+  "apple.privacyManifestAggregationEnabled": "true",
+  "ios.buildReactNativeFromSource": "true"
+}

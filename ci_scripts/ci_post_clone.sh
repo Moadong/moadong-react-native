@@ -13,7 +13,23 @@ if [ -n "${GOOGLE_SERVICE_INFO_PLIST_BASE64:-}" ]; then
   printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > GoogleService-Info.plist
 elif [ -n "${GOOGLE_SERVICE_INFO_PLIST:-}" ]; then
   printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist
+else
+  echo "Missing GOOGLE_SERVICE_INFO_PLIST_BASE64 or GOOGLE_SERVICE_INFO_PLIST for iOS archive" >&2
+  exit 1
 fi
+
+mkdir -p ios/app
+cp GoogleService-Info.plist ios/app/GoogleService-Info.plist
+
+: "${EXPO_PUBLIC_BASE_URL:?Missing EXPO_PUBLIC_BASE_URL for iOS archive}"
+: "${EXPO_PUBLIC_WEBVIEW_URL:?Missing EXPO_PUBLIC_WEBVIEW_URL for iOS archive}"
+: "${EXPO_PUBLIC_MIXPANEL_TOKEN:?Missing EXPO_PUBLIC_MIXPANEL_TOKEN for iOS archive}"
+
+{
+  echo "EXPO_PUBLIC_BASE_URL=${EXPO_PUBLIC_BASE_URL}"
+  echo "EXPO_PUBLIC_WEBVIEW_URL=${EXPO_PUBLIC_WEBVIEW_URL}"
+  echo "EXPO_PUBLIC_MIXPANEL_TOKEN=${EXPO_PUBLIC_MIXPANEL_TOKEN}"
+} > .env
 
 APS_ENVIRONMENT="${IOS_APS_ENVIRONMENT:-development}"
 ENTITLEMENTS_FILE="${IOS_ENTITLEMENTS_FILE:-ios/app/app.entitlements}"

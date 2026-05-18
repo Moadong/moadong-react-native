@@ -169,12 +169,15 @@ iOS는 Xcode Cloud의 Archive + TestFlight 배포를 기본 경로로 사용한�
 
 Xcode Cloud가 scheme을 안정적으로 인식하려면 `ios/`와 shared scheme이 저장소에 있어야 한다.
 
-현재 저장소의 `.gitignore`는 `/ios`를 제외하고 있으므로 Xcode Cloud를 실제로 연결할 때는 다음 중 하나를 선택한다.
+Xcode Cloud 연결을 위해 `/ios` ignore 규칙은 제거하고, `ios/` 전체를 커밋 대상으로 둔다. Xcode project, workspace, shared scheme, entitlements, Podfile 변경 이력을 일반 Git 변경으로 관리하기 위함이다.
 
-1. `/ios` ignore 규칙을 제거하고 `ios/` 전체를 커밋한다.
-2. ignore 규칙은 유지하되 `git add -f ios/...`로 Xcode Cloud에 필요한 iOS native 파일을 명시적으로 커밋한다.
+단, 다음 파일과 산출물은 계속 커밋하지 않는다.
 
-권장안은 1번이다. Xcode project, workspace, shared scheme, entitlements, Podfile 변경 이력을 일반 Git 변경으로 관리할 수 있기 때문이다.
+- `ios/**/GoogleService-Info.plist`
+- `ios/Pods/`
+- `ios/build/`
+- `ios/**/*.xcuserstate`
+- `ios/**/xcuserdata/`
 
 native dependency, Expo plugin, app config, bundle identifier, entitlements, Firebase iOS 설정 방식이 바뀌면 로컬에서 다음 명령으로 iOS 산출물을 갱신한 뒤 커밋한다.
 
@@ -193,11 +196,50 @@ ci_scripts/ci_post_clone.sh
 script 책임:
 
 - npm 의존성 설치
-- Xcode Cloud 환경 변수에서 `GoogleService-Info.plist` 복원
+- Xcode Cloud 환경 변수에서 `GoogleService-Info.plist`를 루트와 `ios/app/`에 복원
+- Xcode Cloud 환경 변수에서 `.env` 생성
 - `IOS_APS_ENVIRONMENT` 값에 따라 entitlement의 `aps-environment` 보정
 - CocoaPods 설치
 
 Xcode Cloud에서는 기본값을 `IOS_APS_ENVIRONMENT=production`으로 둔다. 로컬 개발이나 debug archive는 값을 지정하지 않거나 `development`로 둔다.
+
+### iOS Xcode Cloud 환경 변수
+
+Xcode Cloud workflow에는 다음 환경 변수를 설정한다.
+
+| 이름 | 필수 | 설명 |
+| --- | --- | --- |
+| `GOOGLE_SERVICE_INFO_PLIST_BASE64` | O | iOS Firebase 설정 plist 전체 내용을 base64로 인코딩한 값 |
+| `GOOGLE_SERVICE_INFO_PLIST` | 대체 | base64 대신 plist 원문을 넣을 때 사용 |
+| `IOS_APS_ENVIRONMENT` | O | TestFlight/Archive 기본값 `production` |
+| `EXPO_PUBLIC_BASE_URL` | O | API 서버 base URL |
+| `EXPO_PUBLIC_WEBVIEW_URL` | O | WebView 화면에서 사용할 웹 base URL |
+| `EXPO_PUBLIC_MIXPANEL_TOKEN` | O | Mixpanel 프로젝트 토큰 |
+
+`GOOGLE_SERVICE_INFO_PLIST_BASE64`와 `GOOGLE_SERVICE_INFO_PLIST` 중 하나만 있으면 된다. Xcode Cloud에서는 secret 값 줄바꿈 이슈를 줄이기 위해 base64 방식을 권장한다.
+
+### iOS build number
+
+TestFlight 업로드마다 iOS build number는 이전 업로드보다 커야 한다. `app.json`의 `ios.buildNumber`를 배포 전 증가시키고, `npx expo prebuild --platform ios --clean`으로 native project에 반영한 뒤 커밋한다.
+
+현재 기준값:
+
+```json
+"buildNumber": "13"
+```
+
+App Store Connect에 이미 더 큰 build number가 올라가 있다면 그보다 큰 값으로 조정한다.
+
+### Apple/Firebase 콘솔 체크리스트
+
+iOS Archive 전에 외부 콘솔에서 다음 설정을 확인한다.
+
+- Apple Developer의 App ID `com.moadong.moadong`에 Push Notifications와 Associated Domains capability를 활성화한다.
+- Xcode Cloud에서 repository, scheme `app`, Archive action을 연결한다.
+- Signing은 Apple Developer Team `2QMK9GBWN6`에서 자동 signing이 가능해야 한다.
+- Firebase iOS app의 bundle identifier가 `com.moadong.moadong`인지 확인한다.
+- Firebase Cloud Messaging에 APNs auth key 또는 certificate를 등록한다.
+- Associated Domains에 필요한 `apple-app-site-association` 파일이 `https://www.moadong.com/.well-known/apple-app-site-association`에서 제공되는지 확인한다.
 
 ## Expo config 전환
 
@@ -224,8 +266,10 @@ IOS_APS_ENVIRONMENT=production npx expo config --type public
 ```text
 docs/cicd.md
 .env.example
+.gitignore
 app.config.js
 app.json
+ios/
 plugins/withAndroidReleaseSigning.js
 Gemfile
 fastlane/Appfile
