@@ -1,6 +1,17 @@
 require "fileutils"
+require "base64"
 
 default_platform(:android)
+
+PROJECT_ROOT = File.expand_path("..", __dir__)
+
+def project_path(*parts)
+  File.join(PROJECT_ROOT, *parts)
+end
+
+def expand_project_path(path)
+  File.absolute_path(path, PROJECT_ROOT)
+end
 
 def require_file!(path, label)
   UI.user_error!("#{label} is missing: #{path}") unless path && File.exist?(path)
@@ -10,6 +21,19 @@ def require_env!(name)
   value = ENV[name]
   UI.user_error!("Missing required environment variable: #{name}") if value.to_s.empty?
   value
+end
+
+def restore_file_from_env(path, env_name, label, base64: false)
+  return if path.to_s.empty? || File.exist?(path)
+
+  value = ENV[env_name]
+  return if value.to_s.empty?
+
+  content = base64 ? Base64.decode64(value) : value
+  UI.user_error!("#{label} from #{env_name} is empty") if content.empty?
+
+  FileUtils.mkdir_p(File.dirname(path))
+  File.binwrite(path, content)
 end
 
 def upsert_gradle_properties(path, values)
@@ -24,24 +48,32 @@ def upsert_gradle_properties(path, values)
 end
 
 def build_android_release_aab
-  json_key = require_env!("SUPPLY_JSON_KEY")
+  json_key = expand_project_path(require_env!("SUPPLY_JSON_KEY"))
   keystore_name = ENV.fetch("MYAPP_UPLOAD_STORE_FILE", "moadong-upload.keystore")
+  keystore_path = expand_project_path(keystore_name)
+  google_services_path = project_path("google-services.json")
+
+  restore_file_from_env(google_services_path, "GOOGLE_SERVICES_JSON_BASE64", "Android Firebase config", base64: true)
+  restore_file_from_env(json_key, "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON", "Google Play service account JSON")
+  restore_file_from_env(keystore_path, "ANDROID_KEYSTORE_BASE64", "Android upload keystore", base64: true)
 
   require_file!(json_key, "Google Play service account JSON")
-  require_file!("google-services.json", "Android Firebase config")
-  require_file!(keystore_name, "Android upload keystore")
+  require_file!(google_services_path, "Android Firebase config")
+  require_file!(keystore_path, "Android upload keystore")
 
   store_password = require_env!("MYAPP_UPLOAD_STORE_PASSWORD")
   key_alias = require_env!("MYAPP_UPLOAD_KEY_ALIAS")
   key_password = require_env!("MYAPP_UPLOAD_KEY_PASSWORD")
 
-  sh("CI=1 npx expo prebuild --platform android --clean")
+  Dir.chdir(PROJECT_ROOT) do
+    sh("CI=1 npx expo prebuild --platform android --clean")
+  end
 
-  android_app_keystore = File.join("android", "app", File.basename(keystore_name))
-  FileUtils.cp(keystore_name, android_app_keystore)
+  android_app_keystore = project_path("android", "app", File.basename(keystore_name))
+  FileUtils.cp(keystore_path, android_app_keystore)
 
   upsert_gradle_properties(
-    File.join("android", "gradle.properties"),
+    project_path("android", "gradle.properties"),
     {
       "MYAPP_UPLOAD_STORE_FILE" => File.basename(keystore_name),
       "MYAPP_UPLOAD_STORE_PASSWORD" => store_password,
@@ -50,11 +82,11 @@ def build_android_release_aab
     }
   )
 
-  Dir.chdir("android") do
+  Dir.chdir(project_path("android")) do
     sh("./gradlew bundleRelease")
   end
 
-  "android/app/build/outputs/bundle/release/app-release.aab"
+  project_path("android", "app", "build", "outputs", "bundle", "release", "app-release.aab")
 end
 
 platform :android do
