@@ -26,7 +26,7 @@ npx expo start --dev-client  # 개발 클라이언트 빌드로 시작
 ## 아키텍처
 
 ### 라우팅 (Expo Router 파일 기반)
-```
+```text
 app/
   _layout.tsx          # 루트 레이아웃: 부트스트랩, 스플래시, 강제 업데이트, Context 프로바이더
   (tabs)/              # 하단 탭 네비게이터

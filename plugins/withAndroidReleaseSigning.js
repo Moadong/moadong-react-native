@@ -135,8 +135,8 @@ function addAndroidReleaseSigning(source) {
 }
 
 module.exports = function withAndroidReleaseSigning(config) {
-  return withAppBuildGradle(config, (config) => {
-    config.modResults.contents = addAndroidReleaseSigning(config.modResults.contents);
-    return config;
+  return withAppBuildGradle(config, (appBuildGradleConfig) => {
+    appBuildGradleConfig.modResults.contents = addAndroidReleaseSigning(appBuildGradleConfig.modResults.contents);
+    return appBuildGradleConfig;
   });
 };

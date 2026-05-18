@@ -9,8 +9,26 @@ cd "$REPO_ROOT"
 
 npm ci
 
+decode_google_service_info_plist() {
+  if printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > GoogleService-Info.plist 2>/dev/null; then
+    return
+  fi
+
+  if printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 -D > GoogleService-Info.plist 2>/dev/null; then
+    return
+  fi
+
+  if command -v openssl >/dev/null 2>&1 &&
+    printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | openssl base64 -d -A > GoogleService-Info.plist 2>/dev/null; then
+    return
+  fi
+
+  echo "Failed to decode GOOGLE_SERVICE_INFO_PLIST_BASE64" >&2
+  exit 1
+}
+
 if [ -n "${GOOGLE_SERVICE_INFO_PLIST_BASE64:-}" ]; then
-  printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > GoogleService-Info.plist
+  decode_google_service_info_plist
 elif [ -n "${GOOGLE_SERVICE_INFO_PLIST:-}" ]; then
   printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist
 else

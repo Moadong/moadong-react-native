@@ -37,7 +37,8 @@ GitHub Actions에서는 가능하면 GitHub Variables에 `EXPO_PUBLIC_*` 값을 
 - `*.p12`
 - `*.mobileprovision`
 
-현재 `.gitignore`에는 `/android`, `/ios`, `.env`, `google-services.json`, `GoogleService-Info.plist`가 포함되어 있다. Android는 prebuild 산출물을 커밋하지 않는 흐름을 유지한다.
+현재 `.gitignore`에는 `/android`, `.env`, `google-services.json`, `GoogleService-Info.plist`가 포함되어 있다. Android는 prebuild 산출물을 커밋하지 않는 흐름을 유지한다.
+또한 iOS 네이티브 프로젝트를 버전 관리하기 위해 `/ios` ignore 규칙은 제거한다.
 
 ## GitHub Actions 트리거
 
