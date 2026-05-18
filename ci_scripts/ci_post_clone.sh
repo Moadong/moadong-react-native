@@ -58,4 +58,4 @@ if [ -f "$ENTITLEMENTS_FILE" ]; then
 fi
 
 cd ios
-pod install
+pod install --deployment
