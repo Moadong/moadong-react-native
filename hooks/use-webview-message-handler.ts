@@ -5,6 +5,8 @@ import { Linking } from 'react-native';
 interface UseWebViewMessageHandlerOptions {
   // 뒤로가기 요청 시 호출
   onNavigateBack?: () => void;
+  // 웹뷰 내 화면 이동 요청 시 호출
+  onNavigateWebview?: (slug: string) => void;
   // 알림 구독 요청 시 호출
   onSubscribe?: (clubId: string, clubName?: string) => Promise<void> | void;
   // 알림 구독 해제 요청 시 호출
@@ -16,6 +18,7 @@ interface UseWebViewMessageHandlerOptions {
 // WebView 메시지를 처리하는 Hook
 export const useWebViewMessageHandler = ({
   onNavigateBack,
+  onNavigateWebview,
   onSubscribe,
   onUnsubscribe,
   onShare,
@@ -30,6 +33,11 @@ export const useWebViewMessageHandler = ({
       switch (message.type) {
         case WebViewMessageTypes.NAVIGATE_BACK:
           onNavigateBack?.();
+          break;
+        case WebViewMessageTypes.NAVIGATE_WEBVIEW:
+          if (message.payload?.slug) {
+            onNavigateWebview?.(message.payload.slug);
+          }
           break;
         case WebViewMessageTypes.NOTIFICATION_SUBSCRIBE:
           if (message.payload?.clubId) {
@@ -61,7 +69,7 @@ export const useWebViewMessageHandler = ({
     } catch (error) {
       console.error('[WebViewHandler] 메시지 파싱 오류:', error);
     }
-  }, [onNavigateBack, onSubscribe, onUnsubscribe, onShare]);
+  }, [onNavigateBack, onNavigateWebview, onSubscribe, onUnsubscribe, onShare]);
 
   return { handleMessage };
 };
