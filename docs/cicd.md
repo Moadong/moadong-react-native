@@ -191,8 +191,10 @@ npx expo prebuild --platform ios --clean
 추가할 파일:
 
 ```text
-ci_scripts/ci_post_clone.sh
+ios/ci_scripts/ci_post_clone.sh
 ```
+
+Xcode Cloud는 custom build script를 Xcode project/workspace와 같은 디렉터리의 `ci_scripts`에서 찾는다. 이 프로젝트의 workspace는 `ios/app.xcworkspace`이므로 script도 `ios/ci_scripts`에 둔다.
 
 script 책임:
 
@@ -277,7 +279,7 @@ fastlane/Appfile
 fastlane/Fastfile
 .github/workflows/android-check.yml
 .github/workflows/android-release.yml
-ci_scripts/ci_post_clone.sh
+ios/ci_scripts/ci_post_clone.sh
 ```
 
 secret 값, keystore, `google-services.json`, `GoogleService-Info.plist`는 구현 대상 파일에 포함하지 않는다.
