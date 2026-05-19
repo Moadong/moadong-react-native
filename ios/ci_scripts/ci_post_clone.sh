@@ -7,6 +7,72 @@ REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 
 cd "$REPO_ROOT"
 
+prepend_homebrew_paths() {
+  if [ -d /opt/homebrew/bin ]; then
+    PATH="/opt/homebrew/bin:$PATH"
+  fi
+
+  if [ -d /usr/local/bin ]; then
+    PATH="/usr/local/bin:$PATH"
+  fi
+
+  export PATH
+}
+
+install_with_homebrew() {
+  FORMULA="$1"
+
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Homebrew is required to install $FORMULA, but brew is not available." >&2
+    exit 1
+  fi
+
+  if ! brew list "$FORMULA" >/dev/null 2>&1; then
+    brew install "$FORMULA"
+  fi
+}
+
+ensure_node() {
+  prepend_homebrew_paths
+
+  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    export NODE_BINARY="$(command -v node)"
+    return
+  fi
+
+  NODE_FORMULA="${NODE_FORMULA:-node@22}"
+
+  echo "Node.js/npm not found in PATH. Installing $NODE_FORMULA with Homebrew..."
+  install_with_homebrew "$NODE_FORMULA"
+
+  NODE_PREFIX="$(brew --prefix "$NODE_FORMULA" 2>/dev/null || true)"
+  if [ -n "$NODE_PREFIX" ]; then
+    PATH="$NODE_PREFIX/bin:$PATH"
+    export PATH
+  fi
+
+  if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+    echo "Failed to make Node.js/npm available after installing $NODE_FORMULA." >&2
+    exit 1
+  fi
+
+  export NODE_BINARY="$(command -v node)"
+}
+
+ensure_cocoapods() {
+  prepend_homebrew_paths
+
+  if command -v pod >/dev/null 2>&1; then
+    return
+  fi
+
+  echo "CocoaPods not found in PATH. Installing cocoapods with Homebrew..."
+  install_with_homebrew cocoapods
+}
+
+ensure_node
+node --version
+npm --version
 npm ci
 
 decode_google_service_info_plist() {
@@ -58,6 +124,7 @@ if [ -f "$ENTITLEMENTS_FILE" ]; then
 fi
 
 cd ios
+ensure_cocoapods
 pod install --deployment
 
 PODS_RELEASE_XCCONFIG="Pods/Target Support Files/Pods-app/Pods-app.release.xcconfig"
