@@ -2,7 +2,7 @@
   "expo": {
     "name": "모아동",
     "slug": "moadong-app",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "moadongapp",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "buildNumber": "13",
+      "buildNumber": "14",
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.moadong.moadong",
       "associatedDomains": [
@@ -26,7 +26,7 @@
     },
     "android": {
       "jsEngine": "hermes",
-      "versionCode": 12,
+      "versionCode": 14,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
