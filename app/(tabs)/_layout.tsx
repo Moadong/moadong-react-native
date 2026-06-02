@@ -3,10 +3,10 @@ import HomeIcon from "@/assets/icons/ic_home.svg";
 import { HapticTab } from "@/components/haptic-tab";
 import { USER_EVENT } from "@/constants/eventname";
 import { Colors } from "@/constants/theme";
-import { useMixpanelTrack } from "@/hooks";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useMixpanelTrack } from "@/hooks/use-mixpanel-track";
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -16,6 +16,10 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const TAB_BAR_BASE_HEIGHT = 56;
   const TAB_BAR_BASE_PADDING_VERTICAL = 6;
+
+  useEffect(() => {
+    console.log('[StartupTiming] tabsMounted', Date.now());
+  }, []);
 
   const handleTabPress = (tabName: string) => {
     trackEvent(USER_EVENT.BOTTOM_TAB_CLICKED, {

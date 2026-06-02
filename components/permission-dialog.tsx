@@ -5,7 +5,7 @@
 import { MoaText } from '@/components/moa-text';
 import { USER_EVENT } from '@/constants/eventname';
 import { Colors } from '@/constants/theme';
-import { useMixpanelTrack } from '@/hooks';
+import { useMixpanelTrack } from '@/hooks/use-mixpanel-track';
 import React, { useEffect } from 'react';
 import { Linking, Modal, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';
@@ -139,4 +139,3 @@ const ConfirmButton = styled(TouchableOpacity)`
 const ConfirmButtonText = styled(MoaText)`
   color: ${Colors.light.tint};
 `;
-

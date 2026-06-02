@@ -5,7 +5,8 @@
 import { MoaText } from '@/components/moa-text';
 import { PermissionDialog } from '@/components/permission-dialog';
 import { PAGE_VIEW_EVENT, USER_EVENT } from '@/constants/eventname';
-import { useMixpanelTrack, useTrackScreenView } from '@/hooks';
+import { useMixpanelTrack } from '@/hooks/use-mixpanel-track';
+import { useTrackScreenView } from '@/hooks/use-track-screen-view';
 import { Club } from '@/types/club.types';
 import { useRouter } from 'expo-router';
 import React, { RefObject, useCallback, useRef, useState } from 'react';
@@ -203,4 +204,3 @@ const RetryButtonText = styled(MoaText)`
 `;
 
 export default SubscribeScreen;
-

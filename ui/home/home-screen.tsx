@@ -8,17 +8,16 @@ import { useRouter } from 'expo-router';
 import { CategoryType } from '@/components/icon';
 import { PermissionDialog } from '@/components/permission-dialog';
 import { PAGE_VIEW_EVENT, USER_EVENT } from '@/constants/eventname';
-import { useMixpanelTrack, useTrackScreenView } from '@/hooks';
+import { useMixpanelTrack } from '@/hooks/use-mixpanel-track';
+import { useTrackScreenView } from '@/hooks/use-track-screen-view';
 import { Club } from '@/types/club.types';
-import {
-  Banner,
-  CategoryFilter,
-  ClubList,
-  MainHeader,
-  Tab,
-  TabType
-} from '@/ui/home/components';
-import { useClubs, useSubscribedClubs } from '@/ui/home/hook';
+import { Banner } from '@/ui/home/components/banner';
+import { CategoryFilter } from '@/ui/home/components/category-filter';
+import { ClubList } from '@/ui/home/components/club-list';
+import { MainHeader } from '@/ui/home/components/main-header';
+import { Tab, TabType } from '@/ui/home/components/tab';
+import { useClubs } from '@/ui/home/hook/use-clubs';
+import { useSubscribedClubs } from '@/ui/home/hook/use-subscribed-clubs';
 
 export function HomeScreen() {
   // SafeArea insets

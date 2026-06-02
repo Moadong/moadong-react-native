@@ -14,7 +14,10 @@ import { firebaseConfig } from '@/constants/firebase-config';
 
 type FirebaseApp = any;
 
+const MIN_SUPPORTED_VERSION_KEY = 'min_supported_version';
+
 let firebaseAppPromise: Promise<FirebaseApp> | null = null;
+let remoteConfigSetupPromise: Promise<void> | null = null;
 
 const ensureFirebaseApp = (): Promise<FirebaseApp> => {
   if (firebaseAppPromise) {
@@ -38,6 +41,30 @@ const ensureFirebaseApp = (): Promise<FirebaseApp> => {
   })();
 
   return firebaseAppPromise;
+};
+
+const ensureRemoteConfigSetup = async (): Promise<void> => {
+  if (remoteConfigSetupPromise) {
+    return remoteConfigSetupPromise;
+  }
+
+  remoteConfigSetupPromise = (async () => {
+    await ensureFirebaseApp();
+
+    await remoteConfig().setDefaults({
+      [MIN_SUPPORTED_VERSION_KEY]: '',
+    });
+
+    await remoteConfig().setConfigSettings({
+      fetchTimeMillis: 5000,
+      minimumFetchIntervalMillis: __DEV__ ? 0 : 60 * 60 * 1000, // 1h
+    });
+  })().catch((error) => {
+    remoteConfigSetupPromise = null;
+    throw error;
+  });
+
+  return remoteConfigSetupPromise;
 };
 
 function getNativeAppVersion(): string | undefined {
@@ -65,65 +92,80 @@ function isVersionLessThan(current: string, min: string): boolean {
   return false;
 }
 
-export async function checkForceUpdateRequired(): Promise<boolean> {
+function evaluateForceUpdateRequired(options: {
+  mode: 'cached' | 'refresh';
+  fetchedRemotely?: boolean;
+}): boolean {
+  const rcMinVersion = remoteConfig().getValue(MIN_SUPPORTED_VERSION_KEY);
+  const minSupportedVersion = rcMinVersion.asString();
+
+  const currentVersion = getNativeAppVersion();
+  const versionBlocked =
+    !!currentVersion &&
+    !!minSupportedVersion &&
+    isVersionLessThan(currentVersion, minSupportedVersion);
+
+  const required = versionBlocked;
+
+  console.log('🧩 Remote Config (force update)', {
+    mode: options.mode,
+    fetchedRemotely: options.fetchedRemotely,
+    keys: {
+      [MIN_SUPPORTED_VERSION_KEY]: {
+        valueRaw: minSupportedVersion,
+        source: rcMinVersion.getSource?.() ?? 'unknown',
+      },
+    },
+    app: {
+      currentVersion,
+      versionBlocked,
+    },
+    required,
+    lastFetchStatus: remoteConfig().lastFetchStatus,
+    fetchTimeMillis: remoteConfig().fetchTimeMillis,
+  });
+
+  return required;
+}
+
+export async function getCachedForceUpdateRequired(): Promise<boolean> {
   // 네이티브 앱(iOS/Android)만 대상. 웹/기타 플랫폼은 false 처리.
   if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
     return false;
   }
 
   try {
-    console.log('🧪 Remote Config(force update) 시작');
-    await ensureFirebaseApp();
+    console.log('🧪 Remote Config(force update) 캐시 판정 시작');
+    await ensureRemoteConfigSetup();
+    return evaluateForceUpdateRequired({ mode: 'cached' });
+  } catch (error) {
+    console.warn('⚠️ 강제 업데이트 캐시 체크 실패 (force update):', error);
+    return false;
+  }
+}
 
-    await remoteConfig().setDefaults({
-      // 권장: 최소 지원 버전(예: "1.2.0")
-      min_supported_version: '',
-    });
+export async function refreshForceUpdateRequired(): Promise<boolean> {
+  // 네이티브 앱(iOS/Android)만 대상. 웹/기타 플랫폼은 false 처리.
+  if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
+    return false;
+  }
 
-    await remoteConfig().setConfigSettings({
-      fetchTimeMillis: 5000,
-      minimumFetchIntervalMillis: __DEV__ ? 0 : 60 * 60 * 1000, // 1h
-    });
-
+  try {
+    console.log('🧪 Remote Config(force update) 백그라운드 갱신 시작');
+    await ensureRemoteConfigSetup();
     // fetch 실패해도 기존 활성값/기본값으로 판단 가능하도록 catch
     const fetchedRemotely = await remoteConfig().fetchAndActivate().catch((error) => {
       console.warn('⚠️ Remote Config fetchAndActivate 실패 (force update):', error);
       return false;
     });
 
-    const rcMinVersion = remoteConfig().getValue('min_supported_version');
-    const minSupportedVersion = rcMinVersion.asString();
-
-    const currentVersion = getNativeAppVersion();
-    const versionBlocked =
-      !!currentVersion &&
-      !!minSupportedVersion &&
-      isVersionLessThan(currentVersion, minSupportedVersion);
-
-    const required = versionBlocked;
-
-    // 디버깅 로그: Remote Config에서 무엇을 받았는지 확인
-    console.log('🧩 Remote Config (force update)', {
-      fetchedRemotely,
-      keys: {
-        min_supported_version: {
-          valueRaw: minSupportedVersion,
-          source: rcMinVersion.getSource?.() ?? 'unknown',
-        },
-      },
-      app: {
-        currentVersion,
-        versionBlocked,
-      },
-      required,
-      lastFetchStatus: remoteConfig().lastFetchStatus,
-      fetchTimeMillis: remoteConfig().fetchTimeMillis,
-    });
-
-    return required;
+    return evaluateForceUpdateRequired({ mode: 'refresh', fetchedRemotely });
   } catch (error) {
-    console.warn('⚠️ 강제 업데이트 체크 실패 (force update):', error);
+    console.warn('⚠️ 강제 업데이트 백그라운드 갱신 실패 (force update):', error);
     return false;
   }
 }
 
+export async function checkForceUpdateRequired(): Promise<boolean> {
+  return refreshForceUpdateRequired();
+}

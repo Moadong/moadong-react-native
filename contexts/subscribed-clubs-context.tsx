@@ -36,14 +36,20 @@ const SubscribedClubsContext = createContext<SubscribedClubsContextType | undefi
  */
 interface SubscribedClubsProviderProps {
   children: React.ReactNode;
+  initialClubIds?: string[];
   refreshKey?: number;
 }
 
 /**
  * 구독 동아리 전역 상태 Provider
  */
-export function SubscribedClubsProvider({ children, refreshKey = 0 }: SubscribedClubsProviderProps) {
-  const [subscribedClubIds, setSubscribedClubIds] = useState<string[]>([]);
+export function SubscribedClubsProvider({
+  children,
+  initialClubIds,
+  refreshKey = 0,
+}: SubscribedClubsProviderProps) {
+  const usesBootstrapState = initialClubIds !== undefined;
+  const [subscribedClubIds, setSubscribedClubIds] = useState<string[]>(initialClubIds ?? []);
   const [loading, setLoading] = useState(false);
 
   /**
@@ -171,8 +177,13 @@ export function SubscribedClubsProvider({ children, refreshKey = 0 }: Subscribed
    * 초기 데이터 로드
    */
   useEffect(() => {
+    if (usesBootstrapState) {
+      setSubscribedClubIds(initialClubIds ?? []);
+      return;
+    }
+
     loadSubscribedClubs();
-  }, [loadSubscribedClubs, refreshKey]);
+  }, [initialClubIds, loadSubscribedClubs, refreshKey, usesBootstrapState]);
 
   const value: SubscribedClubsContextType = {
     subscribedClubIds,
@@ -199,4 +210,3 @@ export function useSubscribedClubsContext(): SubscribedClubsContextType {
   }
   return context;
 }
-

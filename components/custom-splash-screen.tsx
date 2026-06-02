@@ -32,6 +32,7 @@ export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: C
   const textTranslateY = useSharedValue(20);
   const fadeOutOpacity = useSharedValue(1);
   const hasAnimatedOnce = useRef(false);
+  const hasStartedFadeOut = useRef(false);
 
   const triggerFadeOut = useCallback((delayMs: number) => {
     fadeOutOpacity.value = withDelay(
@@ -48,7 +49,7 @@ export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: C
     );
   }, [fadeOutOpacity, onFinish]);
 
-  const startAnimation = useCallback((shouldBlockFinish: boolean) => {
+  const startAnimation = useCallback(() => {
     logoOpacity.value = withTiming(1, {
       duration: 500,
       easing: Easing.out(Easing.ease),
@@ -69,22 +70,28 @@ export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: C
       300,
       withTiming(0, { duration: 400, easing: Easing.out(Easing.ease) })
     );
-
-    if (!shouldBlockFinish) {
-      triggerFadeOut(2200);
-    }
-  }, [logoOpacity, logoScale, textOpacity, textTranslateY, triggerFadeOut]);
+  }, [logoOpacity, logoScale, textOpacity, textTranslateY]);
 
   useEffect(() => {
-    if (!isReady) return;
-
     if (!hasAnimatedOnce.current) {
       hasAnimatedOnce.current = true;
-      startAnimation(blockFinish);
-    } else if (!blockFinish) {
-      triggerFadeOut(0);
+      startAnimation();
     }
-  }, [isReady, blockFinish, startAnimation, triggerFadeOut]);
+  }, [startAnimation]);
+
+  useEffect(() => {
+    if (blockFinish) {
+      hasStartedFadeOut.current = false;
+      return;
+    }
+
+    if (!isReady || hasStartedFadeOut.current) {
+      return;
+    }
+
+    hasStartedFadeOut.current = true;
+    triggerFadeOut(0);
+  }, [isReady, blockFinish, triggerFadeOut]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
@@ -182,4 +189,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-
