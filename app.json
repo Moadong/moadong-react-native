@@ -77,6 +77,10 @@
       [
         "expo-build-properties",
         {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          },
           "ios": {
             "useFrameworks": "static",
             "buildReactNativeFromSource": true,
@@ -97,7 +101,8 @@
       ],
       "expo-tracking-transparency",
       "./plugins/withFcmNotificationColorFix",
-      "./plugins/withAndroidReleaseSigning"
+      "./plugins/withAndroidReleaseSigning",
+      "./plugins/withIosPrebuildFixes"
     ],
     "experiments": {
       "typedRoutes": true,

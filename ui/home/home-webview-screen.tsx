@@ -1,4 +1,4 @@
-import { useMixpanelContext } from '@/contexts';
+import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
 import { useRouter } from 'expo-router';
@@ -26,6 +26,12 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const { subscribedClubIds, toggleSubscribe } = useSubscribedClubsContext();
 
   const url = sessionLoading ? null : appendSessionId(BASE_URL, sessionId);
+
+  useEffect(() => {
+    if (url) {
+      console.log('[StartupTiming] homeWebViewSourceReady', Date.now());
+    }
+  }, [url]);
 
   const sendMessage = useCallback((data: object) => {
     webViewRef.current?.injectJavaScript(
@@ -90,6 +96,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   );
 
   const handleLoadEnd = useCallback(() => {
+    console.log('[StartupTiming] homeWebViewLoadEnd', Date.now());
     setLoaded(true);
   }, []);
 

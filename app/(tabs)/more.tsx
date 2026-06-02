@@ -1,7 +1,8 @@
 import MoadongIcon from '@/assets/icons/ic-moadong.svg';
 import { MoaText } from '@/components/moa-text';
 import { PAGE_VIEW_EVENT, USER_EVENT } from '@/constants/eventname';
-import { useMixpanelTrack, useTrackScreenView } from '@/hooks';
+import { useMixpanelTrack } from '@/hooks/use-mixpanel-track';
+import { useTrackScreenView } from '@/hooks/use-track-screen-view';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
@@ -162,4 +163,3 @@ const VersionItem = styled.View`
 const VersionValue = styled(MoaText)`
   color: #888888;
 `;
-

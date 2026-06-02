@@ -9,6 +9,13 @@ export interface RowProps extends ViewProps {
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
 }
 
+type StyledRowProps = {
+  gap: number;
+  align: NonNullable<RowProps['align']>;
+  justify: NonNullable<RowProps['justify']>;
+  wrap: NonNullable<RowProps['wrap']>;
+};
+
 /**
  * 가로 방향 레이아웃 컴포넌트
  * 
@@ -40,15 +47,10 @@ export function Row({
   );
 }
 
-const StyledRow = styled.View<{
-  gap: number;
-  align: string;
-  justify: string;
-  wrap: string;
-}>`
+const StyledRow = styled.View<StyledRowProps>`
   flex-direction: row;
-  align-items: ${props => props.align};
-  justify-content: ${props => props.justify};
-  flex-wrap: ${props => props.wrap};
-  gap: ${props => props.gap}px;
+  align-items: ${(props: StyledRowProps) => props.align};
+  justify-content: ${(props: StyledRowProps) => props.justify};
+  flex-wrap: ${(props: StyledRowProps) => props.wrap};
+  gap: ${(props: StyledRowProps) => props.gap}px;
 `;

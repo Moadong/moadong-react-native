@@ -1,7 +1,7 @@
 import { MoaImage } from "@/components/moa-image";
 import { USER_EVENT } from "@/constants/eventname";
 import { BorderRadius, Spacing } from "@/constants/theme";
-import { useMixpanelTrack } from "@/hooks";
+import { useMixpanelTrack } from "@/hooks/use-mixpanel-track";
 import { publicApi } from "@/services/api";
 import { BannerProps, HomeBannerItem } from "@/ui/home/model/banner";
 import { useRouter } from "expo-router";

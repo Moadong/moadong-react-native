@@ -3,6 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const ACCESS_TOKEN_KEY = '@access_token';
 const AUTH_SUBJECT_KEY = '@auth_subject';
 
+let cachedAccessToken: string | null | undefined;
+let cachedAuthSubject: string | null | undefined;
+
 function generateUuidV4(): string {
   const template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
   return template.replace(/[xy]/g, (char) => {
@@ -13,31 +16,45 @@ function generateUuidV4(): string {
 }
 
 export async function getStoredAccessToken(): Promise<string | null> {
+  if (cachedAccessToken !== undefined) {
+    return cachedAccessToken;
+  }
+
   try {
-    return await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+    cachedAccessToken = await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+    return cachedAccessToken;
   } catch (error) {
     console.error('❌ Access Token 조회 실패:', error);
+    cachedAccessToken = null;
     return null;
   }
 }
 
 export async function saveAccessToken(token: string): Promise<void> {
+  cachedAccessToken = token;
   await AsyncStorage.setItem(ACCESS_TOKEN_KEY, token);
 }
 
 export async function getOrCreateAuthSubject(): Promise<string> {
+  if (cachedAuthSubject !== undefined && cachedAuthSubject !== null) {
+    return cachedAuthSubject;
+  }
+
   try {
     const stored = await AsyncStorage.getItem(AUTH_SUBJECT_KEY);
     if (stored) {
+      cachedAuthSubject = stored;
       return stored;
     }
 
     const subject = generateUuidV4();
+    cachedAuthSubject = subject;
     await AsyncStorage.setItem(AUTH_SUBJECT_KEY, subject);
     return subject;
   } catch (error) {
     console.warn('⚠️ auth subject 저장 실패, 임시 값 사용:', error);
-    return generateUuidV4();
+    cachedAuthSubject = generateUuidV4();
+    return cachedAuthSubject;
   }
 }
 
@@ -70,4 +87,3 @@ export function getJwtSubject(accessToken: string): string | null {
     return null;
   }
 }
-

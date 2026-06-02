@@ -6,7 +6,7 @@ import { MoaImage } from '@/components/moa-image';
 import { MoaText } from '@/components/moa-text';
 import { USER_EVENT } from '@/constants/eventname';
 import { MainColors } from '@/constants/theme';
-import { useMixpanelTrack } from '@/hooks';
+import { useMixpanelTrack } from '@/hooks/use-mixpanel-track';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
@@ -87,4 +87,3 @@ const HomeButton = styled(TouchableOpacity)`
 const ButtonText = styled(MoaText)`
   color: #FFFFFF;
 `;
-
