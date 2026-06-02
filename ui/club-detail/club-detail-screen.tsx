@@ -71,7 +71,7 @@ export default function ClubWebViewScreen() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.push("/(tabs)");
+      router.push("/");
     }
   };
 

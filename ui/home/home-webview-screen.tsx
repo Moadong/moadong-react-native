@@ -1,6 +1,7 @@
 import { useMixpanelContext } from '@/contexts';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -80,6 +81,13 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
           case 'OPEN_EXTERNAL_URL':
             await WebBrowser.openBrowserAsync(payload.url);
+            break;
+
+          case 'REQUEST_APP_VERSION':
+            sendMessage({
+              type: 'APP_VERSION',
+              payload: { version: Constants.expoConfig?.version ?? 'unknown' },
+            });
             break;
         }
       } catch {

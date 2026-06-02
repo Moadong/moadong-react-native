@@ -25,7 +25,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: 'index',
 };
 
 type BootstrapStatus = 'idle' | 'running' | 'success' | 'failed';
@@ -144,7 +144,7 @@ export default function RootLayout() {
         <SubscribedClubsProvider refreshKey={subscribedClubsRefreshKey}>
           <ThemeProvider value={DefaultTheme}>
             <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="club/[id]" options={{ headerShown: false }} />
               <Stack.Screen name="clubDetail/[id]" options={{ headerShown: false }} />
               <Stack.Screen name="webview/[slug]" options={{ headerShown: false }} />
