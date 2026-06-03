@@ -1,3 +1,4 @@
+import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-context';
 import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
@@ -20,8 +21,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const webViewRef = useRef<WebView>(null);
+  const loadFailedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
 
+  const { markLoading, markReady, markFailed } = useHomeWebViewPreloadContext();
   const { sessionId, isLoading: sessionLoading } = useMixpanelContext();
   const { subscribedClubIds, toggleSubscribe } = useSubscribedClubsContext();
 
@@ -29,9 +32,11 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
   useEffect(() => {
     if (url) {
+      loadFailedRef.current = false;
+      markLoading();
       console.log('[StartupTiming] homeWebViewSourceReady', Date.now());
     }
-  }, [url]);
+  }, [markLoading, url]);
 
   const sendMessage = useCallback((data: object) => {
     webViewRef.current?.injectJavaScript(
@@ -97,8 +102,19 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
   const handleLoadEnd = useCallback(() => {
     console.log('[StartupTiming] homeWebViewLoadEnd', Date.now());
+    if (loadFailedRef.current) {
+      return;
+    }
+
+    markReady();
     setLoaded(true);
-  }, []);
+  }, [markReady]);
+
+  const handleError = useCallback(() => {
+    loadFailedRef.current = true;
+    markFailed();
+    onError();
+  }, [markFailed, onError]);
 
   return (
     <Container style={{ paddingTop: insets.top }}>
@@ -115,8 +131,8 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           userAgent={USER_AGENT}
           onMessage={handleMessage}
           onLoadEnd={handleLoadEnd}
-          onError={onError}
-          onHttpError={onError}
+          onError={handleError}
+          onHttpError={handleError}
           javaScriptEnabled
           domStorageEnabled
           pullToRefreshEnabled

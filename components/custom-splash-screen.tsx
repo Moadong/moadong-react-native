@@ -29,7 +29,6 @@ interface CustomSplashScreenProps {
 type IntroAnimationStep = 'logoOpacity' | 'logoScale' | 'textOpacity' | 'textTranslateY';
 
 const INTRO_ANIMATION_STEP_COUNT = 4;
-const MIN_SPLASH_VISIBLE_DURATION_MS = 700;
 const SPLASH_FADE_OUT_DURATION_MS = 300;
 
 export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: CustomSplashScreenProps) {
@@ -41,7 +40,6 @@ export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: C
   const [introCompleted, setIntroCompleted] = useState(false);
   const hasAnimatedOnce = useRef(false);
   const hasStartedFadeOut = useRef(false);
-  const animationStartedAt = useRef(Date.now());
   const completedIntroAnimationSteps = useRef(new Set<IntroAnimationStep>());
 
   const markIntroAnimationStepComplete = useCallback((step: IntroAnimationStep) => {
@@ -56,24 +54,19 @@ export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: C
     }
   }, []);
 
-  const triggerFadeOut = useCallback((delayMs: number) => {
-    fadeOutOpacity.value = withDelay(
-      delayMs,
-      withTiming(
-        0,
-        { duration: SPLASH_FADE_OUT_DURATION_MS, easing: Easing.in(Easing.ease) },
-        (finished) => {
-          if (finished) {
-            runOnJS(onFinish)();
-          }
+  const triggerFadeOut = useCallback(() => {
+    fadeOutOpacity.value = withTiming(
+      0,
+      { duration: SPLASH_FADE_OUT_DURATION_MS, easing: Easing.in(Easing.ease) },
+      (finished) => {
+        if (finished) {
+          runOnJS(onFinish)();
         }
-      )
+      }
     );
   }, [fadeOutOpacity, onFinish]);
 
   const startAnimation = useCallback(() => {
-    animationStartedAt.current = Date.now();
-
     logoOpacity.value = withTiming(
       1,
       {
@@ -154,9 +147,7 @@ export function CustomSplashScreen({ onFinish, isReady, blockFinish = false }: C
     }
 
     hasStartedFadeOut.current = true;
-    const elapsedMs = Date.now() - animationStartedAt.current;
-    const remainingMinimumMs = Math.max(0, MIN_SPLASH_VISIBLE_DURATION_MS - elapsedMs);
-    triggerFadeOut(remainingMinimumMs);
+    triggerFadeOut();
   }, [isReady, introCompleted, blockFinish, fadeOutOpacity, triggerFadeOut]);
 
   const logoAnimatedStyle = useAnimatedStyle(() => ({
