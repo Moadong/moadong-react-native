@@ -1,5 +1,5 @@
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { getTrackingPermissionsAsync, requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
@@ -12,6 +12,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BootstrapErrorDialog } from '@/components/bootstrap-error-dialog';
 import { CustomSplashScreen } from '@/components/custom-splash-screen';
 import { ForceUpdateDialog } from '@/components/force-update-dialog';
+import {
+  HomeWebViewPreloadProvider,
+  useHomeWebViewPreloadContext,
+} from '@/contexts/home-webview-preload-context';
 import { MixpanelProvider } from '@/contexts/mixpanel-context';
 import { SubscribedClubsProvider } from '@/contexts/subscribed-clubs-context';
 import { useFcm } from '@/hooks/use-fcm';
@@ -36,6 +40,15 @@ type BootstrapStatus = 'idle' | 'running' | 'success' | 'failed';
 const EMPTY_SUBSCRIBED_CLUB_IDS: string[] = [];
 
 export default function RootLayout() {
+  return (
+    <HomeWebViewPreloadProvider>
+      <RootLayoutContent />
+    </HomeWebViewPreloadProvider>
+  );
+}
+
+function RootLayoutContent() {
+  const pathname = usePathname();
   const [showSplash, setShowSplash] = useState(true);
   const [forceUpdateRequired, setForceUpdateRequired] = useState(false);
   const [forceUpdateChecked, setForceUpdateChecked] = useState(false);
@@ -44,9 +57,15 @@ export default function RootLayout() {
   const [bootstrapResult, setBootstrapResult] = useState<BootstrapResult | null>(null);
   const bootstrapStatusRef = useRef<BootstrapStatus>('idle');
   const nativeSplashHiddenRef = useRef(false);
+  const { isSettled: homeWebViewPreloadSettled, status: homeWebViewPreloadStatus } =
+    useHomeWebViewPreloadContext();
 
   const bootstrapSucceeded = bootstrapStatus === 'success';
-  const shouldBlockSplash = forceUpdateRequired || !bootstrapSucceeded;
+  const shouldWaitForHomeWebView = pathname === '/';
+  const shouldBlockSplash =
+    forceUpdateRequired ||
+    !bootstrapSucceeded ||
+    (shouldWaitForHomeWebView && !homeWebViewPreloadSettled);
 
   // 강제 업데이트가 필요한 경우(또는 체크 전)에는 FCM 권한 프롬프트/핸들러 설정이 뜨지 않도록 비활성화
   useFcm(forceUpdateChecked && !forceUpdateRequired && bootstrapSucceeded);
@@ -181,11 +200,22 @@ export default function RootLayout() {
       customSplashDismissed: Date.now(),
     });
     if (shouldBlockSplash) {
-      console.log('⛔️ 스플래시 유지:', { forceUpdateRequired, bootstrapStatus });
+      console.log('⛔️ 스플래시 유지:', {
+        forceUpdateRequired,
+        bootstrapStatus,
+        pathname,
+        homeWebViewPreloadStatus,
+      });
       return;
     }
     setShowSplash(false);
-  }, [forceUpdateRequired, bootstrapStatus, shouldBlockSplash]);
+  }, [
+    forceUpdateRequired,
+    bootstrapStatus,
+    pathname,
+    homeWebViewPreloadStatus,
+    shouldBlockSplash,
+  ]);
 
   const handleRetryBootstrap = useCallback(async () => {
     if (bootstrapStatus === 'running') {
@@ -205,6 +235,8 @@ export default function RootLayout() {
       showSplash,
       bootstrapStatus,
       forceUpdateRequired,
+      pathname,
+      homeWebViewPreloadStatus,
     });
   }
 

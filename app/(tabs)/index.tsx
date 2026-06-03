@@ -1,10 +1,17 @@
+import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-context';
 import { HomeWebViewScreen } from '@/ui/home/home-webview-screen';
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useState } from 'react';
 
 const LazyHomeScreen = lazy(() => import('@/ui/home/home-screen'));
 
 export default function HomeTab() {
   const [webViewFailed, setWebViewFailed] = useState(false);
+  const { markFailed } = useHomeWebViewPreloadContext();
+
+  const handleWebViewError = useCallback(() => {
+    markFailed();
+    setWebViewFailed(true);
+  }, [markFailed]);
 
   if (webViewFailed) {
     return (
@@ -14,5 +21,5 @@ export default function HomeTab() {
     );
   }
 
-  return <HomeWebViewScreen onError={() => setWebViewFailed(true)} />;
+  return <HomeWebViewScreen onError={handleWebViewError} />;
 }
