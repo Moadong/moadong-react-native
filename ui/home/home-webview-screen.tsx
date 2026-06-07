@@ -12,6 +12,7 @@ import {
   WebView,
   WebViewMessageEvent,
   WebViewNavigation,
+  ShouldStartLoadRequest,
 } from 'react-native-webview';
 import styled from 'styled-components/native';
 
@@ -140,6 +141,18 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
     [],
   );
 
+  const handleShouldStartLoadWithRequest = useCallback(
+    (request: ShouldStartLoadRequest) => {
+      const baseOrigin = (process.env.EXPO_PUBLIC_WEBVIEW_URL ?? 'https://moadong.com').replace(/\/$/, '');
+      if (request.url.startsWith('http') && !request.url.startsWith(baseOrigin)) {
+        router.push({ pathname: '/webview/[slug]', params: { slug: 'external', url: request.url } });
+        return false;
+      }
+      return true;
+    },
+    [router],
+  );
+
   // Android 하드웨어 뒤로가기: 웹뷰 히스토리가 있으면 웹뷰 back, 없으면 기본 동작(종료)
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
@@ -171,6 +184,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           onMessage={handleMessage}
           onLoadEnd={handleLoadEnd}
           onNavigationStateChange={handleNavigationStateChange}
+          onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
           onError={handleError}
           onHttpError={handleError}
           javaScriptEnabled
