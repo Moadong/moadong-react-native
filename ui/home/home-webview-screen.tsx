@@ -5,9 +5,13 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, BackHandler, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import {
+  WebView,
+  WebViewMessageEvent,
+  WebViewNavigation,
+} from 'react-native-webview';
 import styled from 'styled-components/native';
 
 const BASE_URL = `${(process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://moadong.com').replace(/\/$/, '')}/webview/main`;
@@ -21,6 +25,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const webViewRef = useRef<WebView>(null);
+  const canGoBackRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
 
   const { sessionId, isLoading: sessionLoading } = useMixpanelContext();
@@ -67,6 +72,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
             break;
           }
 
+          case 'NAVIGATE_BACK':
+            webViewRef.current?.goBack();
+            break;
+
           case 'NAVIGATE_WEBVIEW':
             if (payload.slug?.startsWith('club/')) {
               const clubId = payload.slug.slice('club/'.length);
@@ -101,6 +110,28 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
     setLoaded(true);
   }, []);
 
+  const handleNavigationStateChange = useCallback(
+    (navState: WebViewNavigation) => {
+      canGoBackRef.current = navState.canGoBack;
+    },
+    [],
+  );
+
+  // Android 하드웨어 뒤로가기: 웹뷰 히스토리가 있으면 웹뷰 back, 없으면 기본 동작(종료)
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (canGoBackRef.current) {
+          webViewRef.current?.goBack();
+          return true;
+        }
+        return false;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
   return (
     <Container style={{ paddingTop: insets.top }}>
       {!loaded && (
@@ -116,11 +147,13 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           userAgent={USER_AGENT}
           onMessage={handleMessage}
           onLoadEnd={handleLoadEnd}
+          onNavigationStateChange={handleNavigationStateChange}
           onError={onError}
           onHttpError={onError}
           javaScriptEnabled
           domStorageEnabled
           pullToRefreshEnabled
+          allowsBackForwardNavigationGestures
         />
       )}
     </Container>
