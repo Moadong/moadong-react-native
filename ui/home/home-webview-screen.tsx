@@ -1,4 +1,5 @@
-import { useMixpanelContext } from '@/contexts';
+import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-context';
+import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
 import Constants from 'expo-constants';
@@ -26,12 +27,22 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const router = useRouter();
   const webViewRef = useRef<WebView>(null);
   const canGoBackRef = useRef(false);
+  const loadFailedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
 
+  const { markLoading, markReady, markFailed } = useHomeWebViewPreloadContext();
   const { sessionId, isLoading: sessionLoading } = useMixpanelContext();
   const { subscribedClubIds, toggleSubscribe } = useSubscribedClubsContext();
 
   const url = sessionLoading ? null : appendSessionId(BASE_URL, sessionId);
+
+  useEffect(() => {
+    if (url) {
+      loadFailedRef.current = false;
+      markLoading();
+      console.log('[StartupTiming] homeWebViewSourceReady', Date.now());
+    }
+  }, [markLoading, url]);
 
   const sendMessage = useCallback((data: object) => {
     webViewRef.current?.injectJavaScript(
@@ -107,8 +118,20 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   );
 
   const handleLoadEnd = useCallback(() => {
+    console.log('[StartupTiming] homeWebViewLoadEnd', Date.now());
+    if (loadFailedRef.current) {
+      return;
+    }
+
+    markReady();
     setLoaded(true);
-  }, []);
+  }, [markReady]);
+
+  const handleError = useCallback(() => {
+    loadFailedRef.current = true;
+    markFailed();
+    onError();
+  }, [markFailed, onError]);
 
   const handleNavigationStateChange = useCallback(
     (navState: WebViewNavigation) => {
@@ -148,8 +171,8 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           onMessage={handleMessage}
           onLoadEnd={handleLoadEnd}
           onNavigationStateChange={handleNavigationStateChange}
-          onError={onError}
-          onHttpError={onError}
+          onError={handleError}
+          onHttpError={handleError}
           javaScriptEnabled
           domStorageEnabled
           pullToRefreshEnabled

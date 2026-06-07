@@ -43,7 +43,46 @@ ENV['RCT_NEW_ARCH_ENABLED'] ||= '0' if podfile_properties['newArchEnabled'] == '
 ENV['EX_DEV_CLIENT_NETWORK_INSPECTOR'] ||= podfile_properties['EX_DEV_CLIENT_NETWORK_INSPECTOR']
 ENV['RCT_USE_RN_DEP'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true' && podfile_properties['newArchEnabled'] != 'false'
 ENV['RCT_USE_PREBUILT_RNCORE'] ||= '1' if podfile_properties['ios.buildReactNativeFromSource'] != 'true' && podfile_properties['newArchEnabled'] != 'false'
-platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
+ios_deployment_target = podfile_properties['ios.deploymentTarget'] || '15.1'
+platform :ios, ios_deployment_target
+
+def set_xcconfig_build_setting(path, key, value)
+  return unless path && File.exist?(path)
+
+  contents = File.read(path)
+  setting = "#{key} = #{value}"
+
+  updated_contents =
+    if contents.match?(/^#{Regexp.escape(key)}\s*=/)
+      contents.gsub(/^#{Regexp.escape(key)}\s*=.*$/, setting)
+    else
+      "#{setting}\n#{contents}"
+    end
+
+  File.write(path, updated_contents) if updated_contents != contents
+end
+
+def configure_fmt_for_xcode_26(installer)
+  fmt_target = installer.pods_project.targets.find { |target| target.name == 'fmt' }
+  return unless fmt_target
+
+  fmt_target.build_configurations.each do |config|
+    config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+    set_xcconfig_build_setting(
+      config.base_configuration_reference&.real_path,
+      'CLANG_CXX_LANGUAGE_STANDARD',
+      'c++17'
+    )
+  end
+end
+
+def normalize_pods_deployment_target(installer, deployment_target)
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = deployment_target
+    end
+  end
+end
 
 prepare_react_native_project!
 
@@ -86,6 +125,9 @@ target 'app' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+
+    configure_fmt_for_xcode_26(installer)
+    normalize_pods_deployment_target(installer, ios_deployment_target)
   end
 end
 

@@ -1,8 +1,34 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Mixpanel } from 'mixpanel-react-native';
+
+const SESSION_ID_KEY = '@moadong_session_id';
 
 let mixpanelInstance: Mixpanel | null = null;
 let isInitialized = false;
 let initializationPromise: Promise<void> | null = null;
+
+const generateSessionId = (): string => {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 15);
+  return `moadong_${timestamp}_${randomStr}`;
+};
+
+export const getOrCreateMixpanelSessionId = async (): Promise<string> => {
+  try {
+    const storedSessionId = await AsyncStorage.getItem(SESSION_ID_KEY);
+    if (storedSessionId) {
+      return storedSessionId;
+    }
+
+    const newSessionId = generateSessionId();
+    await AsyncStorage.setItem(SESSION_ID_KEY, newSessionId);
+    console.log('[Mixpanel] 새 Session ID 생성:', newSessionId);
+    return newSessionId;
+  } catch (error) {
+    console.error('[Mixpanel] Session ID 로드/저장 실패:', error);
+    return generateSessionId();
+  }
+};
 
 export const getMixpanel = async (): Promise<Mixpanel | null> => {
   if (mixpanelInstance && isInitialized) {

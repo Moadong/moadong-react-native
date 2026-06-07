@@ -4,7 +4,7 @@
 
 import { MoaText } from '@/components/moa-text';
 import { Club } from '@/types/club.types';
-import { ClubCard } from '@/ui/home/components';
+import { ClubCard } from '@/ui/home/components/club-card';
 import React, { ReactElement, RefObject } from 'react';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import styled from 'styled-components/native';

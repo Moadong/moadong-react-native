@@ -16,27 +16,28 @@ type IssueAccessTokenPayload = {
 };
 
 function extractAccessToken(response: IssueAccessTokenResponse): string | null {
-  if (!response || typeof response !== 'object') {
+  const payload = response as any;
+  if (!payload || typeof payload !== 'object') {
     return null;
   }
 
   const directToken =
-    'accessToken' in response && typeof response.accessToken === 'string'
-      ? response.accessToken
-      : 'token' in response && typeof response.token === 'string'
-        ? response.token
+    typeof payload.accessToken === 'string'
+      ? payload.accessToken
+      : typeof payload.token === 'string'
+        ? payload.token
         : null;
 
   if (directToken) {
     return directToken;
   }
 
-  if ('data' in response && response.data && typeof response.data === 'object') {
-    if (typeof response.data.accessToken === 'string') {
-      return response.data.accessToken;
+  if (payload.data && typeof payload.data === 'object') {
+    if (typeof payload.data.accessToken === 'string') {
+      return payload.data.accessToken;
     }
-    if (typeof response.data.token === 'string') {
-      return response.data.token;
+    if (typeof payload.data.token === 'string') {
+      return payload.data.token;
     }
   }
 
@@ -68,4 +69,3 @@ export async function ensureAccessToken(): Promise<string> {
 
   return issueAccessToken();
 }
-

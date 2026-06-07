@@ -4,8 +4,8 @@
  */
 
 import { MoaText } from "@/components/moa-text";
-import { useMixpanelContext } from "@/contexts";
-import { useWebViewMessageHandler } from "@/hooks";
+import { useMixpanelContext } from "@/contexts/mixpanel-context";
+import { useWebViewMessageHandler } from "@/hooks/use-webview-message-handler";
 import { appendSessionId, getWebViewUserAgent } from "@/utils/webview";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";

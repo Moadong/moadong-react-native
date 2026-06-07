@@ -9,6 +9,13 @@ export interface ColumnProps extends ViewProps {
   wrap?: 'nowrap' | 'wrap' | 'wrap-reverse';
 }
 
+type StyledColumnProps = {
+  gap: number;
+  align: NonNullable<ColumnProps['align']>;
+  justify: NonNullable<ColumnProps['justify']>;
+  wrap: NonNullable<ColumnProps['wrap']>;
+};
+
 /**
  * 세로 방향 레이아웃 컴포넌트
  * 
@@ -40,15 +47,10 @@ export function Column({
   );
 }
 
-const StyledColumn = styled.View<{
-  gap: number;
-  align: string;
-  justify: string;
-  wrap: string;
-}>`
+const StyledColumn = styled.View<StyledColumnProps>`
   flex-direction: column;
-  align-items: ${props => props.align};
-  justify-content: ${props => props.justify};
-  flex-wrap: ${props => props.wrap};
-  gap: ${props => props.gap}px;
+  align-items: ${(props: StyledColumnProps) => props.align};
+  justify-content: ${(props: StyledColumnProps) => props.justify};
+  flex-wrap: ${(props: StyledColumnProps) => props.wrap};
+  gap: ${(props: StyledColumnProps) => props.gap}px;
 `;
