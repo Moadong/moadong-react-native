@@ -57,15 +57,15 @@ function RootLayoutContent() {
   const [bootstrapResult, setBootstrapResult] = useState<BootstrapResult | null>(null);
   const bootstrapStatusRef = useRef<BootstrapStatus>('idle');
   const nativeSplashHiddenRef = useRef(false);
-  const { isSettled: homeWebViewPreloadSettled, status: homeWebViewPreloadStatus } =
+  const { isSettled: homeWebViewPreloadSettled } =
     useHomeWebViewPreloadContext();
 
+  const initialPathnameRef = useRef(pathname);
   const bootstrapSucceeded = bootstrapStatus === 'success';
-  const shouldWaitForHomeWebView = pathname === '/';
   const shouldBlockSplash =
     forceUpdateRequired ||
     !bootstrapSucceeded ||
-    (shouldWaitForHomeWebView && !homeWebViewPreloadSettled);
+    (initialPathnameRef.current === '/' && !homeWebViewPreloadSettled);
 
   // 강제 업데이트가 필요한 경우(또는 체크 전)에는 FCM 권한 프롬프트/핸들러 설정이 뜨지 않도록 비활성화
   useFcm(forceUpdateChecked && !forceUpdateRequired && bootstrapSucceeded);
@@ -204,7 +204,7 @@ function RootLayoutContent() {
         forceUpdateRequired,
         bootstrapStatus,
         pathname,
-        homeWebViewPreloadStatus,
+        homeWebViewPreloadSettled,
       });
       return;
     }
@@ -213,7 +213,7 @@ function RootLayoutContent() {
     forceUpdateRequired,
     bootstrapStatus,
     pathname,
-    homeWebViewPreloadStatus,
+    homeWebViewPreloadSettled,
     shouldBlockSplash,
   ]);
 
@@ -236,7 +236,7 @@ function RootLayoutContent() {
       bootstrapStatus,
       forceUpdateRequired,
       pathname,
-      homeWebViewPreloadStatus,
+      homeWebViewPreloadSettled,
     });
   }
 

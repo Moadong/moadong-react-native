@@ -6,14 +6,14 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   WebView,
   WebViewMessageEvent,
   WebViewNavigation,
-  ShouldStartLoadRequest,
 } from 'react-native-webview';
+import type { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 import styled from 'styled-components/native';
 
 const BASE_URL = `${(process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://moadong.com').replace(/\/$/, '')}/webview/main`;
@@ -89,6 +89,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
             break;
 
           case 'NAVIGATE_WEBVIEW':
+            if (!loaded) break;
             if (payload.slug?.startsWith('club/')) {
               const clubId = payload.slug.slice('club/'.length);
               if (!clubId) break;
@@ -145,12 +146,21 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
     (request: ShouldStartLoadRequest) => {
       const baseOrigin = (process.env.EXPO_PUBLIC_WEBVIEW_URL ?? 'https://moadong.com').replace(/\/$/, '');
       if (request.url.startsWith('http') && !request.url.startsWith(baseOrigin)) {
-        router.push({ pathname: '/webview/[slug]', params: { slug: 'external', url: request.url } });
-        return false;
+        // iOS: navigationType === 'click' 은 사용자가 직접 링크를 탭한 경우만 해당
+        //      초기 로드·서버 리다이렉트는 'other' 이므로 인터셉트하지 않음
+        // Android: navigationType이 항상 'other'이므로 loaded 상태로 구분
+        const isUserInitiated = Platform.OS === 'ios'
+          ? request.navigationType === 'click'
+          : loaded;
+        if (isUserInitiated) {
+          router.push({ pathname: '/webview/[slug]', params: { slug: 'external', url: request.url } });
+          return false;
+        }
+        return true;
       }
       return true;
     },
-    [router],
+    [router, loaded],
   );
 
   // Android 하드웨어 뒤로가기: 웹뷰 히스토리가 있으면 웹뷰 back, 없으면 기본 동작(종료)
