@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, Platform, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Platform, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   WebView,
@@ -91,9 +91,9 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           case 'NAVIGATE_WEBVIEW':
             if (!loaded) break;
             if (payload.slug?.startsWith('club/')) {
-              const clubId = payload.slug.slice('club/'.length);
-              if (!clubId) break;
-              router.push({ pathname: '/club/[id]', params: { id: clubId } });
+              const slugId = payload.slug.slice('club/'.length);
+              if (!slugId) break;
+              router.push({ pathname: '/club/[id]', params: { id: slugId, clubId: payload.clubId } });
             } else if (payload.slug?.startsWith('promotions/')) {
               router.push({ pathname: '/webview/[slug]', params: { slug: 'promotions', path: `/${payload.slug}`, hideHeader: 'true' } });
             } else {
@@ -103,6 +103,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
           case 'OPEN_EXTERNAL_URL':
             await WebBrowser.openBrowserAsync(payload.url);
+            break;
+
+          case 'SHARE':
+            await Share.share({ title: payload.title, message: payload.text, url: payload.url });
             break;
 
           case 'REQUEST_APP_VERSION':
