@@ -4,7 +4,7 @@ import React, { Suspense, lazy, useCallback, useState } from 'react';
 
 const LazyHomeScreen = lazy(() => import('@/ui/home/home-screen'));
 
-export default function HomeTab() {
+export default function Home() {
   const [webViewFailed, setWebViewFailed] = useState(false);
   const { markFailed } = useHomeWebViewPreloadContext();
 

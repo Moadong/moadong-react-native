@@ -83,15 +83,15 @@ export default function WebViewScreen() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.push("/(tabs)/more");
+      router.push("/");
     }
   };
 
-  const handleNavigateWebview = (slug: string) => {
+  const handleNavigateWebview = (slug: string, clubId?: string) => {
     if (slug.startsWith('club/')) {
-      const clubId = slug.slice('club/'.length);
-      if (!clubId) return;
-      router.push({ pathname: '/club/[id]', params: { id: clubId } });
+      const slugId = slug.slice('club/'.length);
+      if (!slugId) return;
+      router.push({ pathname: '/club/[id]', params: { id: slugId, clubId } });
     } else {
       router.push({ pathname: '/webview/[slug]', params: { slug } });
     }
@@ -174,6 +174,7 @@ export default function WebViewScreen() {
           domStorageEnabled={true}
         />
       </WebViewWrapper>
+
     </Container>
   );
 }

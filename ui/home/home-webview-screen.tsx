@@ -2,12 +2,18 @@ import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-co
 import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Platform, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import {
+  WebView,
+  WebViewMessageEvent,
+  WebViewNavigation,
+} from 'react-native-webview';
+import type { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 import styled from 'styled-components/native';
 
 const BASE_URL = `${(process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://moadong.com').replace(/\/$/, '')}/webview/main`;
@@ -21,6 +27,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const webViewRef = useRef<WebView>(null);
+  const canGoBackRef = useRef(false);
   const loadFailedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -77,11 +84,16 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
             break;
           }
 
+          case 'NAVIGATE_BACK':
+            webViewRef.current?.goBack();
+            break;
+
           case 'NAVIGATE_WEBVIEW':
+            if (!loaded) break;
             if (payload.slug?.startsWith('club/')) {
-              const clubId = payload.slug.slice('club/'.length);
-              if (!clubId) break;
-              router.push({ pathname: '/club/[id]', params: { id: clubId } });
+              const slugId = payload.slug.slice('club/'.length);
+              if (!slugId) break;
+              router.push({ pathname: '/club/[id]', params: { id: slugId, clubId: payload.clubId } });
             } else if (payload.slug?.startsWith('promotions/')) {
               router.push({ pathname: '/webview/[slug]', params: { slug: 'promotions', path: `/${payload.slug}`, hideHeader: 'true' } });
             } else {
@@ -91,6 +103,17 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
           case 'OPEN_EXTERNAL_URL':
             await WebBrowser.openBrowserAsync(payload.url);
+            break;
+
+          case 'SHARE':
+            await Share.share({ title: payload.title, message: payload.text, url: payload.url });
+            break;
+
+          case 'REQUEST_APP_VERSION':
+            sendMessage({
+              type: 'APP_VERSION',
+              payload: { version: Constants.expoConfig?.version ?? 'unknown' },
+            });
             break;
         }
       } catch {
@@ -116,6 +139,49 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
     onError();
   }, [markFailed, onError]);
 
+  const handleNavigationStateChange = useCallback(
+    (navState: WebViewNavigation) => {
+      canGoBackRef.current = navState.canGoBack;
+    },
+    [],
+  );
+
+  const handleShouldStartLoadWithRequest = useCallback(
+    (request: ShouldStartLoadRequest) => {
+      const baseOrigin = (process.env.EXPO_PUBLIC_WEBVIEW_URL ?? 'https://moadong.com').replace(/\/$/, '');
+      if (request.url.startsWith('http') && !request.url.startsWith(baseOrigin)) {
+        // iOS: navigationType === 'click' 은 사용자가 직접 링크를 탭한 경우만 해당
+        //      초기 로드·서버 리다이렉트는 'other' 이므로 인터셉트하지 않음
+        // Android: navigationType이 항상 'other'이므로 loaded 상태로 구분
+        const isUserInitiated = Platform.OS === 'ios'
+          ? request.navigationType === 'click'
+          : loaded;
+        if (isUserInitiated) {
+          router.push({ pathname: '/webview/[slug]', params: { slug: 'external', url: request.url } });
+          return false;
+        }
+        return true;
+      }
+      return true;
+    },
+    [router, loaded],
+  );
+
+  // Android 하드웨어 뒤로가기: 웹뷰 히스토리가 있으면 웹뷰 back, 없으면 기본 동작(종료)
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (canGoBackRef.current) {
+          webViewRef.current?.goBack();
+          return true;
+        }
+        return false;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
   return (
     <Container style={{ paddingTop: insets.top }}>
       {!loaded && (
@@ -131,11 +197,14 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           userAgent={USER_AGENT}
           onMessage={handleMessage}
           onLoadEnd={handleLoadEnd}
+          onNavigationStateChange={handleNavigationStateChange}
+          onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
           onError={handleError}
           onHttpError={handleError}
           javaScriptEnabled
           domStorageEnabled
           pullToRefreshEnabled
+          allowsBackForwardNavigationGestures
         />
       )}
     </Container>

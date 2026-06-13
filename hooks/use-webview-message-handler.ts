@@ -6,7 +6,7 @@ interface UseWebViewMessageHandlerOptions {
   // 뒤로가기 요청 시 호출
   onNavigateBack?: () => void;
   // 웹뷰 내 화면 이동 요청 시 호출
-  onNavigateWebview?: (slug: string) => void;
+  onNavigateWebview?: (slug: string, clubId?: string) => void;
   // 알림 구독 요청 시 호출
   onSubscribe?: (clubId: string, clubName?: string) => Promise<void> | void;
   // 알림 구독 해제 요청 시 호출
@@ -36,7 +36,7 @@ export const useWebViewMessageHandler = ({
           break;
         case WebViewMessageTypes.NAVIGATE_WEBVIEW:
           if (message.payload?.slug) {
-            onNavigateWebview?.(message.payload.slug);
+            onNavigateWebview?.(message.payload.slug, message.payload.clubId);
           }
           break;
         case WebViewMessageTypes.NOTIFICATION_SUBSCRIBE:
