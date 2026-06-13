@@ -18,7 +18,7 @@ import styled from "styled-components/native";
 
 export default function ClubWebViewScreen() {
   const router = useRouter();
-  const { id, name } = useLocalSearchParams<{ id?: string; name?: string }>();
+  const { id, name, clubId: objectId } = useLocalSearchParams<{ id?: string; name?: string; clubId?: string }>();
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
@@ -38,15 +38,17 @@ export default function ClubWebViewScreen() {
     const baseUrl = `${cleanUrl}/webview/club/${id}`;
 
     let url = appendSessionId(baseUrl, sessionId);
-    if (id && isSubscribed(id)) {
+    const lookupId = typeof objectId === 'string' ? objectId : id;
+    if (lookupId && isSubscribed(lookupId)) {
       url += `&is_subscribed=true`;
     }
     return url;
-  }, [id, webviewUrl, sessionId, isSubscribed]);
+  }, [id, objectId, webviewUrl, sessionId, isSubscribed]);
 
   const subscribed = useMemo(() => {
-    return id ? isSubscribed(id) : false;
-  }, [id, isSubscribed]);
+    const lookupId = typeof objectId === 'string' ? objectId : id;
+    return lookupId ? isSubscribed(lookupId) : false;
+  }, [id, objectId, isSubscribed]);
 
   const userAgent = getWebViewUserAgent();
 

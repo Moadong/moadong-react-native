@@ -13,7 +13,7 @@ export const WebViewMessageTypes = {
 
 export type WebViewMessage =
   | { type: 'NAVIGATE_BACK' }
-  | { type: 'NAVIGATE_WEBVIEW'; payload: { slug: string } }
+  | { type: 'NAVIGATE_WEBVIEW'; payload: { slug: string; clubId?: string } }
   | { type: 'NOTIFICATION_SUBSCRIBE'; payload: { clubId: string; clubName?: string } }
   | { type: 'NOTIFICATION_UNSUBSCRIBE'; payload: { clubId: string } }
   | { type: 'SHARE'; payload: { title: string; text: string; url: string } }
