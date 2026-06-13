@@ -83,7 +83,7 @@ export default function WebViewScreen() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.push("/(tabs)/more");
+      router.push("/");
     }
   };
 
