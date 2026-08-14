@@ -1,6 +1,7 @@
 import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-context';
 import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
+import { ensureAccessToken } from '@/services/auth-token.service';
 import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
@@ -18,6 +19,9 @@ import styled from 'styled-components/native';
 
 const BASE_URL = `${(process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://moadong.com').replace(/\/$/, '')}/webview/main`;
 const USER_AGENT = getWebViewUserAgent();
+// new URL(...) 은 EXPO_PUBLIC_WEBVIEW_URL 이 잘못되면 모듈 로드 시점에 throw 하므로,
+// 주입을 건너뛰고 넘어갈 수 있도록 직접 파싱한다.
+const WEB_ORIGIN = BASE_URL.match(/^https?:\/\/[^/]+/i)?.[0] ?? null;
 
 interface HomeWebViewScreenProps {
   onError: () => void;
@@ -30,12 +34,45 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const canGoBackRef = useRef(false);
   const loadFailedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
+  const [studentToken, setStudentToken] = useState<string | null>(null);
+  const [tokenResolved, setTokenResolved] = useState(false);
 
   const { markLoading, markReady, markFailed } = useHomeWebViewPreloadContext();
   const { sessionId, isLoading: sessionLoading } = useMixpanelContext();
   const { subscribedClubIds, toggleSubscribe } = useSubscribedClubsContext();
 
-  const url = sessionLoading ? null : appendSessionId(BASE_URL, sessionId);
+  // 웹의 첫 API 호출 전에 토큰이 준비돼 있어야 하므로, 조회가 끝난 뒤에 웹뷰를 렌더한다.
+  // 발급에 실패하면 주입 없이 렌더하고 웹이 자체 토큰으로 폴백한다.
+  useEffect(() => {
+    let cancelled = false;
+    ensureAccessToken()
+      .then((token) => {
+        if (!cancelled) setStudentToken(token);
+      })
+      .catch(() => {
+        if (!cancelled) setStudentToken(null);
+      })
+      .finally(() => {
+        if (!cancelled) setTokenResolved(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const url =
+    sessionLoading || !tokenResolved ? null : appendSessionId(BASE_URL, sessionId);
+
+  // 주입 스크립트는 웹뷰가 로드하는 모든 문서에서 실행되므로,
+  // origin 가드 없이는 외부 사이트로 이동했을 때 베어러 토큰이 노출된다.
+  const injectedToken =
+    studentToken && WEB_ORIGIN
+      ? `(function(){
+           if (window.location.origin !== ${JSON.stringify(WEB_ORIGIN)}) return;
+           window.__MOADONG_STUDENT_TOKEN__ = ${JSON.stringify(studentToken)};
+         })(); true;`
+      : undefined;
 
   useEffect(() => {
     if (url) {
@@ -195,6 +232,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           style={{ flex: 1 }}
           source={{ uri: url }}
           userAgent={USER_AGENT}
+          injectedJavaScriptBeforeContentLoaded={injectedToken}
           onMessage={handleMessage}
           onLoadEnd={handleLoadEnd}
           onNavigationStateChange={handleNavigationStateChange}
