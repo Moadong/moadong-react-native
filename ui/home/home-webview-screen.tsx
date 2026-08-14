@@ -19,9 +19,6 @@ import styled from 'styled-components/native';
 
 const BASE_URL = `${(process.env.EXPO_PUBLIC_WEBVIEW_URL || 'https://moadong.com').replace(/\/$/, '')}/webview/main`;
 const USER_AGENT = getWebViewUserAgent();
-// new URL(...) 은 EXPO_PUBLIC_WEBVIEW_URL 이 잘못되면 모듈 로드 시점에 throw 하므로,
-// 주입을 건너뛰고 넘어갈 수 있도록 직접 파싱한다.
-const WEB_ORIGIN = BASE_URL.match(/^https?:\/\/[^/]+/i)?.[0] ?? null;
 
 interface HomeWebViewScreenProps {
   onError: () => void;
@@ -66,13 +63,18 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
   // 주입 스크립트는 웹뷰가 로드하는 모든 문서에서 실행되므로,
   // origin 가드 없이는 외부 사이트로 이동했을 때 베어러 토큰이 노출된다.
-  const injectedToken =
-    studentToken && WEB_ORIGIN
-      ? `(function(){
-           if (window.location.origin !== ${JSON.stringify(WEB_ORIGIN)}) return;
-           window.__MOADONG_STUDENT_TOKEN__ = ${JSON.stringify(studentToken)};
-         })(); true;`
-      : undefined;
+  // origin 비교는 웹뷰 안에서 한다. RN 의 URL 폴리필은 호스트 대소문자와 기본 포트를
+  // 정규화하지 않아 window.location.origin 과 어긋날 수 있다. 파싱에 실패하면 주입하지 않는다.
+  const injectedToken = studentToken
+    ? `(function(){
+         try {
+           if (new URL(${JSON.stringify(BASE_URL)}).origin !== window.location.origin) return;
+         } catch (e) {
+           return;
+         }
+         window.__MOADONG_STUDENT_TOKEN__ = ${JSON.stringify(studentToken)};
+       })(); true;`
+    : undefined;
 
   useEffect(() => {
     if (url) {
