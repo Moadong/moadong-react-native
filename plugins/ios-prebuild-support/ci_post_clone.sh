@@ -59,21 +59,51 @@ ensure_node() {
   export NODE_BINARY="$(command -v node)"
 }
 
-ensure_cocoapods() {
+ensure_ruby() {
   prepend_homebrew_paths
 
-  if command -v pod >/dev/null 2>&1; then
+  if command -v ruby >/dev/null 2>&1 &&
+    ruby -e 'exit Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.0") ? 0 : 1'; then
     return
   fi
 
-  echo "CocoaPods not found in PATH. Installing cocoapods with Homebrew..."
-  install_with_homebrew cocoapods
+  echo "Ruby 3 or newer not found in PATH. Installing ruby with Homebrew..."
+  install_with_homebrew ruby
+
+  RUBY_PREFIX="$(brew --prefix ruby 2>/dev/null || true)"
+  if [ -n "$RUBY_PREFIX" ]; then
+    PATH="$RUBY_PREFIX/bin:$PATH"
+    export PATH
+  fi
+
+  if ! command -v ruby >/dev/null 2>&1 ||
+    ! ruby -e 'exit Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.0") ? 0 : 1'; then
+    echo "Failed to make Ruby 3 or newer available." >&2
+    exit 1
+  fi
+}
+
+BUNDLER_VERSION="${BUNDLER_VERSION:-2.5.22}"
+
+ensure_bundler() {
+  if gem list --installed bundler --version "$BUNDLER_VERSION" >/dev/null 2>&1; then
+    return
+  fi
+
+  echo "Installing Bundler $BUNDLER_VERSION..."
+  gem install bundler -v "$BUNDLER_VERSION" --no-document
 }
 
 ensure_node
+ensure_ruby
+ensure_bundler
 node --version
 npm --version
+ruby --version
+bundle "_${BUNDLER_VERSION}_" --version
 npm ci
+
+bundle "_${BUNDLER_VERSION}_" install --jobs 4 --retry 3
 
 decode_google_service_info_plist() {
   if printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > GoogleService-Info.plist 2>/dev/null; then
@@ -124,8 +154,7 @@ if [ -f "$ENTITLEMENTS_FILE" ]; then
 fi
 
 cd ios
-ensure_cocoapods
-pod install --deployment
+bundle "_${BUNDLER_VERSION}_" exec pod install --deployment
 
 PODS_RELEASE_XCCONFIG="Pods/Target Support Files/Pods-app/Pods-app.release.xcconfig"
 if [ ! -f "$PODS_RELEASE_XCCONFIG" ]; then
