@@ -61,11 +61,21 @@ export async function issueAccessToken(): Promise<string> {
   return token;
 }
 
+let issuePromise: Promise<string> | null = null;
+
 export async function ensureAccessToken(): Promise<string> {
   const storedToken = await getStoredAccessToken();
   if (storedToken) {
     return storedToken;
   }
 
-  return issueAccessToken();
+  // 첫 실행 시 부트스트랩과 웹뷰가 동시에 호출하면 서로 다른 sub/토큰이 발급되어
+  // 앱 신원과 웹뷰 신원이 갈린다. 발급은 항상 한 번만 수행한다.
+  if (!issuePromise) {
+    issuePromise = issueAccessToken().finally(() => {
+      issuePromise = null;
+    });
+  }
+
+  return issuePromise;
 }
