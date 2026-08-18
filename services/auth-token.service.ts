@@ -1,5 +1,5 @@
 import { publicApi } from './api';
-import { getOrCreateAuthSubject, getStoredAccessToken, saveAccessToken } from './auth-token-storage';
+import { getStoredAccessToken, resolveAuthSubject, saveAccessToken } from './auth-token-storage';
 
 type IssueAccessTokenResponse =
   | {
@@ -46,7 +46,7 @@ function extractAccessToken(response: IssueAccessTokenResponse): string | null {
 
 export async function issueAccessToken(): Promise<string> {
   const payload: IssueAccessTokenPayload = {
-    sub: await getOrCreateAuthSubject(),
+    sub: await resolveAuthSubject(),
     iat: Math.floor(Date.now() / 1000),
   };
 
