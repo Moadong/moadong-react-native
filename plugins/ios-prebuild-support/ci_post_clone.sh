@@ -59,26 +59,40 @@ ensure_node() {
   export NODE_BINARY="$(command -v node)"
 }
 
-ensure_ruby() {
-  prepend_homebrew_paths
+RUBY_VERSION_SERIES="$(awk -F. '{ print $1 "." $2 }' .ruby-version)"
+RUBY_FORMULA="${RUBY_FORMULA:-ruby@${RUBY_VERSION_SERIES}}"
 
-  if command -v ruby >/dev/null 2>&1 &&
-    ruby -e 'exit Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.0") ? 0 : 1'; then
+prepend_homebrew_ruby_path() {
+  if ! command -v brew >/dev/null 2>&1; then
     return
   fi
 
-  echo "Ruby 3 or newer not found in PATH. Installing ruby with Homebrew..."
-  install_with_homebrew ruby
-
-  RUBY_PREFIX="$(brew --prefix ruby 2>/dev/null || true)"
+  RUBY_PREFIX="$(brew --prefix "$RUBY_FORMULA" 2>/dev/null || true)"
   if [ -n "$RUBY_PREFIX" ]; then
     PATH="$RUBY_PREFIX/bin:$PATH"
     export PATH
   fi
+}
 
-  if ! command -v ruby >/dev/null 2>&1 ||
-    ! ruby -e 'exit Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("3.0") ? 0 : 1'; then
-    echo "Failed to make Ruby 3 or newer available." >&2
+ruby_is_supported() {
+  command -v ruby >/dev/null 2>&1 &&
+    [ "$(ruby -e 'print RUBY_VERSION.split(".").first(2).join(".")')" = "$RUBY_VERSION_SERIES" ]
+}
+
+ensure_ruby() {
+  prepend_homebrew_paths
+  prepend_homebrew_ruby_path
+
+  if ruby_is_supported; then
+    return
+  fi
+
+  echo "Ruby $RUBY_VERSION_SERIES not found in PATH. Installing $RUBY_FORMULA with Homebrew..."
+  install_with_homebrew "$RUBY_FORMULA"
+  prepend_homebrew_ruby_path
+
+  if ! ruby_is_supported; then
+    echo "Failed to make Ruby $RUBY_VERSION_SERIES available." >&2
     exit 1
   fi
 }
