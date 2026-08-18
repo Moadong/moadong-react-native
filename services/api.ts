@@ -6,7 +6,7 @@ import { ApiErrorResponse } from '@/types/club.types';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
-import { getOrCreateAuthSubject, getStoredAccessToken, saveAccessToken } from './auth-token-storage';
+import { getStoredAccessToken, resolveAuthSubject, saveAccessToken } from './auth-token-storage';
 
 const APP_VERSION_HEADER_KEY = 'APP_VERSION';
 
@@ -160,7 +160,7 @@ function attachInterceptors(client: AxiosInstance, options: { withAuth: boolean 
         if (!refreshTokenPromise) {
           refreshTokenPromise = (async () => {
             try {
-              const sub = await getOrCreateAuthSubject();
+              const sub = await resolveAuthSubject();
               const iat = Math.floor(Date.now() / 1000);
               const response = await publicApiClient.post<AccessTokenIssueResponse>('/auth/student', { sub, iat });
               const nextToken = extractAccessToken(response.data);
