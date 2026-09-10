@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { appendSessionId, getWebViewUserAgent } from "@/utils/webview";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Share, TouchableOpacity } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
@@ -22,7 +22,8 @@ export default function ClubWebViewScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
-  const { isSubscribed, toggleSubscribe } = useSubscribedClubsContext();
+  const { isSubscribed, toggleSubscribe, subscribedClubIds } = useSubscribedClubsContext();
+  const webViewRef = useRef<WebView>(null);
   const { sessionId } = useMixpanelContext();
   const trackEvent = useMixpanelTrack();
   const insets = useSafeAreaInsets();
@@ -78,6 +79,21 @@ export default function ClubWebViewScreen() {
     }
   };
 
+  // 웹은 window의 message 이벤트만 듣기 때문에 dispatchEvent로 회신한다.
+  const sendMessage = useCallback((data: object) => {
+    webViewRef.current?.injectJavaScript(
+      `window.dispatchEvent(new MessageEvent('message', { data: ${JSON.stringify(JSON.stringify(data))} })); true;`,
+    );
+  }, []);
+
+  const sendSubscribeState = useCallback(() => {
+    sendMessage({ type: 'SUBSCRIBE_STATE', payload: { subscribedClubIds } });
+  }, [sendMessage, subscribedClubIds]);
+
+  useEffect(() => {
+    if (!isLoading) sendSubscribeState();
+  }, [isLoading, sendSubscribeState]);
+
   const handleSubscribeToggle = async () => {
     if (id && typeof id === "string") {
       const wasSubscribed = isSubscribed(id);
@@ -128,6 +144,29 @@ export default function ClubWebViewScreen() {
       
       await toggleSubscribe(targetId);
     },
+    onSubscribeToggle: async (targetId: string) => {
+      const wasSubscribed = subscribedClubIds.includes(targetId);
+      const result = await toggleSubscribe(targetId);
+
+      if (!result.needsPermission) {
+        trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
+          clubName: name,
+          subscribed: !wasSubscribed,
+          from: 'club_detail',
+          url: 'app://moadong/club',
+        });
+      }
+
+      sendMessage({
+        type: 'SUBSCRIBE_RESULT',
+        payload: {
+          clubId: targetId,
+          subscribed: result.needsPermission ? wasSubscribed : !wasSubscribed,
+          needsPermission: result.needsPermission,
+        },
+      });
+    },
+    onRequestSubscribeState: sendSubscribeState,
     onShare: async ({ title, text, url }: { title: string; text: string; url: string }) => {
       await Share.share({
         title,
@@ -170,6 +209,7 @@ export default function ClubWebViewScreen() {
 
       <WebViewContainer>
         <WebView
+          ref={webViewRef}
           source={{ uri }}
           style={{ flex: 1, backgroundColor: "#fff" }}
           userAgent={userAgent}

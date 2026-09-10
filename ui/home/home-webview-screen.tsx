@@ -7,7 +7,7 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, Platform, Share, View } from 'react-native';
+import { ActivityIndicator, BackHandler, Linking, Platform, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   WebView,
@@ -142,6 +142,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
           case 'OPEN_EXTERNAL_URL':
             await WebBrowser.openBrowserAsync(payload.url);
+            break;
+
+          case 'OPEN_APP_SETTINGS':
+            await Linking.openSettings();
             break;
 
           case 'SHARE':
