@@ -11,6 +11,10 @@ interface UseWebViewMessageHandlerOptions {
   onSubscribe?: (clubId: string, clubName?: string) => Promise<void> | void;
   // 알림 구독 해제 요청 시 호출
   onUnsubscribe?: (clubId: string) => Promise<void> | void;
+  // 알림 구독 토글 요청 시 호출 (구버전 SUBSCRIBE/UNSUBSCRIBE를 대체)
+  onSubscribeToggle?: (clubId: string) => Promise<void> | void;
+  // 웹이 현재 구독 목록을 요청할 때 호출
+  onRequestSubscribeState?: () => void;
   // 공유하기 요청 시 호출
   onShare?: (payload: { title: string; text: string; url: string }) => Promise<void> | void;
 }
@@ -21,6 +25,8 @@ export const useWebViewMessageHandler = ({
   onNavigateWebview,
   onSubscribe,
   onUnsubscribe,
+  onSubscribeToggle,
+  onRequestSubscribeState,
   onShare,
 }: UseWebViewMessageHandlerOptions) => {
   const handleMessage = useCallback((event: WebViewMessageEvent) => {
@@ -49,6 +55,14 @@ export const useWebViewMessageHandler = ({
             onUnsubscribe?.(message.payload.clubId);
           }
           break;
+        case WebViewMessageTypes.SUBSCRIBE_TOGGLE:
+          if (message.payload?.clubId) {
+            onSubscribeToggle?.(message.payload.clubId);
+          }
+          break;
+        case WebViewMessageTypes.REQUEST_SUBSCRIBE_STATE:
+          onRequestSubscribeState?.();
+          break;
         case WebViewMessageTypes.SHARE:
           if (message.payload) {
             onShare?.(message.payload);
@@ -63,13 +77,26 @@ export const useWebViewMessageHandler = ({
           }
           break;
         }
+        case WebViewMessageTypes.OPEN_APP_SETTINGS:
+          Linking.openSettings().catch(err =>
+            console.error('[WebViewHandler] 앱 설정 열기 실패:', err)
+          );
+          break;
         default:
           console.warn('[WebViewHandler] 알 수 없는 메시지 타입:', message);
       }
     } catch (error) {
       console.error('[WebViewHandler] 메시지 파싱 오류:', error);
     }
-  }, [onNavigateBack, onNavigateWebview, onSubscribe, onUnsubscribe, onShare]);
+  }, [
+    onNavigateBack,
+    onNavigateWebview,
+    onSubscribe,
+    onUnsubscribe,
+    onSubscribeToggle,
+    onRequestSubscribeState,
+    onShare,
+  ]);
 
   return { handleMessage };
 };
