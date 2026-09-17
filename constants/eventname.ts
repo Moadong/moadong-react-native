@@ -19,3 +19,8 @@ export const PAGE_VIEW_EVENT = {
   SUBSCRIBE_PAGE: 'SubscribePage',
   MORE_PAGE: 'MorePage',
 }
+
+// 앱 자체 진단용 — 사용자 행동이 아니라 웹↔앱 브리지 상태를 관측한다.
+export const DIAGNOSTIC_EVENT = {
+  BRIDGE_UNKNOWN_MESSAGE: 'Bridge UnknownMessage',
+}
