@@ -2,7 +2,7 @@ import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-co
 import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { ensureAccessToken } from '@/services/auth-token.service';
-import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
+import { appendSessionId, getWebViewUserAgent, reportUnknownBridgeMessage } from '@/utils/webview';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -158,6 +158,9 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
               payload: { version: Constants.expoConfig?.version ?? 'unknown' },
             });
             break;
+
+          default:
+            reportUnknownBridgeMessage(type, 'home');
         }
       } catch {
         // 파싱 실패 무시

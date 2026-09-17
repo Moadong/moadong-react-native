@@ -1,8 +1,11 @@
 import { WebViewMessage, WebViewMessageEvent, WebViewMessageTypes } from '@/types/webview-message.types';
+import { reportUnknownBridgeMessage } from '@/utils/webview';
 import { useCallback } from 'react';
 import { Linking } from 'react-native';
 
 interface UseWebViewMessageHandlerOptions {
+  /** 처리되지 않은 메시지를 어느 화면이 받았는지 구분하기 위한 이름 */
+  host: string;
   // 뒤로가기 요청 시 호출
   onNavigateBack?: () => void;
   // 웹뷰 내 화면 이동 요청 시 호출
@@ -21,6 +24,7 @@ interface UseWebViewMessageHandlerOptions {
 
 // WebView 메시지를 처리하는 Hook
 export const useWebViewMessageHandler = ({
+  host,
   onNavigateBack,
   onNavigateWebview,
   onSubscribe,
@@ -83,12 +87,13 @@ export const useWebViewMessageHandler = ({
           );
           break;
         default:
-          console.warn('[WebViewHandler] 알 수 없는 메시지 타입:', message);
+          reportUnknownBridgeMessage((message as { type?: unknown }).type, host);
       }
     } catch (error) {
       console.error('[WebViewHandler] 메시지 파싱 오류:', error);
     }
   }, [
+    host,
     onNavigateBack,
     onNavigateWebview,
     onSubscribe,
