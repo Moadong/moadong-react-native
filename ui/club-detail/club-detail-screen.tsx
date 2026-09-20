@@ -29,6 +29,17 @@ export default function ClubWebViewScreen() {
 
   const webviewUrl = process.env.EXPO_PUBLIC_WEBVIEW_URL;
 
+  /**
+   * 웹은 is_subscribed를 initialIsSubscribed(첫 페인트용)로만 쓰고, 이후 상태는
+   * SUBSCRIBE_STATE 메시지로 받는다. 그런데 구독을 토글할 때마다 이 값이 바뀌면
+   * source.uri가 바뀌어 웹뷰가 통째로 다시 로드된다(iOS visitSource, Android loadUrl).
+   * 그래서 마운트 시점 값으로 고정한다.
+   */
+  const [initialIsSubscribed] = useState(() => {
+    const lookupId = typeof objectId === 'string' ? objectId : id;
+    return !!lookupId && isSubscribed(lookupId);
+  });
+
   const uri = useMemo(() => {
     if (!id || typeof id !== "string") {
       return `${webviewUrl}/webview/club`;
@@ -38,12 +49,11 @@ export default function ClubWebViewScreen() {
     const baseUrl = `${cleanUrl}/webview/club/${id}`;
 
     let url = appendSessionId(baseUrl, sessionId);
-    const lookupId = typeof objectId === 'string' ? objectId : id;
-    if (lookupId && isSubscribed(lookupId)) {
+    if (initialIsSubscribed) {
       url += `${url.includes('?') ? '&' : '?'}is_subscribed=true`;
     }
     return url;
-  }, [id, objectId, webviewUrl, sessionId, isSubscribed]);
+  }, [id, webviewUrl, sessionId, initialIsSubscribed]);
 
   const subscribed = useMemo(() => {
     const lookupId = typeof objectId === 'string' ? objectId : id;
