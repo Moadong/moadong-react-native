@@ -40,7 +40,7 @@ export default function ClubWebViewScreen() {
     let url = appendSessionId(baseUrl, sessionId);
     const lookupId = typeof objectId === 'string' ? objectId : id;
     if (lookupId && isSubscribed(lookupId)) {
-      url += `&is_subscribed=true`;
+      url += `${url.includes('?') ? '&' : '?'}is_subscribed=true`;
     }
     return url;
   }, [id, objectId, webviewUrl, sessionId, isSubscribed]);
