@@ -16,6 +16,14 @@ import { initializeFcm, registerBackgroundMessageHandler, setupForegroundMessage
  * Android는 FCM data를 content.data로 그대로 복사하므로(NotificationSerializer.java)
  * 첫 경로에서 끝난다. 폴백이 Android 동작을 바꾸지 않도록 순서를 지켜야 한다.
  */
+/**
+ * iOS의 trigger.payload는 FCM data뿐 아니라 aps 등 userInfo 전체다. 라우팅에 쓰는 값만
+ * 문자열인지 확인한다. 단언만 하면 path가 문자열이 아닐 때 startsWith에서 던지는데,
+ * 응답 리스너 경로에는 catch가 없다.
+ */
+const asString = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value : undefined;
+
 const extractNotificationData = (
   request: Notifications.NotificationRequest,
 ): Record<string, any> | undefined =>
@@ -43,9 +51,9 @@ export const useFcm = (enabled: boolean = true) => {
     const handleNotificationData = (data?: Record<string, any>) => {
       if (!data) return;
 
-      const action = data.action as string | undefined;
-      const clubId = data.clubId as string | undefined;
-      const path = data.path as string | undefined;
+      const action = asString(data.action);
+      const clubId = asString(data.clubId);
+      const path = asString(data.path);
 
       // 서버에서 전달된 포맷: path=/webview/clubDetail/{clubId}, action=NAVIGATE_WEBVIEW, clubId={clubId}
       if (action === 'NAVIGATE_WEBVIEW') {
