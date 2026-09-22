@@ -2,7 +2,7 @@ import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-co
 import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { ensureAccessToken } from '@/services/auth-token.service';
-import { appendSessionId, buildStudentTokenInjection, getWebViewUserAgent } from '@/utils/webview';
+import { appendSessionId, buildStudentTokenInjection, getWebViewUserAgent, isWebViewOrigin } from '@/utils/webview';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -174,8 +174,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
   const handleShouldStartLoadWithRequest = useCallback(
     (request: ShouldStartLoadRequest) => {
-      const baseOrigin = (process.env.EXPO_PUBLIC_WEBVIEW_URL ?? 'https://moadong.com').replace(/\/$/, '');
-      if (request.url.startsWith('http') && !request.url.startsWith(baseOrigin)) {
+      // origin 을 문자열 prefix 로 판정하면 moadong.com.evil.com 이 내부로 통과한다.
+      // 그 페이지가 이 웹뷰에 뜨면 window.ReactNativeWebView.postMessage 로 브리지를
+      // 그대로 쓸 수 있다(SUBSCRIBE_TOGGLE, OPEN_EXTERNAL_URL 등). 파싱해서 비교한다.
+      if (request.url.startsWith('http') && !isWebViewOrigin(request.url)) {
         // iOS: navigationType === 'click' 은 사용자가 직접 링크를 탭한 경우만 해당
         //      초기 로드·서버 리다이렉트는 'other' 이므로 인터셉트하지 않음
         // Android: navigationType이 항상 'other'이므로 loaded 상태로 구분
@@ -230,6 +232,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           onHttpError={handleError}
           javaScriptEnabled
           domStorageEnabled
+          // Android 기본값(true)이면 target=_blank 가 onCreateWindow 로 가는데,
+          // onOpenWindow 핸들러가 없으면 화면에 붙지 않는 WebView 로 빨려들어가 링크가 죽는다.
+          // false 로 두면 같은 요청이 onShouldStartLoadWithRequest 를 타 iOS 와 같은 경로가 된다.
+          setSupportMultipleWindows={false}
           pullToRefreshEnabled
           allowsBackForwardNavigationGestures
         />
