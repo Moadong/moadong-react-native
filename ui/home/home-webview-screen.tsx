@@ -230,6 +230,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           onHttpError={handleError}
           javaScriptEnabled
           domStorageEnabled
+          // Android 기본값(true)이면 target=_blank 가 onCreateWindow 로 가는데,
+          // onOpenWindow 핸들러가 없으면 화면에 붙지 않는 WebView 로 빨려들어가 링크가 죽는다.
+          // false 로 두면 같은 요청이 onShouldStartLoadWithRequest 를 타 iOS 와 같은 경로가 된다.
+          setSupportMultipleWindows={false}
           pullToRefreshEnabled
           allowsBackForwardNavigationGestures
         />

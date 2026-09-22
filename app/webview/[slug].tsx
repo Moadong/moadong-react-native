@@ -76,7 +76,14 @@ export default function WebViewScreen() {
         ? (config.url ?? (config.path ? `${webviewUrl}${config.path}` : ""))
         : "";
 
-  const url = useMemo(() => appendSessionId(baseUrl, sessionId), [baseUrl, sessionId]);
+  /**
+   * session_id 는 웹 Mixpanel 의 distinct_id 라 모아동 밖으로 나가면 안 된다.
+   * 이 화면은 slug=external 로 임의 외부 URL 도 로드하므로 오리진을 확인하고 붙인다.
+   */
+  const url = useMemo(
+    () => (isWebViewOrigin(baseUrl) ? appendSessionId(baseUrl, sessionId) : baseUrl),
+    [baseUrl, sessionId],
+  );
 
   /**
    * 우체통은 앱이 주입한 학생 토큰을 먼저 쓴다(웹 studentFetch). 주입이 없으면 웹이
