@@ -6,10 +6,11 @@
 import { MoaText } from "@/components/moa-text";
 import { useMixpanelContext } from "@/contexts/mixpanel-context";
 import { useWebViewMessageHandler } from "@/hooks/use-webview-message-handler";
-import { appendSessionId, getWebViewUserAgent } from "@/utils/webview";
+import { ensureAccessToken } from "@/services/auth-token.service";
+import { appendSessionId, buildStudentTokenInjection, getWebViewUserAgent, isWebViewOrigin } from "@/utils/webview";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
@@ -76,6 +77,42 @@ export default function WebViewScreen() {
         : "";
 
   const url = useMemo(() => appendSessionId(baseUrl, sessionId), [baseUrl, sessionId]);
+
+  /**
+   * 우체통은 앱이 주입한 학생 토큰을 먼저 쓴다(웹 studentFetch). 주입이 없으면 웹이
+   * 자체 토큰을 발급해 앱과 신원이 갈리고, 답장 푸시로 열린 편지함이 비어 보인다.
+   * 답장 푸시의 path가 /feedback/letters/... 라 이 화면으로 들어온다.
+   *
+   * 주입은 content load 이전에 끝나야 하므로 토큰이 정해질 때까지 웹뷰를 렌더하지 않는다.
+   * 외부 URL로 진입한 경우에는 주입할 일이 없으니 기다리지도 않는다.
+   */
+  const [studentToken, setStudentToken] = useState<string | null>(null);
+  const [tokenResolved, setTokenResolved] = useState(false);
+
+  useEffect(() => {
+    if (!isWebViewOrigin(baseUrl)) {
+      setTokenResolved(true);
+      return;
+    }
+
+    let cancelled = false;
+    ensureAccessToken()
+      .then((token) => {
+        if (!cancelled) setStudentToken(token);
+      })
+      .catch(() => {
+        if (!cancelled) setStudentToken(null);
+      })
+      .finally(() => {
+        if (!cancelled) setTokenResolved(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [baseUrl]);
+
+  const injectedToken = buildStudentTokenInjection(baseUrl, studentToken);
 
   const userAgent = getWebViewUserAgent();
 
@@ -150,29 +187,32 @@ export default function WebViewScreen() {
           </LoadingContainer>
         )}
 
-        <StyledWebView
-          source={{ uri: url }}
-          userAgent={userAgent}
-          onMessage={handleMessage}
-          onLoadStart={() => {
-            if (!hasLoadedOnce) {
-              setLoading(true);
-              setError(false);
-            }
-          }}
-          onLoadEnd={() => {
-            setLoading(false);
-            if (!hasLoadedOnce) {
-              setHasLoadedOnce(true);
-            }
-          }}
-          onError={() => {
-            setError(true);
-            setLoading(false);
-          }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-        />
+        {tokenResolved && (
+          <StyledWebView
+            source={{ uri: url }}
+            userAgent={userAgent}
+            injectedJavaScriptBeforeContentLoaded={injectedToken}
+            onMessage={handleMessage}
+            onLoadStart={() => {
+              if (!hasLoadedOnce) {
+                setLoading(true);
+                setError(false);
+              }
+            }}
+            onLoadEnd={() => {
+              setLoading(false);
+              if (!hasLoadedOnce) {
+                setHasLoadedOnce(true);
+              }
+            }}
+            onError={() => {
+              setError(true);
+              setLoading(false);
+            }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+          />
+        )}
       </WebViewWrapper>
 
     </Container>

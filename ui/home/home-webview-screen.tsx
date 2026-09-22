@@ -2,7 +2,7 @@ import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-co
 import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { ensureAccessToken } from '@/services/auth-token.service';
-import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
+import { appendSessionId, buildStudentTokenInjection, getWebViewUserAgent } from '@/utils/webview';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -61,20 +61,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const url =
     sessionLoading || !tokenResolved ? null : appendSessionId(BASE_URL, sessionId);
 
-  // 주입 스크립트는 웹뷰가 로드하는 모든 문서에서 실행되므로,
-  // origin 가드 없이는 외부 사이트로 이동했을 때 베어러 토큰이 노출된다.
-  // origin 비교는 웹뷰 안에서 한다. RN 의 URL 폴리필은 호스트 대소문자와 기본 포트를
-  // 정규화하지 않아 window.location.origin 과 어긋날 수 있다. 파싱에 실패하면 주입하지 않는다.
-  const injectedToken = studentToken
-    ? `(function(){
-         try {
-           if (new URL(${JSON.stringify(BASE_URL)}).origin !== window.location.origin) return;
-         } catch (e) {
-           return;
-         }
-         window.__MOADONG_STUDENT_TOKEN__ = ${JSON.stringify(studentToken)};
-       })(); true;`
-    : undefined;
+  const injectedToken = buildStudentTokenInjection(BASE_URL, studentToken);
 
   useEffect(() => {
     if (url) {
