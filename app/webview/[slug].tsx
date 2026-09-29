@@ -50,13 +50,11 @@ export default function WebViewScreen() {
   const {
     slug,
     path,
-    url: urlParam,
     title,
     hideHeader,
   } = useLocalSearchParams<{
     slug?: string;
     path?: string;
-    url?: string;
     title?: string;
     hideHeader?: string;
   }>();
@@ -68,13 +66,16 @@ export default function WebViewScreen() {
 
   const config = pageConfig[slug || ""];
 
-  const baseUrl = urlParam
-    ? String(urlParam)
-    : path
-      ? `${webviewUrl}${String(path).startsWith("/") ? "" : "/"}${String(path)}`
-      : config
-        ? (config.url ?? (config.path ? `${webviewUrl}${config.path}` : ""))
-        : "";
+  /**
+   * 목적지는 path 또는 pageConfig 로만 정한다. 예전에는 url 파라미터를 그대로 받았는데,
+   * 그러면 moadongapp://webview/x?url=... 딥링크로 임의 사이트를 이 화면에 띄울 수 있다.
+   * 이 화면은 onMessage 가 붙어 있어 그 페이지가 앱 브리지를 그대로 쓴다.
+   */
+  const baseUrl = path
+    ? `${webviewUrl}${String(path).startsWith("/") ? "" : "/"}${String(path)}`
+    : config
+      ? (config.url ?? (config.path ? `${webviewUrl}${config.path}` : ""))
+      : "";
 
   /**
    * session_id 는 웹 Mixpanel 의 distinct_id 라 모아동 밖으로 나가면 안 된다.
@@ -146,7 +147,7 @@ export default function WebViewScreen() {
     onNavigateWebview: handleNavigateWebview,
   });
 
-  if (!config && !path && !urlParam) {
+  if (!config && !path) {
     return (
       <Container edges={["top", "bottom"]}>
         <Header>
