@@ -185,14 +185,22 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           ? request.navigationType === 'click'
           : loaded;
         if (isUserInitiated) {
-          router.push({ pathname: '/webview/[slug]', params: { slug: 'external', url: request.url } });
+          // 외부 사이트는 OS 브라우저로 넘긴다. 앱 화면(WebView)에 띄우면 모아동 헤더가
+          // 붙어 어디인지 구분이 안 되고, 앱 프로세스 안이라 그 페이지가
+          // window.ReactNativeWebView 로 브리지를 쓸 수 있다.
+          // 배너·동아리 SNS·OPEN_EXTERNAL_URL 이 이미 같은 방식이다.
+          WebBrowser.openBrowserAsync(request.url, {
+            presentationStyle: WebBrowser.WebBrowserPresentationStyle.AUTOMATIC,
+          }).catch((error) => {
+            console.warn('[HomeWebView] 외부 링크 열기 실패:', request.url, error);
+          });
           return false;
         }
         return true;
       }
       return true;
     },
-    [router, loaded],
+    [loaded],
   );
 
   // Android 하드웨어 뒤로가기: 웹뷰 히스토리가 있으면 웹뷰 back, 없으면 기본 동작(종료)
