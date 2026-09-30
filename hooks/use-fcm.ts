@@ -6,6 +6,31 @@ import { useRouter } from 'expo-router';
 import { initializeFcm, registerBackgroundMessageHandler, setupForegroundMessageHandler } from '@/services/fcm.service';
 
 /**
+ * 알림 탭에서 FCM data를 꺼낸다.
+ *
+ * iOS의 expo-notifications는 원격 푸시일 때 userInfo["body"]만 data로 넘긴다
+ * (EXNotificationSerializer.m serializedNotificationData). 그건 Expo 푸시 서비스
+ * 포맷이고 FCM은 커스텀 키를 userInfo 최상위에 두므로 content.data가 null이 된다.
+ * iOS는 trigger.payload에 userInfo 원본이 통째로 남아 있어 그쪽으로 폴백한다.
+ *
+ * Android는 FCM data를 content.data로 그대로 복사하므로(NotificationSerializer.java)
+ * 첫 경로에서 끝난다. 폴백이 Android 동작을 바꾸지 않도록 순서를 지켜야 한다.
+ */
+/**
+ * iOS의 trigger.payload는 FCM data뿐 아니라 aps 등 userInfo 전체다. 라우팅에 쓰는 값만
+ * 문자열인지 확인한다. 단언만 하면 path가 문자열이 아닐 때 startsWith에서 던지는데,
+ * 응답 리스너 경로에는 catch가 없다.
+ */
+const asString = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value : undefined;
+
+const extractNotificationData = (
+  request: Notifications.NotificationRequest,
+): Record<string, any> | undefined =>
+  (request.content.data as Record<string, any> | null | undefined) ??
+  ((request.trigger as { payload?: Record<string, any> } | null)?.payload);
+
+/**
  * 앱 시작 시 FCM 초기화를 1회 실행하는 커스텀 훅
  */
 export const useFcm = (enabled: boolean = true) => {
@@ -26,9 +51,9 @@ export const useFcm = (enabled: boolean = true) => {
     const handleNotificationData = (data?: Record<string, any>) => {
       if (!data) return;
 
-      const action = data.action as string | undefined;
-      const clubId = data.clubId as string | undefined;
-      const path = data.path as string | undefined;
+      const action = asString(data.action);
+      const clubId = asString(data.clubId);
+      const path = asString(data.path);
 
       // 서버에서 전달된 포맷: path=/webview/clubDetail/{clubId}, action=NAVIGATE_WEBVIEW, clubId={clubId}
       if (action === 'NAVIGATE_WEBVIEW') {
@@ -80,8 +105,8 @@ export const useFcm = (enabled: boolean = true) => {
     // 알림 클릭(앱 열림) 처리
     Notifications.getLastNotificationResponseAsync()
       .then((response) => {
-        if (response?.notification?.request?.content?.data) {
-          handleNotificationData(response.notification.request.content.data as Record<string, any>);
+        if (response?.notification?.request) {
+          handleNotificationData(extractNotificationData(response.notification.request));
         }
       })
       .catch((error) => {
@@ -89,7 +114,7 @@ export const useFcm = (enabled: boolean = true) => {
       });
 
     notificationUnsubscribe = Notifications.addNotificationResponseReceivedListener((response) => {
-      handleNotificationData(response.notification.request.content.data as Record<string, any>);
+      handleNotificationData(extractNotificationData(response.notification.request));
     });
 
     return () => {
