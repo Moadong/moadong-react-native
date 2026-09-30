@@ -2,7 +2,7 @@ import { useHomeWebViewPreloadContext } from '@/contexts/home-webview-preload-co
 import { useMixpanelContext } from '@/contexts/mixpanel-context';
 import { useSubscribedClubsContext } from '@/contexts/subscribed-clubs-context';
 import { ensureAccessToken } from '@/services/auth-token.service';
-import { appendSessionId, getWebViewUserAgent } from '@/utils/webview';
+import { appendSessionId, buildStudentTokenInjection, getWebViewUserAgent, isWebViewOrigin } from '@/utils/webview';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -61,20 +61,7 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
   const url =
     sessionLoading || !tokenResolved ? null : appendSessionId(BASE_URL, sessionId);
 
-  // 주입 스크립트는 웹뷰가 로드하는 모든 문서에서 실행되므로,
-  // origin 가드 없이는 외부 사이트로 이동했을 때 베어러 토큰이 노출된다.
-  // origin 비교는 웹뷰 안에서 한다. RN 의 URL 폴리필은 호스트 대소문자와 기본 포트를
-  // 정규화하지 않아 window.location.origin 과 어긋날 수 있다. 파싱에 실패하면 주입하지 않는다.
-  const injectedToken = studentToken
-    ? `(function(){
-         try {
-           if (new URL(${JSON.stringify(BASE_URL)}).origin !== window.location.origin) return;
-         } catch (e) {
-           return;
-         }
-         window.__MOADONG_STUDENT_TOKEN__ = ${JSON.stringify(studentToken)};
-       })(); true;`
-    : undefined;
+  const injectedToken = buildStudentTokenInjection(BASE_URL, studentToken);
 
   useEffect(() => {
     if (url) {
@@ -187,8 +174,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
 
   const handleShouldStartLoadWithRequest = useCallback(
     (request: ShouldStartLoadRequest) => {
-      const baseOrigin = (process.env.EXPO_PUBLIC_WEBVIEW_URL ?? 'https://moadong.com').replace(/\/$/, '');
-      if (request.url.startsWith('http') && !request.url.startsWith(baseOrigin)) {
+      // origin 을 문자열 prefix 로 판정하면 moadong.com.evil.com 이 내부로 통과한다.
+      // 그 페이지가 이 웹뷰에 뜨면 window.ReactNativeWebView.postMessage 로 브리지를
+      // 그대로 쓸 수 있다(SUBSCRIBE_TOGGLE, OPEN_EXTERNAL_URL 등). 파싱해서 비교한다.
+      if (request.url.startsWith('http') && !isWebViewOrigin(request.url)) {
         // iOS: navigationType === 'click' 은 사용자가 직접 링크를 탭한 경우만 해당
         //      초기 로드·서버 리다이렉트는 'other' 이므로 인터셉트하지 않음
         // Android: navigationType이 항상 'other'이므로 loaded 상태로 구분
@@ -196,14 +185,22 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           ? request.navigationType === 'click'
           : loaded;
         if (isUserInitiated) {
-          router.push({ pathname: '/webview/[slug]', params: { slug: 'external', url: request.url } });
+          // 외부 사이트는 OS 브라우저로 넘긴다. 앱 화면(WebView)에 띄우면 모아동 헤더가
+          // 붙어 어디인지 구분이 안 되고, 앱 프로세스 안이라 그 페이지가
+          // window.ReactNativeWebView 로 브리지를 쓸 수 있다.
+          // 배너·동아리 SNS·OPEN_EXTERNAL_URL 이 이미 같은 방식이다.
+          WebBrowser.openBrowserAsync(request.url, {
+            presentationStyle: WebBrowser.WebBrowserPresentationStyle.AUTOMATIC,
+          }).catch((error) => {
+            console.warn('[HomeWebView] 외부 링크 열기 실패:', request.url, error);
+          });
           return false;
         }
         return true;
       }
       return true;
     },
-    [router, loaded],
+    [loaded],
   );
 
   // Android 하드웨어 뒤로가기: 웹뷰 히스토리가 있으면 웹뷰 back, 없으면 기본 동작(종료)
@@ -243,6 +240,10 @@ export function HomeWebViewScreen({ onError }: HomeWebViewScreenProps) {
           onHttpError={handleError}
           javaScriptEnabled
           domStorageEnabled
+          // Android 기본값(true)이면 target=_blank 가 onCreateWindow 로 가는데,
+          // onOpenWindow 핸들러가 없으면 화면에 붙지 않는 WebView 로 빨려들어가 링크가 죽는다.
+          // false 로 두면 같은 요청이 onShouldStartLoadWithRequest 를 타 iOS 와 같은 경로가 된다.
+          setSupportMultipleWindows={false}
           pullToRefreshEnabled
           allowsBackForwardNavigationGestures
         />

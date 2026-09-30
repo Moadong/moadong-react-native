@@ -6,10 +6,11 @@
 import { MoaText } from "@/components/moa-text";
 import { useMixpanelContext } from "@/contexts/mixpanel-context";
 import { useWebViewMessageHandler } from "@/hooks/use-webview-message-handler";
-import { appendSessionId, getWebViewUserAgent } from "@/utils/webview";
+import { ensureAccessToken } from "@/services/auth-token.service";
+import { appendSessionId, buildStudentTokenInjection, getWebViewUserAgent, isWebViewOrigin } from "@/utils/webview";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
@@ -49,13 +50,11 @@ export default function WebViewScreen() {
   const {
     slug,
     path,
-    url: urlParam,
     title,
     hideHeader,
   } = useLocalSearchParams<{
     slug?: string;
     path?: string;
-    url?: string;
     title?: string;
     hideHeader?: string;
   }>();
@@ -67,15 +66,61 @@ export default function WebViewScreen() {
 
   const config = pageConfig[slug || ""];
 
-  const baseUrl = urlParam
-    ? String(urlParam)
-    : path
-      ? `${webviewUrl}${String(path).startsWith("/") ? "" : "/"}${String(path)}`
-      : config
-        ? (config.url ?? (config.path ? `${webviewUrl}${config.path}` : ""))
-        : "";
+  /**
+   * 목적지는 path 또는 pageConfig 로만 정한다. 예전에는 url 파라미터를 그대로 받았는데,
+   * 그러면 moadongapp://webview/x?url=... 딥링크로 임의 사이트를 이 화면에 띄울 수 있다.
+   * 이 화면은 onMessage 가 붙어 있어 그 페이지가 앱 브리지를 그대로 쓴다.
+   */
+  const baseUrl = path
+    ? `${webviewUrl}${String(path).startsWith("/") ? "" : "/"}${String(path)}`
+    : config
+      ? (config.url ?? (config.path ? `${webviewUrl}${config.path}` : ""))
+      : "";
 
-  const url = useMemo(() => appendSessionId(baseUrl, sessionId), [baseUrl, sessionId]);
+  /**
+   * session_id 는 웹 Mixpanel 의 distinct_id 라 모아동 밖으로 나가면 안 된다.
+   * 이 화면은 slug=external 로 임의 외부 URL 도 로드하므로 오리진을 확인하고 붙인다.
+   */
+  const url = useMemo(
+    () => (isWebViewOrigin(baseUrl) ? appendSessionId(baseUrl, sessionId) : baseUrl),
+    [baseUrl, sessionId],
+  );
+
+  /**
+   * 우체통은 앱이 주입한 학생 토큰을 먼저 쓴다(웹 studentFetch). 주입이 없으면 웹이
+   * 자체 토큰을 발급해 앱과 신원이 갈리고, 답장 푸시로 열린 편지함이 비어 보인다.
+   * 답장 푸시의 path가 /feedback/letters/... 라 이 화면으로 들어온다.
+   *
+   * 주입은 content load 이전에 끝나야 하므로 토큰이 정해질 때까지 웹뷰를 렌더하지 않는다.
+   * 외부 URL로 진입한 경우에는 주입할 일이 없으니 기다리지도 않는다.
+   */
+  const [studentToken, setStudentToken] = useState<string | null>(null);
+  const [tokenResolved, setTokenResolved] = useState(false);
+
+  useEffect(() => {
+    if (!isWebViewOrigin(baseUrl)) {
+      setTokenResolved(true);
+      return;
+    }
+
+    let cancelled = false;
+    ensureAccessToken()
+      .then((token) => {
+        if (!cancelled) setStudentToken(token);
+      })
+      .catch(() => {
+        if (!cancelled) setStudentToken(null);
+      })
+      .finally(() => {
+        if (!cancelled) setTokenResolved(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [baseUrl]);
+
+  const injectedToken = buildStudentTokenInjection(baseUrl, studentToken);
 
   const userAgent = getWebViewUserAgent();
 
@@ -102,7 +147,7 @@ export default function WebViewScreen() {
     onNavigateWebview: handleNavigateWebview,
   });
 
-  if (!config && !path && !urlParam) {
+  if (!config && !path) {
     return (
       <Container edges={["top", "bottom"]}>
         <Header>
@@ -150,29 +195,32 @@ export default function WebViewScreen() {
           </LoadingContainer>
         )}
 
-        <StyledWebView
-          source={{ uri: url }}
-          userAgent={userAgent}
-          onMessage={handleMessage}
-          onLoadStart={() => {
-            if (!hasLoadedOnce) {
-              setLoading(true);
-              setError(false);
-            }
-          }}
-          onLoadEnd={() => {
-            setLoading(false);
-            if (!hasLoadedOnce) {
-              setHasLoadedOnce(true);
-            }
-          }}
-          onError={() => {
-            setError(true);
-            setLoading(false);
-          }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-        />
+        {tokenResolved && (
+          <StyledWebView
+            source={{ uri: url }}
+            userAgent={userAgent}
+            injectedJavaScriptBeforeContentLoaded={injectedToken}
+            onMessage={handleMessage}
+            onLoadStart={() => {
+              if (!hasLoadedOnce) {
+                setLoading(true);
+                setError(false);
+              }
+            }}
+            onLoadEnd={() => {
+              setLoading(false);
+              if (!hasLoadedOnce) {
+                setHasLoadedOnce(true);
+              }
+            }}
+            onError={() => {
+              setError(true);
+              setLoading(false);
+            }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+          />
+        )}
       </WebViewWrapper>
 
     </Container>
