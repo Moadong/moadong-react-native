@@ -143,6 +143,7 @@ export default function WebViewScreen() {
   };
 
   const { handleMessage } = useWebViewMessageHandler({
+    host: 'webview_slug',
     onNavigateBack: handleBack,
     onNavigateWebview: handleNavigateWebview,
   });
