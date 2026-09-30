@@ -114,6 +114,7 @@ export default function ClubWebViewScreen() {
 
   // WebView 메시지 핸들러
   const { handleMessage } = useWebViewMessageHandler({
+    host: 'club_detail',
     onNavigateBack: handleBack,
     onSubscribe: async (targetId: string, clubName?: string) => {
       trackEvent(USER_EVENT.SUBSCRIBE_BUTTON_CLICKED, {
