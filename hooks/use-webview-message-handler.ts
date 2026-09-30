@@ -1,8 +1,11 @@
 import { WebViewMessage, WebViewMessageEvent, WebViewMessageTypes } from '@/types/webview-message.types';
+import { reportUnknownBridgeMessage } from '@/utils/webview';
 import { useCallback } from 'react';
 import { Linking } from 'react-native';
 
 interface UseWebViewMessageHandlerOptions {
+  /** 처리되지 않은 메시지를 어느 화면이 받았는지 구분하기 위한 이름 */
+  host: string;
   // 뒤로가기 요청 시 호출
   onNavigateBack?: () => void;
   // 웹뷰 내 화면 이동 요청 시 호출
@@ -11,16 +14,23 @@ interface UseWebViewMessageHandlerOptions {
   onSubscribe?: (clubId: string, clubName?: string) => Promise<void> | void;
   // 알림 구독 해제 요청 시 호출
   onUnsubscribe?: (clubId: string) => Promise<void> | void;
+  // 알림 구독 토글 요청 시 호출 (구버전 SUBSCRIBE/UNSUBSCRIBE를 대체)
+  onSubscribeToggle?: (clubId: string) => Promise<void> | void;
+  // 웹이 현재 구독 목록을 요청할 때 호출
+  onRequestSubscribeState?: () => void;
   // 공유하기 요청 시 호출
   onShare?: (payload: { title: string; text: string; url: string }) => Promise<void> | void;
 }
 
 // WebView 메시지를 처리하는 Hook
 export const useWebViewMessageHandler = ({
+  host,
   onNavigateBack,
   onNavigateWebview,
   onSubscribe,
   onUnsubscribe,
+  onSubscribeToggle,
+  onRequestSubscribeState,
   onShare,
 }: UseWebViewMessageHandlerOptions) => {
   const handleMessage = useCallback((event: WebViewMessageEvent) => {
@@ -49,6 +59,14 @@ export const useWebViewMessageHandler = ({
             onUnsubscribe?.(message.payload.clubId);
           }
           break;
+        case WebViewMessageTypes.SUBSCRIBE_TOGGLE:
+          if (message.payload?.clubId) {
+            onSubscribeToggle?.(message.payload.clubId);
+          }
+          break;
+        case WebViewMessageTypes.REQUEST_SUBSCRIBE_STATE:
+          onRequestSubscribeState?.();
+          break;
         case WebViewMessageTypes.SHARE:
           if (message.payload) {
             onShare?.(message.payload);
@@ -63,13 +81,27 @@ export const useWebViewMessageHandler = ({
           }
           break;
         }
+        case WebViewMessageTypes.OPEN_APP_SETTINGS:
+          Linking.openSettings().catch(err =>
+            console.error('[WebViewHandler] 앱 설정 열기 실패:', err)
+          );
+          break;
         default:
-          console.warn('[WebViewHandler] 알 수 없는 메시지 타입:', message);
+          reportUnknownBridgeMessage((message as { type?: unknown }).type, host);
       }
     } catch (error) {
       console.error('[WebViewHandler] 메시지 파싱 오류:', error);
     }
-  }, [onNavigateBack, onNavigateWebview, onSubscribe, onUnsubscribe, onShare]);
+  }, [
+    host,
+    onNavigateBack,
+    onNavigateWebview,
+    onSubscribe,
+    onUnsubscribe,
+    onSubscribeToggle,
+    onRequestSubscribeState,
+    onShare,
+  ]);
 
   return { handleMessage };
 };

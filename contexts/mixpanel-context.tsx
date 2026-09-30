@@ -1,6 +1,4 @@
-import { getJwtSubject, getStoredAccessToken } from '@/services/auth-token-storage';
-import { getOrCreateMixpanelSessionId, identifyMixpanel } from '@/utils/mixpanel';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 
 interface MixpanelContextType {
   sessionId: string;
@@ -20,62 +18,23 @@ export const useMixpanelContext = () => {
 interface MixpanelProviderProps {
   children: React.ReactNode;
   initialSessionId?: string;
-  initialReady?: boolean;
-}
-
-async function getMixpanelDistinctId(sessionId: string): Promise<string> {
-  const accessToken = await getStoredAccessToken();
-  if (accessToken) {
-    const subject = getJwtSubject(accessToken);
-    if (subject) {
-      return `user:${subject}`;
-    }
-  }
-
-  return sessionId;
+  /**
+   * 부트스트랩 성공 여부. 필수로 둔다 - optional 이던 시절에는 넘기지 않는 경우를 위한
+   * 폴백 분기가 있었고, 그 분기가 프로바이더 안에서 따로 identify 를 했다. 실제로는
+   * 마운트 지점(app/_layout.tsx)이 항상 넘겨서 도달하지 않는 코드였는데, 신원 결정
+   * 로직이 두 곳에 있는 것처럼 읽혔다. 신원은 부트스트랩에서만 정한다.
+   */
+  initialReady: boolean;
 }
 
 export const MixpanelProvider: React.FC<MixpanelProviderProps> = ({
   children,
   initialSessionId,
   initialReady,
-}) => {
-  const usesBootstrapState = initialReady !== undefined;
-  const [sessionId, setSessionId] = useState<string>(initialSessionId ?? '');
-  const [isLoading, setIsLoading] = useState<boolean>(
-    usesBootstrapState ? !initialReady : true,
-  );
-
-  useEffect(() => {
-    if (usesBootstrapState) {
-      setSessionId(initialSessionId ?? '');
-      setIsLoading(!initialReady);
-      return;
-    }
-
-    const initializeMixpanel = async () => {
-      try {
-        const id = await getOrCreateMixpanelSessionId();
-        setSessionId(id);
-
-        const distinctId = await getMixpanelDistinctId(id);
-        const identified = await identifyMixpanel(distinctId);
-        if (identified) {
-          console.log('[MixpanelProvider] Mixpanel identified with:', distinctId);
-        }
-      } catch (error) {
-        console.error('[MixpanelProvider] 초기화 실패:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeMixpanel();
-  }, [initialReady, initialSessionId, usesBootstrapState]);
-
-  return (
-    <MixpanelContext.Provider value={{ sessionId, isLoading }}>
-      {children}
-    </MixpanelContext.Provider>
-  );
-};
+}) => (
+  <MixpanelContext.Provider
+    value={{ sessionId: initialSessionId ?? '', isLoading: !initialReady }}
+  >
+    {children}
+  </MixpanelContext.Provider>
+);
