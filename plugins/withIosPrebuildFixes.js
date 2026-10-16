@@ -1,8 +1,22 @@
 const fs = require('fs');
 const path = require('path');
-const { withFinalizedMod, withPodfile, withXcodeProject } = require('@expo/config-plugins');
+const { IOSConfig, withFinalizedMod, withInfoPlist, withPodfile, withXcodeProject } = require('@expo/config-plugins');
 
 const SUPPORT_DIR = path.join(__dirname, 'ios-prebuild-support');
+
+// iOS 27 SDK부터 UIScene 생명주기가 필수다. SceneDelegate는 AppDelegate의 window와 URL 처리를 그대로 재사용한다.
+const SCENE_DELEGATE_FILE = 'SceneDelegate.swift';
+const SCENE_MANIFEST = {
+  UIApplicationSupportsMultipleScenes: false,
+  UISceneConfigurations: {
+    UIWindowSceneSessionRoleApplication: [
+      {
+        UISceneConfigurationName: 'Default Configuration',
+        UISceneDelegateClassName: '$(PRODUCT_MODULE_NAME).SceneDelegate',
+      },
+    ],
+  },
+};
 
 const RNFB_SCRIPT_PHASE_NAMES = new Set([
   '[CP-User] [RNFB] Core Configuration',
@@ -143,7 +157,12 @@ function normalizeXcodeString(value) {
     .replace(/\\"/g, '"');
 }
 
-function applyXcodeProjectFixes(project) {
+function applyXcodeProjectFixes(project, projectName) {
+  const sceneDelegatePath = `${projectName}/${SCENE_DELEGATE_FILE}`;
+  if (!project.hasFile(sceneDelegatePath)) {
+    IOSConfig.XcodeUtils.addBuildSourceFileToGroup({ filepath: sceneDelegatePath, groupName: projectName, project });
+  }
+
   const shellScriptBuildPhases = project.hash?.project?.objects?.PBXShellScriptBuildPhase;
 
   for (const phase of Object.values(shellScriptBuildPhases || {})) {
@@ -179,7 +198,8 @@ function removeAppTestsFromScheme(schemeContents) {
   });
 }
 
-function applyFinalizedFileFixes(platformProjectRoot) {
+function applyFinalizedFileFixes(platformProjectRoot, projectName) {
+  copySupportFile(SCENE_DELEGATE_FILE, path.join(platformProjectRoot, projectName, SCENE_DELEGATE_FILE));
   copySupportFile('xcode.env', path.join(platformProjectRoot, '.xcode.env'));
   copySupportFile('ci_post_clone.sh', path.join(platformProjectRoot, 'ci_scripts', 'ci_post_clone.sh'), 0o755);
   copySupportFile(
@@ -200,15 +220,20 @@ module.exports = function withIosPrebuildFixes(config) {
     return config;
   });
 
+  config = withInfoPlist(config, (config) => {
+    config.modResults.UIApplicationSceneManifest = SCENE_MANIFEST;
+    return config;
+  });
+
   config = withXcodeProject(config, (config) => {
-    config.modResults = applyXcodeProjectFixes(config.modResults);
+    config.modResults = applyXcodeProjectFixes(config.modResults, config.modRequest.projectName);
     return config;
   });
 
   return withFinalizedMod(config, [
     'ios',
     (config) => {
-      applyFinalizedFileFixes(config.modRequest.platformProjectRoot);
+      applyFinalizedFileFixes(config.modRequest.platformProjectRoot, config.modRequest.projectName);
       return config;
     },
   ]);
