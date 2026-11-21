@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getLocales } from 'expo-localization';
 import { Mixpanel } from 'mixpanel-react-native';
 
 const SESSION_ID_KEY = '@moadong_session_id';
@@ -30,6 +31,25 @@ export const getOrCreateMixpanelSessionId = async (): Promise<string> => {
   }
 };
 
+/**
+ * 기기 언어 설정을 super property로 등록한다. 웹(Moadong/moadong#1920)과 같은 키를 쓴다.
+ *
+ * Locale.current(앱 번들 언어와 협상된 값)가 아니라 기기 선호 언어 목록의 첫 값을 쓴다.
+ * iOS 앱은 현지화를 en(developmentRegion) 하나만 선언하므로 협상된 값은 기기 언어와
+ * 무관하게 en이 될 수 있다.
+ * 값이 없으면 빈 문자열 세그먼트가 생기지 않도록 등록하지 않는다.
+ * 부가 속성 하나 때문에 Mixpanel 초기화 전체가 실패하지 않도록 오류는 여기서 삼킨다.
+ */
+const registerDeviceLocale = (mixpanel: Mixpanel): void => {
+  try {
+    const deviceLocale = getLocales()[0]?.languageTag;
+    if (!deviceLocale) return;
+    mixpanel.registerSuperProperties({ device_locale: deviceLocale });
+  } catch (error) {
+    console.error('[Mixpanel] device_locale 등록 실패:', error);
+  }
+};
+
 export const getMixpanel = async (): Promise<Mixpanel | null> => {
   if (mixpanelInstance && isInitialized) {
     return mixpanelInstance;
@@ -51,6 +71,7 @@ export const getMixpanel = async (): Promise<Mixpanel | null> => {
       try {
         if (mixpanelInstance) {
           await mixpanelInstance.init();
+          registerDeviceLocale(mixpanelInstance);
           isInitialized = true;
         }
       } catch (error) {
